@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Istighfar",
+    "arab": "أَسْتَغْفِرُ اللّٰهَ",
+    "latin": "Astagfirullah",
+    "arti": "Aku memohon ampunan kepada Allah.",
+    "read": 3
+  },
+  {
+    "title": "Doa Keselamatan",
+    "arab": "اَللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",
+    "latin": "Allahumma antas salam wa minkas salam tabarakta ya dzal jalali wal ikram",
+    "arti": "Ya Allah, Engkau pemberi keselamatan dan dari-Mu keselamatan, Maha Suci Engkau Sang Pemilik Keagungan dan Kemuliaan.",
+    "read": 1
+  },
+  {
+    "title": "Tasbih",
+    "arab": "سُبْحَانَ اللّٰهِ",
+    "latin": "Subhaanallah",
+    "arti": "Maha suci Allah",
+    "read": 33
+  },
+  {
+    "title": "Tahmid",
+    "arab": "اَلْحَمْدُ لِلّٰهِ",
+    "latin": "Al-hamdu lillah",
+    "arti": "Segala puji bagi Allah",
+    "read": 33
+  },
+  {
+    "title": "Takbir",
+    "arab": "اَللّٰهُ أَكْبَرُ",
+    "latin": "Allahu akbar",
+    "arti": "Allah Maha Besar.",
+    "read": 33
+  },
+  {
+    "title": "Tahlil",
+    "arab": "لَا إِلَهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ",
+    "latin": "La ilaha illallah wahdahu la syarika lah, lahul mulku wa lahul hamdu wa huwa ‘ala kulli syai`in qadir",
+    "arti": "Tiada Rabb yang berhak disembah selain Allah Yang Maha Esa, tidak ada sekutu bagi-Nya. bagi-Nya kerajan dan bagi-Nya pujian dan Dia Maha Mengetahui atas segala sesuatu.",
+    "read": 1
+  }
+]
