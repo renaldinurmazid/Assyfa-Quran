@@ -1,0 +1,43 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '15.0'
+
+# CocoaPods analytics sends network stats synchronously during install.
+# If you're behind an auth proxy or do not have network access,
+# uncomment the following line to skip stats.
+# ENV['COCOAPODS_DISABLE_STATS'] = '1'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Release' => :release,
+  'Profile' => :profile,
+}
+
+def flutter_install_all_ios_pods(flutter_application_path = nil)
+  flutter_application_path ||= File.join('..', '..')
+  res = File.read(File.join(flutter_application_path, '.flutter-plugins-dependencies'))
+  plugins_dir = File.join(flutter_application_path, '.symlinks', 'plugins')
+  podfile_path = File.expand_path(__FILE__)
+
+  # This is a shim to help with plugin installation, not a full implementation
+  # Real implementation is in flutter_tools
+end
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+    end
+  end
+end
