@@ -1,6 +1,10 @@
+// Quran Page Screen
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:iconly/iconly.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/quran/quran_page_screen_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -28,12 +32,13 @@ class QuranPageScreen extends StatelessWidget {
               child: AppBar(
                 title: Obx(() {
                   if (controller.dataPage.isEmpty) {
-                    return const Text('Quran Page');
+                    return Text('Al-Quran', style: pBold18);
                   }
                   final currentPage =
                       controller.dataPage[controller.currentPageIndex.value];
                   final surahs = currentPage.ayahs
-                      .map((e) => e.ayah.surah.name)
+                      .map((e) => e.ayah?.surah?.name ?? '')
+                      .where((name) => name.isNotEmpty)
                       .toSet()
                       .toList();
                   return InkWell(
@@ -42,35 +47,44 @@ class QuranPageScreen extends StatelessWidget {
                       controller.fetchDropdownJuz();
                       Get.dialog(_buildSearchSurah(controller));
                     },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              child: Text(
-                                surahs.join(', '),
-                                style: pMedium16.copyWith(
-                                  color: AppColor.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  surahs.join(', '),
+                                  style: pBold16.copyWith(
+                                    color: AppColor.primaryColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
                               ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                IconlyLight.arrow_down_2,
+                                color: AppColor.primaryColor,
+                                size: 14,
+                              ),
+                            ],
+                          ),
+                          Text(
+                            'Halaman ${currentPage.pageNumber} • Juz ${currentPage.juzNumbers.isNotEmpty ? currentPage.juzNumbers.first : "-"}',
+                            style: pMedium12.copyWith(
+                              color: Colors.grey.shade500,
                             ),
-                            const SizedBox(width: 10),
-                            Icon(
-                              Icons.keyboard_arrow_down,
-                              color: AppColor.primaryColor,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                        Text(
-                          'Halaman ${currentPage.pageNumber}, Juz ${currentPage.juzNumbers.isNotEmpty ? currentPage.juzNumbers.first : "-"}',
-                          style: pRegular12.copyWith(color: Colors.grey),
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }),
@@ -82,9 +96,9 @@ class QuranPageScreen extends StatelessWidget {
                       Get.dialog(_buildSearchAyah(controller));
                     },
                     icon: Icon(
-                      Icons.find_in_page_rounded,
+                      IconlyLight.search,
                       color: AppColor.primaryColor,
-                      size: 24,
+                      size: 22,
                     ),
                   ),
                   PopupMenuButton<String>(
@@ -104,86 +118,55 @@ class QuranPageScreen extends StatelessWidget {
                         ]);
                       }
                     },
-                    icon: const Icon(Icons.more_vert),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    icon: Icon(
+                      IconlyLight.more_square,
+                      color: AppColor.primaryColor,
+                      size: 22,
                     ),
-                    color: AppColor.primaryColor,
-                    padding: const EdgeInsets.all(0),
-                    menuPadding: EdgeInsets.all(0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    color: Colors.white,
                     itemBuilder: (context) => [
-                      controller.isLandscape.value
-                          ? PopupMenuItem(
-                              value: 'setPortrait',
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.crop_portrait,
-                                    color: AppColor.backgroundColor,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Perkecil Layar',
-                                    style: pRegular14.copyWith(
-                                      color: AppColor.backgroundColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : PopupMenuItem(
-                              value: 'setLandscape',
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.crop_landscape,
-                                    color: AppColor.backgroundColor,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Perbesar Layar',
-                                    style: pRegular14.copyWith(
-                                      color: AppColor.backgroundColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                       PopupMenuItem(
-                        value: 'search',
+                        value: controller.isLandscape.value
+                            ? 'setPortrait'
+                            : 'setLandscape',
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.info,
-                              color: AppColor.backgroundColor,
-                              size: 20,
+                            Icon(
+                              controller.isLandscape.value
+                                  ? IconlyLight.document
+                                  : IconlyLight.show,
+                              color: AppColor.primaryColor,
+                              size: 18,
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Info Detail',
-                              style: pRegular14.copyWith(
-                                color: AppColor.backgroundColor,
+                              controller.isLandscape.value
+                                  ? 'Mode Potret'
+                                  : 'Mode Lanskap',
+                              style: pMedium14.copyWith(
+                                color: AppColor.primaryColor,
                               ),
                             ),
                           ],
                         ),
                       ),
                       PopupMenuItem(
-                        value: 'search',
+                        value: 'info',
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.refresh,
-                              color: AppColor.backgroundColor,
-                              size: 20,
+                            Icon(
+                              IconlyLight.info_square,
+                              color: AppColor.primaryColor,
+                              size: 18,
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Muat Ulang',
-                              style: pRegular14.copyWith(
-                                color: AppColor.backgroundColor,
+                              'Info Detail',
+                              style: pMedium14.copyWith(
+                                color: AppColor.primaryColor,
                               ),
                             ),
                           ],
@@ -191,12 +174,11 @@ class QuranPageScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(width: 8),
                 ],
                 backgroundColor: AppColor.backgroundColor,
-                elevation: 1,
-                surfaceTintColor: AppColor.backgroundColor,
-                shadowColor: AppColor.primaryColor,
-                iconTheme: const IconThemeData(color: AppColor.primaryColor),
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
               ),
             ),
           );
@@ -230,42 +212,58 @@ class QuranPageScreen extends StatelessWidget {
                     builder: (context, orientation) {
                       final isLandscape = orientation == Orientation.landscape;
 
+                      if (page.id < 0) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColor.primaryColor,
+                          ),
+                        );
+                      }
+
                       Widget buildPageContent() {
                         return Obx(() {
                           if (controller.viewportWidth.value == 0) {
-                            return Image.network(
-                              '${controller.fullImageUrl}${page.imagePath ?? ""}',
-                              fit: isLandscape
-                                  ? BoxFit.fitWidth
-                                  : BoxFit.contain,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                      .cumulativeBytesLoaded /
+                            return controller.isOfflineMode.value
+                                ? Image.file(
+                                    File(page.imagePath),
+                                    fit: isLandscape
+                                        ? BoxFit.fitWidth
+                                        : BoxFit.contain,
+                                  )
+                                : Image.network(
+                                    page.imagePath,
+                                    fit: isLandscape
+                                        ? BoxFit.fitWidth
+                                        : BoxFit.contain,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
                                                   loadingProgress
-                                                      .expectedTotalBytes!
-                                            : null,
-                                        color: AppColor.primaryColor,
-                                      ),
-                                    );
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(
-                                    Icons.error,
-                                    color: Colors.red,
-                                    size: 40,
-                                  ),
-                                );
-                              },
-                            );
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                              color: AppColor.primaryColor,
+                                            ),
+                                          );
+                                        },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                          size: 40,
+                                        ),
+                                      );
+                                    },
+                                  );
                           }
                           return LayoutBuilder(
                             builder: (context, constraints) {
@@ -291,48 +289,56 @@ class QuranPageScreen extends StatelessWidget {
                                   height: displayHeight,
                                   child: Stack(
                                     children: [
-                                      Image.network(
-                                        '${controller.fullImageUrl}${page.imagePath ?? ""}',
-                                        width: displayWidth,
-                                        height: displayHeight,
-                                        fit: BoxFit.fill,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value:
-                                                  loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                            .cumulativeBytesLoaded /
+                                      controller.isOfflineMode.value
+                                          ? Image.file(
+                                              File(page.imagePath),
+                                              width: displayWidth,
+                                              height: displayHeight,
+                                              fit: BoxFit.fill,
+                                            )
+                                          : Image.network(
+                                              page.imagePath,
+                                              width: displayWidth,
+                                              height: displayHeight,
+                                              fit: BoxFit.fill,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) {
+                                                  return child;
+                                                }
+                                                return Center(
+                                                  child: CircularProgressIndicator(
+                                                    value:
                                                         loadingProgress
-                                                            .expectedTotalBytes!
-                                                  : null,
-                                              color: AppColor.primaryColor,
+                                                                .expectedTotalBytes !=
+                                                            null
+                                                        ? loadingProgress
+                                                                  .cumulativeBytesLoaded /
+                                                              loadingProgress
+                                                                  .expectedTotalBytes!
+                                                        : null,
+                                                    color:
+                                                        AppColor.primaryColor,
+                                                  ),
+                                                );
+                                              },
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return const Center(
+                                                      child: Icon(
+                                                        Icons.error,
+                                                        color: Colors.red,
+                                                        size: 40,
+                                                      ),
+                                                    );
+                                                  },
                                             ),
-                                          );
-                                        },
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return const Center(
-                                                child: Icon(
-                                                  Icons.error,
-                                                  color: Colors.red,
-                                                  size: 40,
-                                                ),
-                                              );
-                                            },
-                                      ),
                                       Obx(
                                         () => controller.isPlaying.value
                                             ? Stack(
                                                 children: page.ayahs
                                                     .where(
                                                       (m) =>
-                                                          m.ayah.id ==
+                                                          m.ayah?.id ==
                                                           controller
                                                               .playingAyahId
                                                               .value,
@@ -367,6 +373,28 @@ class QuranPageScreen extends StatelessWidget {
                                               )
                                             : const SizedBox.shrink(),
                                       ),
+                                      // Render Saved Bookmark
+                                      Obx(() {
+                                        final bookmark = controller.bookmarks
+                                            .firstWhereOrNull(
+                                              (b) =>
+                                                  b['page_number'] ==
+                                                  page.pageNumber,
+                                            );
+                                        if (bookmark == null) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        return Positioned(
+                                          top: 0,
+                                          right: 20 * scale,
+                                          child: Image.network(
+                                            bookmark['marker_path'],
+                                            width: 40 * scale,
+                                            height: 120 * scale,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        );
+                                      }),
                                     ],
                                   ),
                                 ),
@@ -390,93 +418,550 @@ class QuranPageScreen extends StatelessWidget {
                 },
               );
             }),
+            Obx(() {
+              if (controller.isDownloading.value) {
+                return Container(
+                  color: Colors.black.withOpacity(0.6),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(30),
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: AppColor.primaryColor.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                value: controller.totalPagesToDownload.value > 0
+                                    ? controller.downloadProgress.value /
+                                          controller.totalPagesToDownload.value
+                                    : null,
+                                color: AppColor.primaryColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Mengunduh Data Al-Quran',
+                            style: pBold18.copyWith(
+                              color: AppColor.primaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '${controller.downloadProgress.value} dari ${controller.totalPagesToDownload.value} Halaman',
+                            style: pSemiBold14,
+                          ),
+                          const SizedBox(height: 20),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              minHeight: 8,
+                              value: controller.totalPagesToDownload.value > 0
+                                  ? controller.downloadProgress.value /
+                                        controller.totalPagesToDownload.value
+                                  : null,
+                              color: AppColor.primaryColor,
+                              backgroundColor: AppColor.primaryColor
+                                  .withOpacity(0.1),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Mohon tunggu sebentar dan jangan tutup aplikasi.',
+                            style: pRegular12.copyWith(color: Colors.grey),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
             Obx(
               () => (controller.isLoading.value && controller.dataPage.isEmpty)
                   ? const SizedBox.shrink()
                   : AnimatedPositioned(
                       duration: const Duration(milliseconds: 300),
-                      bottom: controller.isFocus.value ? -100 : 0,
-                      right: 0,
-                      left: 0,
+                      bottom: controller.isFocus.value ? -160 : 20,
+                      right: 20,
+                      left: 20,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
                         decoration: BoxDecoration(
-                          color: AppColor.backgroundColor,
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () => controller.toggleAudio(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColor.primaryColor,
-                                shape: const CircleBorder(),
-                                padding: const EdgeInsets.all(0),
-                              ),
-                              child: Icon(
-                                controller.isPlaying.value
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                color: AppColor.backgroundColor,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 1,
-                              height: 24,
-                              color: AppColor.primaryColor,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                dropdownColor: AppColor.backgroundColor,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 10,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  fillColor: AppColor.backgroundColor,
-                                  filled: true,
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColor.primaryColor,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (AuthController.to.isLogin.value &&
+                                  !controller.isOfflineMode.value) ...[
+                                InkWell(
+                                  onTap: () {
+                                    controller.isFocus.value = true;
+                                    controller.isBookmarkVisible.value = true;
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 14,
                                     ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColor.primaryColor,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          IconlyBold.bookmark,
+                                          size: 22,
+                                          color: AppColor.primaryColor,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Tandai Halaman Ini',
+                                          style: pSemiBold14,
+                                        ),
+                                        const Spacer(),
+                                        Icon(
+                                          IconlyLight.arrow_right_2,
+                                          size: 16,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                value: controller.selectedReciter.value,
-                                items: controller.reciters.map((reciter) {
-                                  return DropdownMenuItem(
-                                    value: reciter['code'],
-                                    child: Text(
-                                      reciter['name']!,
-                                      style: pMedium14,
+                                Container(
+                                  height: 1,
+                                  color: Colors.grey.shade100,
+                                ),
+                              ],
+                              // Audio Player Row
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => controller.toggleAudio(),
+                                      child: Container(
+                                        height: 48,
+                                        width: 48,
+                                        decoration: BoxDecoration(
+                                          color: AppColor.primaryColor,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColor.primaryColor
+                                                  .withOpacity(0.3),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          controller.isPlaying.value
+                                              ? IconlyBold.voice
+                                              : IconlyBold.play,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                      ),
                                     ),
-                                  );
-                                }).toList(),
-                                onChanged: (value) =>
-                                    controller.changeReciter(value),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColor.primaryColor
+                                              .withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                                            value: controller
+                                                .selectedReciter
+                                                .value,
+                                            isExpanded: true,
+                                            icon: Icon(
+                                              IconlyLight.arrow_down_2,
+                                              size: 16,
+                                              color: AppColor.primaryColor,
+                                            ),
+                                            items: controller.reciters.map((
+                                              reciter,
+                                            ) {
+                                              return DropdownMenuItem(
+                                                value: reciter['code'],
+                                                child: Text(
+                                                  reciter['name']!,
+                                                  style: pMedium14.copyWith(
+                                                    color:
+                                                        AppColor.primaryColor,
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) =>
+                                                controller.changeReciter(value),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
             ),
+            Obx(() {
+              if (!controller.isBookmarkVisible.value) {
+                return const SizedBox.shrink();
+              }
+              return Positioned.fill(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: controller.isBookmarkVisible.value ? 1.0 : 0.0,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.1),
+                    child: InkWell(
+                      onTap: () => controller.isBookmarkVisible.value = false,
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      child: Stack(
+                        children: [
+                          // Left Selection Panel
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 24),
+                              child: GestureDetector(
+                                onTap: () {}, // Prevent tap through to backdrop
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.42,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 20,
+                                        offset: const Offset(5, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Pilih Desain',
+                                        style: pBold16.copyWith(
+                                          color: AppColor.primaryColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 2,
+                                              crossAxisSpacing: 10,
+                                              mainAxisSpacing: 10,
+                                              childAspectRatio: 1,
+                                            ),
+                                        itemCount: controller.apiMarkers.length,
+                                        itemBuilder: (context, index) {
+                                          return Obx(() {
+                                            final isSelected =
+                                                controller
+                                                    .selectedBookmarkDesign
+                                                    .value ==
+                                                index;
+                                            final marker =
+                                                controller.apiMarkers[index];
+                                            final isUse =
+                                                marker['isUse'] ?? false;
+
+                                            return GestureDetector(
+                                              onTap: () =>
+                                                  controller
+                                                          .selectedBookmarkDesign
+                                                          .value =
+                                                      index,
+                                              child: AnimatedContainer(
+                                                duration: const Duration(
+                                                  milliseconds: 200,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: isSelected
+                                                        ? AppColor.primaryColor
+                                                        : Colors.grey.shade200,
+                                                    width: isSelected ? 3 : 1,
+                                                  ),
+                                                  boxShadow: isSelected
+                                                      ? [
+                                                          BoxShadow(
+                                                            color: AppColor
+                                                                .primaryColor
+                                                                .withOpacity(
+                                                                  0.3,
+                                                                ),
+                                                            blurRadius: 8,
+                                                            spreadRadius: 1,
+                                                          ),
+                                                        ]
+                                                      : [],
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: Stack(
+                                                    children: [
+                                                      Positioned.fill(
+                                                        child: Image.network(
+                                                          marker['marker_path'],
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      if (isUse)
+                                                        Positioned.fill(
+                                                          child: Container(
+                                                            color: Colors.grey
+                                                                .withOpacity(
+                                                                  0.5,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      if (isSelected)
+                                                        Align(
+                                                          alignment: Alignment
+                                                              .topRight,
+                                                          child: Container(
+                                                            margin:
+                                                                const EdgeInsets.all(
+                                                                  4,
+                                                                ),
+                                                            decoration:
+                                                                const BoxDecoration(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                ),
+                                                            child: Icon(
+                                                              Icons
+                                                                  .check_circle,
+                                                              color: AppColor
+                                                                  .primaryColor,
+                                                              size: 20,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(height: 24),
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            controller.saveBookmark(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              AppColor.primaryColor,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                          minimumSize: const Size(
+                                            double.infinity,
+                                            50,
+                                          ),
+                                          elevation: 8,
+                                        ),
+                                        child: Text(
+                                          'Simpan',
+                                          style: pBold14.copyWith(
+                                            color: AppColor.backgroundColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Right Hanging Preview
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 24),
+                              child: GestureDetector(
+                                onTap: () {}, // Prevent tap through
+                                child: Obx(() {
+                                  final currentPageNumber =
+                                      controller.dataPage.isNotEmpty &&
+                                          controller.currentPageIndex.value <
+                                              controller.dataPage.length
+                                      ? controller
+                                            .dataPage[controller
+                                                .currentPageIndex
+                                                .value]
+                                            .pageNumber
+                                      : "";
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    height: 480,
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                        0.42,
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(20),
+                                        bottomRight: Radius.circular(20),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.4),
+                                          blurRadius: 25,
+                                          offset: const Offset(0, 15),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(20),
+                                        bottomRight: Radius.circular(20),
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          Positioned.fill(
+                                            child: controller.apiMarkers.isEmpty
+                                                ? const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : Image.network(
+                                                    controller
+                                                        .apiMarkers[controller
+                                                        .selectedBookmarkDesign
+                                                        .value]['marker_path'],
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                          ),
+                                          // Shadow/gradient for depth
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                    bottomLeft: Radius.circular(
+                                                      20,
+                                                    ),
+                                                    bottomRight:
+                                                        Radius.circular(20),
+                                                  ),
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.black.withOpacity(0.1),
+                                                  Colors.transparent,
+                                                  Colors.black.withOpacity(
+                                                    0.05,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          // Hanging string representation
+                                          Align(
+                                            alignment: Alignment.topCenter,
+                                            child: Container(
+                                              height: 60,
+                                              width: 3,
+                                              color: Colors.black45,
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.topCenter,
+                                            child: Container(
+                                              margin: const EdgeInsets.only(
+                                                top: 55,
+                                              ),
+                                              height: 12,
+                                              width: 12,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.black45,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -485,336 +970,300 @@ class QuranPageScreen extends StatelessWidget {
 
   Widget _buildSearchAyah(QuranPageScreenController controller) {
     return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Obx(
         () => Container(
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: AppColor.backgroundColor,
+            borderRadius: BorderRadius.circular(24),
+            color: Colors.white,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Pergi Ke',
-                style: pMedium16.copyWith(color: AppColor.primaryColor),
+                style: pBold18.copyWith(color: AppColor.primaryColor),
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      controller.tabIsAyah.value = true;
-                      controller.searchAyahPageController.jumpToPage(0);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          bottomLeft: Radius.circular(16),
-                        ),
-                        color: controller.tabIsAyah.value
-                            ? AppColor.primaryColor
-                            : AppColor.borderColor,
-                      ),
-                      child: Text(
-                        'Ayat',
-                        style: pMedium12.copyWith(
-                          color: controller.tabIsAyah.value
-                              ? AppColor.backgroundColor
-                              : AppColor.primaryColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      controller.tabIsAyah.value = false;
-                      controller.searchAyahPageController.jumpToPage(1);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
-                        ),
-                        color: controller.tabIsAyah.value
-                            ? AppColor.borderColor
-                            : AppColor.primaryColor,
-                      ),
-                      child: Text(
-                        'Halaman',
-                        style: pMedium12.copyWith(
-                          color: controller.tabIsAyah.value
-                              ? AppColor.primaryColor
-                              : AppColor.backgroundColor,
+              const SizedBox(height: 24),
+              // Tab Selector
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.tabIsAyah.value = true;
+                          controller.searchAyahPageController.jumpToPage(0);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: controller.tabIsAyah.value
+                                ? AppColor.primaryColor
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Text(
+                            'Ayat',
+                            textAlign: TextAlign.center,
+                            style: pSemiBold14.copyWith(
+                              color: controller.tabIsAyah.value
+                                  ? Colors.white
+                                  : Colors.grey,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.tabIsAyah.value = false;
+                          controller.searchAyahPageController.jumpToPage(1);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: !controller.tabIsAyah.value
+                                ? AppColor.primaryColor
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Text(
+                            'Halaman',
+                            textAlign: TextAlign.center,
+                            style: pSemiBold14.copyWith(
+                              color: !controller.tabIsAyah.value
+                                  ? Colors.white
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 30),
               SizedBox(
-                height: 100,
-                child: PageView.builder(
-                  itemCount: 2,
+                height: 80,
+                child: PageView(
                   controller: controller.searchAyahPageController,
-                  scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return controller.tabIsAyah.value
-                        ? Row(
+                  children: [
+                    // Ayat Search
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Surat', style: pRegular12),
-                                    const SizedBox(height: 12),
-                                    SearchAnchor(
-                                      viewBackgroundColor:
-                                          AppColor.backgroundColor,
-                                      searchController:
-                                          controller.searchAnchorController,
-                                      viewHintText: 'Cari Surat',
-                                      headerHintStyle: pRegular12,
-                                      headerTextStyle: pRegular12,
-                                      builder: (context, anchorController) {
-                                        return Obx(
-                                          () => InkWell(
-                                            onTap: () =>
-                                                anchorController.openView(),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 8,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                    color: AppColor.borderColor,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      controller
-                                                              .selectedSurahName
-                                                              .value
-                                                              .isEmpty
-                                                          ? 'Pilih Surat'
-                                                          : controller
-                                                                .selectedSurahName
-                                                                .value,
-                                                      style: pRegular12,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  const Icon(
-                                                    Icons.arrow_drop_down,
-                                                    size: 20,
-                                                    color:
-                                                        AppColor.primaryColor,
-                                                  ),
-                                                ],
-                                              ),
+                              Text(
+                                'Surah',
+                                style: pMedium12.copyWith(color: Colors.grey),
+                              ),
+                              const SizedBox(height: 4),
+                              SearchAnchor(
+                                builder: (context, anchorController) {
+                                  return InkWell(
+                                    onTap: () => anchorController.openView(),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Colors.grey.shade200,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              controller
+                                                      .selectedSurahName
+                                                      .value
+                                                      .isEmpty
+                                                  ? 'Pilih Surah'
+                                                  : controller
+                                                        .selectedSurahName
+                                                        .value,
+                                              style: pSemiBold14,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                        );
-                                      },
-                                      suggestionsBuilder:
-                                          (context, anchorController) {
-                                            if (anchorController.text.isEmpty &&
-                                                controller
-                                                    .dropdownSurah
-                                                    .isEmpty) {
-                                              controller.fetchDropdownSurah('');
-                                            }
-                                            return [
-                                              Obx(() {
-                                                if (controller
-                                                    .isDialogLoading
-                                                    .value) {
-                                                  return const Center(
-                                                    child: Padding(
-                                                      padding: EdgeInsets.all(
-                                                        16.0,
-                                                      ),
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                            color: AppColor
-                                                                .primaryColor,
-                                                          ),
-                                                    ),
-                                                  );
-                                                }
-                                                return Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: controller
-                                                      .dropdownSurah
-                                                      .map((surah) {
-                                                        return ListTile(
-                                                          title: Text(
-                                                            surah.name,
-                                                            style: pRegular12,
-                                                          ),
-                                                          onTap: () {
-                                                            controller
-                                                                .selectedSurahName
-                                                                .value = surah
-                                                                .name;
-                                                            controller
-                                                                    .surahId
-                                                                    .value =
-                                                                surah.id;
-                                                            anchorController
-                                                                .closeView(
-                                                                  surah.name,
-                                                                );
-                                                          },
-                                                        );
-                                                      })
-                                                      .toList(),
-                                                );
-                                              }),
-                                            ];
-                                          },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              SizedBox(
-                                width: 60,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Ayat', style: pRegular12),
-                                    TextField(
-                                      controller:
-                                          controller.searchAyahController,
-                                      cursorColor: AppColor.primaryColor,
-                                      style: pRegular12,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: 'No',
-                                        border: UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: AppColor.borderColor,
-                                          ),
-                                        ),
-                                        focusedBorder: UnderlineInputBorder(
-                                          borderSide: BorderSide(
+                                          Icon(
+                                            IconlyLight.arrow_down_2,
+                                            size: 16,
                                             color: AppColor.primaryColor,
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  );
+                                },
+                                suggestionsBuilder:
+                                    (context, anchorController) {
+                                      if (anchorController.text.isEmpty &&
+                                          controller.dropdownSurah.isEmpty) {
+                                        controller.fetchDropdownSurah('');
+                                      }
+                                      return [
+                                        Obx(
+                                          () => Column(
+                                            children: controller.dropdownSurah
+                                                .map(
+                                                  (surah) => ListTile(
+                                                    title: Text(
+                                                      surah.name,
+                                                      style: pMedium14,
+                                                    ),
+                                                    onTap: () {
+                                                      controller
+                                                              .selectedSurahName
+                                                              .value =
+                                                          surah.name;
+                                                      controller.surahId.value =
+                                                          surah.id;
+                                                      anchorController
+                                                          .closeView(
+                                                            surah.name,
+                                                          );
+                                                    },
+                                                  ),
+                                                )
+                                                .toList(),
+                                          ),
+                                        ),
+                                      ];
+                                    },
                               ),
                             ],
-                          )
-                        : Column(
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          flex: 1,
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('Halaman', style: pRegular12),
-                              const SizedBox(height: 12),
-                              Obx(
-                                () => DropdownButtonFormField<int>(
-                                  dropdownColor: AppColor.backgroundColor,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                    border: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: AppColor.borderColor,
-                                      ),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: AppColor.primaryColor,
-                                      ),
-                                    ),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: AppColor.borderColor,
-                                      ),
+                              Text(
+                                'Ayat',
+                                style: pMedium12.copyWith(color: Colors.grey),
+                              ),
+                              TextField(
+                                controller: controller.searchAyahController,
+                                keyboardType: TextInputType.number,
+                                style: pBold14,
+                                decoration: InputDecoration(
+                                  hintText: 'No',
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade200,
                                     ),
                                   ),
-                                  value: controller.selectedPage.value,
-                                  items: controller.listPages.map((page) {
-                                    return DropdownMenuItem<int>(
-                                      value: page,
-                                      child: Text('$page', style: pRegular12),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      controller.selectedPage.value = value;
-                                    }
-                                  },
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: AppColor.primaryColor,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
-                          );
-                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Page Search
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Halaman',
+                          style: pMedium12.copyWith(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 4),
+                        DropdownButtonHideUnderline(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(color: Colors.grey.shade200),
+                              ),
+                            ),
+                            child: DropdownButton<int>(
+                              value: controller.selectedPage.value,
+                              isExpanded: true,
+                              items: controller.listPages
+                                  .map(
+                                    (page) => DropdownMenuItem(
+                                      value: page,
+                                      child: Text(
+                                        'Halaman $page',
+                                        style: pSemiBold14,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) =>
+                                  controller.selectedPage.value = v!,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Get.back();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.borderColor,
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        minimumSize: const Size(0, 50),
                       ),
-                      child: Text('Batal', style: pMedium12),
+                      child: Text(
+                        'Batal',
+                        style: pSemiBold14.copyWith(color: Colors.grey),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (controller.tabIsAyah.value) {
-                          controller.onJumpToAyah();
-                        } else {
-                          controller.onJumpToPage();
-                        }
-                      },
+                      onPressed: () => controller.tabIsAyah.value
+                          ? controller.onJumpToAyah()
+                          : controller.onJumpToPage(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        minimumSize: const Size(0, 50),
+                        elevation: 0,
                       ),
                       child: Text(
                         'Pergi',
-                        style: pMedium12.copyWith(
-                          color: AppColor.backgroundColor,
-                        ),
+                        style: pSemiBold14.copyWith(color: Colors.white),
                       ),
                     ),
                   ),
@@ -830,315 +1279,292 @@ class QuranPageScreen extends StatelessWidget {
   Widget _buildSearchSurah(QuranPageScreenController controller) {
     controller.searchSurahController.clear();
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 14),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
-        height: 500,
-        width: double.infinity,
+        height: MediaQuery.of(Get.context!).size.height * 0.7,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: AppColor.backgroundColor,
+          borderRadius: BorderRadius.circular(24),
+          color: Colors.white,
         ),
         child: Column(
           children: [
+            // Header Search Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                color: AppColor.primaryColor.withOpacity(0.05),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-                color: AppColor.primaryColor,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      cursorColor: AppColor.backgroundColor,
-                      style: pRegular12.copyWith(
-                        color: AppColor.backgroundColor,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: controller.searchSurahController,
+                            onChanged: (value) =>
+                                controller.onSearchChanged(value),
+                            style: pMedium14,
+                            decoration: InputDecoration(
+                              hintText: 'Cari Surat atau Juz...',
+                              hintStyle: pRegular14.copyWith(
+                                color: Colors.grey,
+                              ),
+                              border: InputBorder.none,
+                              icon: Icon(
+                                IconlyLight.search,
+                                size: 20,
+                                color: AppColor.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      controller: controller.searchSurahController,
-                      onChanged: (value) {
-                        controller.onSearchChanged(value);
-                      },
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: AppColor.backgroundColor,
-                          size: 20,
-                        ),
-                        prefixIconConstraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        hintText: 'Cari surat',
-                        hintStyle: pRegular12.copyWith(
-                          color: AppColor.backgroundColor,
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () => Get.back(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            IconlyLight.close_square,
+                            size: 22,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      Get.back();
-                    },
-                    padding: EdgeInsets.zero,
-                    style: IconButton.styleFrom(padding: EdgeInsets.zero),
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColor.backgroundColor,
-                      size: 20,
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
+            // Tab Selector
             Obx(
-              () => Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        controller.tabIsSurat.value = true;
-                        controller.searchSuratPageController.jumpToPage(0);
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: controller.tabIsSurat.value
-                                  ? AppColor.primaryColor
-                                  : Colors.grey.shade700,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          'Surat',
-                          style: pRegular12.copyWith(
+              () => Container(
+                margin: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.tabIsSurat.value = true;
+                          controller.searchSuratPageController.jumpToPage(0);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
                             color: controller.tabIsSurat.value
                                 ? AppColor.primaryColor
-                                : Colors.grey.shade700,
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        controller.tabIsSurat.value = false;
-                        controller.searchSuratPageController.jumpToPage(1);
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: !controller.tabIsSurat.value
-                                  ? AppColor.primaryColor
-                                  : Colors.grey.shade700,
+                          child: Text(
+                            'Surat',
+                            textAlign: TextAlign.center,
+                            style: pSemiBold14.copyWith(
+                              color: controller.tabIsSurat.value
+                                  ? Colors.white
+                                  : Colors.grey,
                             ),
                           ),
                         ),
-                        child: Text(
-                          'Juz',
-                          style: pRegular12.copyWith(
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.tabIsSurat.value = false;
+                          controller.searchSuratPageController.jumpToPage(1);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
                             color: !controller.tabIsSurat.value
                                 ? AppColor.primaryColor
-                                : Colors.grey.shade700,
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Juz',
+                            textAlign: TextAlign.center,
+                            style: pSemiBold14.copyWith(
+                              color: !controller.tabIsSurat.value
+                                  ? Colors.white
+                                  : Colors.grey,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
+            // List Content
             Expanded(
-              child: PageView.builder(
+              child: PageView(
                 controller: controller.searchSuratPageController,
-                itemCount: 2,
-                onPageChanged: (index) {
-                  controller.tabIsSurat.value = index == 0;
-                },
-                itemBuilder: (context, index) {
-                  return Obx(
-                    () => index == 0
-                        ? controller.isDialogLoading.value
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColor.primaryColor,
-                                  ),
-                                )
-                              : ListView.separated(
+                onPageChanged: (index) =>
+                    controller.tabIsSurat.value = index == 0,
+                children: [
+                  // Surah List
+                  Obx(
+                    () => controller.isDialogLoading.value
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: controller.dropdownSurah.length,
+                            itemBuilder: (context, index) {
+                              final surah = controller.dropdownSurah[index];
+                              return InkWell(
+                                onTap: () => controller.onSelectSurah(surah.id),
+                                child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
-                                    horizontal: 16,
                                   ),
-                                  itemBuilder: (context, index) {
-                                    return InkWell(
-                                      onTap: () {
-                                        controller.onSelectSurah(
-                                          controller.dropdownSurah[index].id,
-                                        );
-                                      },
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade100,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Stack(
+                                        alignment: Alignment.center,
                                         children: [
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: AssetImage(
-                                                  'assets/images/png/frame.png',
-                                                ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                controller
-                                                    .dropdownSurah[index]
-                                                    .id
-                                                    .toString(),
-                                                style: pSemiBold12.copyWith(
-                                                  color:
-                                                      AppColor.backgroundColor,
-                                                ),
-                                              ),
-                                            ),
+                                          Image.asset(
+                                            'assets/images/png/frame.png',
+                                            height: 36,
+                                            width: 36,
                                           ),
-                                          const SizedBox(width: 12),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                controller
-                                                    .dropdownSurah[index]
-                                                    .name,
-                                                style: pMedium14.copyWith(
-                                                  color: AppColor.primaryColor,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    controller
-                                                        .dropdownSurah[index]
-                                                        .translationName,
-                                                    style: pRegular10,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Container(
-                                                    width: 1,
-                                                    height: 12,
-                                                    color: Colors.white,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '${controller.dropdownSurah[index].cityName}(${controller.dropdownSurah[index].totalAyah})',
-                                                    style: pRegular10,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                          Text(
+                                            surah.id.toString(),
+                                            style: pBold12,
                                           ),
                                         ],
                                       ),
-                                    );
-                                  },
-                                  separatorBuilder: (context, index) {
-                                    return const SizedBox(height: 8);
-                                  },
-                                  itemCount: controller.dropdownSurah.length,
-                                )
-                        : controller.isDialogLoading.value
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColor.primaryColor,
-                            ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            itemBuilder: (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  controller.onSelectJuz(
-                                    controller.dropdownJuz[index].juzNomor,
-                                  );
-                                },
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: AssetImage(
-                                            'assets/images/png/frame.png',
-                                          ),
-                                          fit: BoxFit.cover,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              surah.name,
+                                              style: pSemiBold16,
+                                            ),
+                                            Text(
+                                              '${surah.translationName} • ${surah.totalAyah} Ayat',
+                                              style: pRegular12.copyWith(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      child: Center(
-                                        child: Text(
-                                          controller.dropdownJuz[index].juzNomor
-                                              .toString(),
-                                          style: pSemiBold12.copyWith(
-                                            color: AppColor.backgroundColor,
-                                          ),
+                                      Text(
+                                        surah.cityName,
+                                        style: pMedium12.copyWith(
+                                          color: AppColor.primaryColor,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Juz ${controller.dropdownJuz[index].juzNomor}',
-                                      style: pMedium14.copyWith(
-                                        color: AppColor.primaryColor,
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(height: 8);
-                            },
-                            itemCount: controller.dropdownJuz.length,
                           ),
-                  );
-                },
+                  ),
+                  // Juz List
+                  Obx(
+                    () => controller.isDialogLoading.value
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: controller.dropdownJuz.length,
+                            itemBuilder: (context, index) {
+                              final juz = controller.dropdownJuz[index];
+                              return InkWell(
+                                onTap: () =>
+                                    controller.onSelectJuz(juz.juzNomor),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade100,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 40,
+                                        width: 40,
+                                        decoration: BoxDecoration(
+                                          color: AppColor.primaryColor
+                                              .withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            juz.juzNomor.toString(),
+                                            style: pBold14.copyWith(
+                                              color: AppColor.primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        'Juz ${juz.juzNomor}',
+                                        style: pSemiBold16,
+                                      ),
+                                      const Spacer(),
+                                      Icon(
+                                        IconlyLight.arrow_right_2,
+                                        size: 16,
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
               ),
             ),
           ],

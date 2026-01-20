@@ -5,8 +5,11 @@ import 'package:get/get.dart';
 import 'package:quran_app/firebase_options.dart';
 import 'package:quran_app/routes/app_pages.dart';
 
+import 'package:quran_app/services/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

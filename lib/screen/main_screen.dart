@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
-import 'package:quran_app/screen/chat_screen.dart';
+import 'package:quran_app/screen/chat/chat_screen.dart';
 import 'package:quran_app/screen/home_screen.dart';
 import 'package:quran_app/screen/profile/profile_screen.dart';
 import 'package:quran_app/screen/tilawahku_screen.dart';
@@ -47,53 +48,41 @@ class MainScreen extends StatelessWidget {
         );
       }),
       bottomNavigationBar: Obx(() {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColor.backgroundColor,
-            border: Border(
-              top: BorderSide(color: AppColor.primaryColor.withOpacity(0.2)),
-            ),
+        return BottomNavigationBar(
+          unselectedItemColor: AppColor.primaryColor.withOpacity(0.2),
+          selectedItemColor: AppColor.primaryColor,
+          onTap: controller.changeTabIndex,
+          currentIndex: controller.tabIndex.value,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: AppColor.backgroundColor,
+          selectedLabelStyle: pMedium12.copyWith(color: AppColor.primaryColor),
+          unselectedLabelStyle: pRegular12.copyWith(
+            color: AppColor.primaryColor.withOpacity(0.2),
           ),
-          child: BottomNavigationBar(
-            unselectedItemColor: AppColor.primaryColor.withOpacity(0.2),
-            selectedItemColor: AppColor.primaryColor,
-            onTap: controller.changeTabIndex,
-            currentIndex: controller.tabIndex.value,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColor.backgroundColor,
-            selectedLabelStyle: pMedium12.copyWith(
-              color: AppColor.primaryColor,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(IconlyLight.home),
+              label: 'Home',
+              activeIcon: Icon(IconlyBold.home),
             ),
-            unselectedLabelStyle: pRegular12.copyWith(
-              color: AppColor.primaryColor.withOpacity(0.2),
+            BottomNavigationBarItem(
+              icon: Icon(IconlyLight.bookmark),
+              label: 'Tilawahku',
+              activeIcon: Icon(IconlyBold.bookmark),
             ),
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                label: 'Home',
-                activeIcon: Icon(Icons.home),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.bookmark_outline),
-                label: 'Tilawahku',
-                activeIcon: Icon(Icons.bookmark),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.chat_bubble_outline),
-                label: 'Pesan',
-                activeIcon: Icon(Icons.chat_bubble),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                label: 'Profile',
-                activeIcon: Icon(Icons.person),
-              ),
-            ],
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(IconlyLight.chat),
+              label: 'Pesan',
+              activeIcon: Icon(IconlyBold.chat),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(IconlyLight.profile),
+              label: 'Profile',
+              activeIcon: Icon(IconlyBold.profile),
+            ),
+          ],
         );
       }),
     );

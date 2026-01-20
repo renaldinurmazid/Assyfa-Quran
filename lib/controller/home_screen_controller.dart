@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ class HomeScreenController extends GetxController {
   final kabKota = 'KOTA JAKARTA'.obs;
   final provinsi = 'DKI JAKARTA'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
+  final isOfflineMode = false.obs;
 
   final displayPrayers = <Map<String, String>>[].obs;
   Timer? timer;
@@ -46,6 +48,8 @@ class HomeScreenController extends GetxController {
     getPrayerTime();
     _startTimer();
     autoSlideBanner();
+    _checkConnection();
+    _listenToConnectivity();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Listen to jadwalToday changes
       ever(jadwalToday, (_) {
@@ -342,5 +346,18 @@ class HomeScreenController extends GetxController {
     if (calendarToday != null) {
       this.calendarToday.value = calendarToday;
     }
+  }
+
+  Future<void> _checkConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    isOfflineMode.value = connectivityResult.contains(ConnectivityResult.none);
+  }
+
+  void _listenToConnectivity() {
+    Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
+      isOfflineMode.value = results.contains(ConnectivityResult.none);
+    });
   }
 }

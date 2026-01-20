@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:quran_app/api/url.dart';
@@ -10,6 +11,8 @@ import 'package:quran_app/models/group/user_for_group_list.dart';
 class AddMemberGroupController extends GetxController {
   final isLoading = false.obs;
   final users = <Datum>[].obs;
+  final filteredUsers = <Datum>[].obs;
+  final searchController = TextEditingController();
   int? groupId;
 
   @override
@@ -17,6 +20,30 @@ class AddMemberGroupController extends GetxController {
     super.onInit();
     groupId = Get.arguments;
     fetchUsers();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void onClose() {
+    searchController.removeListener(_onSearchChanged);
+    searchController.dispose();
+    super.onClose();
+  }
+
+  void _onSearchChanged() {
+    if (searchController.text.isEmpty) {
+      filteredUsers.assignAll(users);
+    } else {
+      filteredUsers.assignAll(
+        users
+            .where(
+              (user) => user.name.toLowerCase().contains(
+                searchController.text.toLowerCase(),
+              ),
+            )
+            .toList(),
+      );
+    }
   }
 
   Future<void> addUserToGroup(int userId) async {
@@ -41,6 +68,8 @@ class AddMemberGroupController extends GetxController {
       } else {
         Get.snackbar('Error', 'Gagal menambahkan anggota');
       }
+
+      isLoading.value = false;
     } catch (e) {
       Get.snackbar('Error', 'Terjadi kesalahan saat menambahkan anggota');
     } finally {
@@ -62,10 +91,12 @@ class AddMemberGroupController extends GetxController {
       if (response.statusCode == 200) {
         final data = userForMemberGroupFromJson(response.body);
         users.assignAll(data.data);
+        filteredUsers.assignAll(data.data);
       } else {
         Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
       }
     } catch (e) {
+      print(e);
       Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
     } finally {
       isLoading.value = false;

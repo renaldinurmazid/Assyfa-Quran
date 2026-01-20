@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/change_profile_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -17,66 +18,97 @@ class ChangeProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: AppBar(
-        title: Text('Ubah Profile', style: pSemiBold16),
+        title: Text('Ubah Profil', style: pBold18),
         centerTitle: true,
         backgroundColor: AppColor.backgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 10),
+              // Profile Picture Section
               Obx(
-                () => Container(
-                  height: 80,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    shape: BoxShape.circle,
-                    image: controller.selectedImage.value != null
-                        ? DecorationImage(
-                            image: FileImage(controller.selectedImage.value!),
-                            fit: BoxFit.cover,
-                          )
-                        : (AuthController.to.userData['profile_picture'] != null
+                () => Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        height: 110,
+                        width: 110,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColor.primaryColor.withOpacity(0.1),
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                          image: controller.selectedImage.value != null
                               ? DecorationImage(
-                                  image: NetworkImage(
-                                    AuthController
-                                        .to
-                                        .userData['profile_picture'],
+                                  image: FileImage(
+                                    controller.selectedImage.value!,
                                   ),
                                   fit: BoxFit.cover,
                                 )
-                              : null),
-                  ),
-                  child: Stack(
-                    children: [
-                      if (controller.selectedImage.value == null &&
-                          AuthController.to.userData['profile_picture'] == null)
-                        Center(
-                          child: Icon(
-                            Icons.person,
-                            size: 26,
-                            color: Colors.grey.shade600,
-                          ),
+                              : (AuthController
+                                            .to
+                                            .userData['profile_picture'] !=
+                                        null
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                          AuthController
+                                              .to
+                                              .userData['profile_picture'],
+                                        ),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null),
                         ),
+                        child:
+                            controller.selectedImage.value == null &&
+                                AuthController.to.userData['profile_picture'] ==
+                                    null
+                            ? Icon(
+                                IconlyBold.profile,
+                                size: 45,
+                                color: AppColor.primaryColor.withOpacity(0.2),
+                              )
+                            : null,
+                      ),
                       Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: InkWell(
+                        bottom: 4,
+                        right: 4,
+                        child: GestureDetector(
                           onTap: () => controller.pickImage(),
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppColor.primaryColor,
                               shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColor.primaryColor.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.image_rounded,
-                              size: 14,
-                              color: AppColor.backgroundColor,
+                            child: const Icon(
+                              IconlyBold.camera,
+                              size: 16,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -85,18 +117,35 @@ class ChangeProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+
+              // Form Section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Nama Lengkap', style: pSemiBold14),
+              ),
+              const SizedBox(height: 10),
               TextInput(
                 controller: controller.nameController,
-                hintText: 'Nama Lengkap',
+                hintText: 'Masukkan nama lengkap',
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 24),
+
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Email', style: pSemiBold14),
+              ),
+              const SizedBox(height: 10),
               TextInput(
                 controller: controller.emailController,
-                hintText: 'Email',
+                hintText: 'Email Anda',
                 readOnly: true,
               ),
-              const SizedBox(height: 40),
+
+              const SizedBox(height: 50),
+
+              // Save Button
               Obx(
                 () => ElevatedButton(
                   onPressed: controller.isLoading.value
@@ -104,28 +153,29 @@ class ChangeProfileScreen extends StatelessWidget {
                       : () => controller.updateProfile(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.primaryColor,
-                    fixedSize: const Size(double.maxFinite, 50),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 54),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   child: controller.isLoading.value
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppColor.backgroundColor,
+                            color: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
                       : Text(
-                          'Simpan',
-                          style: pMedium14.copyWith(
-                            color: AppColor.backgroundColor,
-                          ),
+                          'Simpan Perubahan',
+                          style: pSemiBold16.copyWith(color: Colors.white),
                         ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

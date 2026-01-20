@@ -1,14 +1,18 @@
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
-
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/dropdown_juz_model.dart';
 import 'package:quran_app/models/dropdown_surah_model.dart';
 import 'package:quran_app/models/quran_page_model.dart';
+import 'package:quran_app/api/request.dart';
+import 'package:quran_app/services/quran_offline_service.dart';
+import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/theme/font.dart';
 
 enum QuranPaginationMode { browse, page }
 
@@ -33,6 +37,15 @@ class QuranPageScreenController extends GetxController {
   final viewportHeight = 0.0.obs;
 
   final pageController = PageController();
+
+  /* =======================
+   * OFFLINE STATE
+   * ======================= */
+  final offlineService = QuranOfflineService();
+  final isOfflineMode = false.obs;
+  final isDownloading = false.obs;
+  final downloadProgress = 0.obs;
+  final totalPagesToDownload = 0.obs;
 
   /* =======================
    * SEARCH / FILTER STATE
@@ -76,7 +89,15 @@ class QuranPageScreenController extends GetxController {
   final selectedReciter = '01'.obs;
   final isLandscape = false.obs;
 
-  String get fullImageUrl => '${Url.baseUrl}/storage/';
+  /* =======================
+   * BOOKMARKS
+   * ======================= */
+  final isBookmarkVisible = false.obs;
+  final bookmarks = <Map<String, dynamic>>[].obs;
+  final apiMarkers = <Map<String, dynamic>>[].obs;
+  final selectedBookmarkDesign =
+      0.obs; // This will store the index of apiMarkers
+  final selectedMarkerId = Rxn<int>();
 
   /* =======================
    * LIFECYCLE
@@ -93,7 +114,9 @@ class QuranPageScreenController extends GetxController {
     ]);
 
     await fetchInitial();
-
+    if (AuthController.to.isLogin.value) {
+      await fetchMarkers();
+    }
     audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _playNextAyah();
@@ -131,6 +154,11 @@ class QuranPageScreenController extends GetxController {
     isFocus.value = !isFocus.value;
   }
 
+  Future<bool> _checkConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    return !connectivityResult.contains(ConnectivityResult.none);
+  }
+
   void fetchListPages() {
     if (listPages.isEmpty) {
       for (int i = 1; i <= 604; i++) {
@@ -148,10 +176,12 @@ class QuranPageScreenController extends GetxController {
       final currentPage = dataPage[currentPageIndex.value];
       selectedPage.value = currentPage.pageNumber;
       if (currentPage.ayahs.isNotEmpty) {
-        final firstAyah = currentPage.ayahs.first.ayah;
-        surahId.value = firstAyah.surahId;
-        selectedSurahName.value = firstAyah.surah.name;
-        searchAyahController.text = firstAyah.ayahNumber.toString();
+        final ayah = currentPage.ayahs.first.ayah;
+        if (ayah != null) {
+          surahId.value = ayah.surahId;
+          selectedSurahName.value = ayah.surah?.name ?? '';
+          searchAyahController.text = ayah.ayahNumber.toString();
+        }
       }
     }
   }
@@ -170,41 +200,166 @@ class QuranPageScreenController extends GetxController {
     currentPageIndex.value = 0;
     dataPage.clear();
 
-    final slug = Get.arguments['slug'];
+    final Map<String, dynamic>? args = Get.arguments;
+    final slug = args?['slug'] ?? 'mushaf_standard';
+    int? targetPage = pageNumber;
 
-    mode.value =
-        (surahId != null || juzId != null || ayah != null || pageNumber != null)
-        ? QuranPaginationMode.page
-        : QuranPaginationMode.browse;
+    // Sync class-level state if param is provided
+    if (surahId != null) this.surahId.value = surahId;
+    if (juzId != null) this.juzId.value = juzId;
 
-    String url = '${Url.baseUrl}${Url.quranPage}?qurantype=$slug';
+    // Resolve targetPage from index.json if available
+    final isOfflineAvailable = await offlineService.isIndexDownloaded(slug);
+    if (isOfflineAvailable) {
+      try {
+        final dynamic index = await offlineService.getIndex(slug);
+        if (index != null && index is Map) {
+          // 1. Resolve Surah + Ayah
+          if (surahId != null && ayah != null) {
+            final sapMap = index['surah_ayah_to_page'];
+            if (sapMap != null && sapMap is Map) {
+              final key = '$surahId:$ayah';
+              if (sapMap.containsKey(key)) {
+                targetPage = int.tryParse(sapMap[key].toString());
+                print("Resolved Surah:Ayah $key to Page $targetPage");
+              }
+            }
+          }
 
-    if (mode.value == QuranPaginationMode.browse) {
-      page.value = 1;
-      url += '&page=${page.value}&per_page=5';
-    } else {
-      if (surahId != null) url += '&surah_id=$surahId';
-      if (ayah != null) url += '&ayah_number=$ayah';
-      if (juzId != null) url += '&juz=$juzId';
-      if (pageNumber != null) url += '&page_number=$pageNumber';
-    }
+          // 2. Resolve Surah (if not resolved by ayah)
+          if (targetPage == null && surahId != null) {
+            final s2pMap = index['surah_to_page'];
+            if (s2pMap != null && s2pMap is Map) {
+              final key = surahId.toString();
+              if (s2pMap.containsKey(key)) {
+                targetPage = int.tryParse(s2pMap[key].toString());
+                print("Resolved Surah $surahId to Page $targetPage");
+              }
+            }
+          }
 
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = quranPageFromJson(response.body);
-        dataPage.value = data.data;
-        _applyMeta(data);
-
-        if (mode.value == QuranPaginationMode.page) {
-          _jumpToTargetPage();
+          // 3. Resolve Juz (fallback to list search if no direct map)
+          if (targetPage == null && juzId != null) {
+            final j2pMap = index['juz_to_page'];
+            if (j2pMap != null && j2pMap is Map) {
+              final key = juzId.toString();
+              if (j2pMap.containsKey(key)) {
+                targetPage = int.tryParse(j2pMap[key].toString());
+                print("Resolved Juz $juzId to Page $targetPage");
+              }
+            } else {
+              // Fallback to searching Juz list
+              final juzs =
+                  index['juzs'] ?? index['data']?['juzs'] ?? index['list_juz'];
+              if (juzs is List) {
+                final juzData = juzs.firstWhere((j) {
+                  final jId =
+                      j['id'] ?? j['juz_number'] ?? j['nomor'] ?? j['number'];
+                  return jId?.toString() == juzId.toString();
+                }, orElse: () => null);
+                if (juzData != null) {
+                  final resolvedPage =
+                      juzData['start_page'] ??
+                      juzData['page_number'] ??
+                      juzData['page'];
+                  targetPage = int.tryParse(resolvedPage.toString());
+                  print("Resolved Juz $juzId via list to Page $targetPage");
+                }
+              }
+            }
+          }
         }
+      } catch (e) {
+        print("Error resolving from index.json: $e");
       }
-    } catch (e) {
-      print("Error fetching initial data: $e");
-    } finally {
-      isLoading.value = false;
     }
+
+    // Hard fallback for Juz if still null
+    if (targetPage == null && juzId != null) {
+      targetPage = (juzId - 1) * 20 + 2;
+      if (juzId == 1) targetPage = 1;
+      if (juzId == 30) targetPage = 582;
+    }
+
+    // If all params are null, fallback to args (history)
+    if (targetPage == null &&
+        surahId == null &&
+        juzId == null &&
+        ayah == null) {
+      targetPage = args?['page_number'];
+    }
+
+    final isOnline = await _checkConnection();
+
+    // If any filter is provided, we should switch to page mode to jump to the target
+    if (surahId != null ||
+        juzId != null ||
+        ayah != null ||
+        targetPage != null) {
+      mode.value = QuranPaginationMode.page;
+    }
+
+    if (isOnline) {
+      if (!isOfflineAvailable &&
+          !isDownloading.value &&
+          mode.value == QuranPaginationMode.browse) {
+        _showDownloadConfirmation(slug);
+      }
+
+      try {
+        final response = await Request().get(
+          Url.quranPage,
+          queryParameters: {
+            'qurantype': slug,
+            if (mode.value == QuranPaginationMode.browse) ...{
+              'page': page.value,
+              'per_page': 5,
+            } else ...{
+              if (targetPage != null) 'page_number': targetPage,
+              if (surahId != null && targetPage == null) 'surah_id': surahId,
+              if (ayah != null && targetPage == null) 'ayah_number': ayah,
+              if (juzId != null && targetPage == null) 'juz': juzId,
+              if (pageNumber != null && targetPage == null)
+                'page_number': pageNumber,
+            },
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = QuranPage.fromJson(response.data);
+          _applyMeta(data);
+          isOfflineMode.value = false;
+
+          if (mode.value == QuranPaginationMode.page) {
+            _updateDataPageWithWindow(data.data);
+            _jumpToTargetPage();
+          } else {
+            dataPage.value = data.data;
+          }
+          isLoading.value = false;
+          return;
+        }
+      } catch (e) {
+        print("API fetch failed, trying offline fallback: $e");
+      }
+    }
+
+    // Fallback or No Internet
+    if (isOfflineAvailable) {
+      isOfflineMode.value = true;
+      await _fetchOfflineInitial(targetPage: targetPage);
+    } else {
+      isOfflineMode.value = false;
+      if (!isOnline) {
+        Get.snackbar(
+          'Tidak ada internet',
+          'Silahkan aktifkan internet atau download data offline.',
+          backgroundColor: Colors.red.withOpacity(0.7),
+          colorText: Colors.white,
+        );
+      }
+    }
+    isLoading.value = false;
   }
 
   /* =======================
@@ -219,14 +374,16 @@ class QuranPageScreenController extends GetxController {
     isLoading.value = true;
     page.value++;
 
-    final slug = Get.arguments['slug'];
-    final url =
-        '${Url.baseUrl}${Url.quranPage}?qurantype=$slug&page=${page.value}&per_page=5';
+    final Map<String, dynamic>? args = Get.arguments;
+    final slug = args?['slug'] ?? 'mushaf_standard';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await Request().get(
+        Url.quranPage,
+        queryParameters: {'qurantype': slug, 'page': page.value, 'per_page': 5},
+      );
       if (response.statusCode == 200) {
-        final data = quranPageFromJson(response.body);
+        final data = QuranPage.fromJson(response.data);
         if (data.data.isEmpty) {
           isLastPage.value = true;
         } else {
@@ -245,47 +402,93 @@ class QuranPageScreenController extends GetxController {
    * PAGE NAVIGATION (PREV / NEXT)
    * ======================= */
   Future<void> fetchByPageNumber(int pageNumber) async {
-    if (mode.value != QuranPaginationMode.page || isLoading.value) return;
+    if (isLoading.value) return;
 
     isLoading.value = true;
     final slug = Get.arguments['slug'];
+    final isOnline = await _checkConnection();
 
-    final url =
-        '${Url.baseUrl}${Url.quranPage}?qurantype=$slug&page_number=$pageNumber';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = quranPageFromJson(response.body);
-        dataPage.value = data.data;
-        _applyMeta(data);
-        _jumpToTargetPage();
+    if (isOnline) {
+      try {
+        final response = await Request().get(
+          Url.quranPage,
+          queryParameters: {'qurantype': slug, 'page_number': pageNumber},
+        );
+        if (response.statusCode == 200) {
+          final data = QuranPage.fromJson(response.data);
+          _applyMeta(data);
+          _updateDataPageWithWindow(data.data);
+          _jumpToTargetPage();
+          isOfflineMode.value = false;
+          isLoading.value = false;
+          return;
+        }
+      } catch (e) {
+        print("API fetch by page failed, trying offline: $e");
       }
-    } catch (e) {
-      print("Error fetching by page number: $e");
-    } finally {
-      isLoading.value = false;
     }
+
+    // Try offline
+    final datum = await offlineService.getPageData(slug, pageNumber);
+    if (datum != null) {
+      isOfflineMode.value = true;
+      _applyMetaOffline(pageNumber);
+      _updateDataPageWithWindow([datum]);
+      _jumpToTargetPage();
+    } else if (!isOnline) {
+      Get.snackbar(
+        'Offline',
+        'Halaman ini belum diunduh dan tidak ada internet.',
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white,
+      );
+    }
+
+    isLoading.value = false;
+  }
+
+  void _updateDataPageWithWindow(List<Datum> currentData) {
+    dataPage.clear();
+
+    // Add dummy prev if exists
+    if (prevPageNumber.value != null && prevPageNumber.value is int) {
+      dataPage.add(_createDummyPage(prevPageNumber.value!, -1));
+    }
+
+    dataPage.addAll(currentData);
+
+    // Add dummy next if exists
+    if (nextPageNumber.value != null && nextPageNumber.value is int) {
+      dataPage.add(_createDummyPage(nextPageNumber.value!, -2));
+    }
+  }
+
+  Datum _createDummyPage(int pageNumber, int id) {
+    return Datum(
+      id: id,
+      pageNumber: pageNumber,
+      imagePath: '',
+      juzNumbers: [],
+      isTargetPage: false,
+      ayahs: [],
+    );
   }
 
   /* =======================
    * PAGEVIEW CALLBACK
    * ======================= */
   void changePage(int index) {
+    if (index < 0 || index >= dataPage.length) return;
+
     currentPageIndex.value = index;
+    final selectedDatum = dataPage[index];
 
     if (isPlaying.value) stopAudio();
 
-    if (mode.value == QuranPaginationMode.page) {
-      if (index == 0 &&
-          prevPageNumber.value != null &&
-          prevPageNumber.value is int) {
-        fetchByPageNumber(prevPageNumber.value!);
-      }
-
-      if (index == dataPage.length - 1 && nextPageNumber.value != null) {
-        fetchByPageNumber(nextPageNumber.value!);
-      }
+    // Check if we hit a dummy page
+    if (selectedDatum.id < 0) {
+      fetchByPageNumber(selectedDatum.pageNumber);
+      return;
     }
 
     if (mode.value == QuranPaginationMode.browse) {
@@ -299,14 +502,120 @@ class QuranPageScreenController extends GetxController {
    * META HANDLER
    * ======================= */
   void _applyMeta(QuranPage data) {
-    viewportWidth.value = data.type.viewportWidth?.toDouble() ?? 0;
-    viewportHeight.value = data.type.viewportHeight?.toDouble() ?? 0;
-    prevPageNumber.value = data.meta.navigation.prevPageNumber;
-    nextPageNumber.value = data.meta.navigation.nextPageNumber;
+    viewportWidth.value = data.type?.viewportWidth.toDouble() ?? 0.0;
+    viewportHeight.value = data.type?.viewportHeight.toDouble() ?? 0.0;
+
+    final prev = data.meta?.navigation?.prevPageNumber;
+    final next = data.meta?.navigation?.nextPageNumber;
+
+    prevPageNumber.value = prev is String ? int.tryParse(prev) : prev;
+    nextPageNumber.value = next is String ? int.tryParse(next) : next;
+  }
+
+  /* =======================
+   * OFFLINE HELPERS
+   * ======================= */
+  void _showDownloadConfirmation(String type) {
+    Get.dialog(
+      Dialog(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: AppColor.backgroundColor,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Download Quran Offline?',
+                style: pMedium18.copyWith(color: AppColor.primaryColor),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduhnya sekarang?',
+                style: pRegular14,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      child: Text('Nanti Saja', style: pMedium14),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        _startDownload(type);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.primaryColor,
+                      ),
+                      child: Text(
+                        'Download',
+                        style: pMedium14.copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startDownload(String type) async {
+    isDownloading.value = true;
+    try {
+      await offlineService.downloadAll(type, (progress, total) {
+        downloadProgress.value = progress;
+        totalPagesToDownload.value = total;
+      });
+      isOfflineMode.value = true;
+      fetchInitial();
+    } finally {
+      isDownloading.value = false;
+    }
+  }
+
+  Future<void> _fetchOfflineInitial({int? targetPage}) async {
+    final Map<String, dynamic>? args = Get.arguments;
+    final slug = args?['slug'] ?? 'mushaf_standard';
+    final pageNum = targetPage ?? 1;
+
+    final datum = await offlineService.getPageData(slug, pageNum);
+    if (datum != null) {
+      _applyMetaOffline(pageNum);
+      _updateDataPageWithWindow([datum]);
+      _jumpToTargetPage();
+    }
+  }
+
+  void _applyMetaOffline(int currentPage) {
+    // Standard Mushaf dimensions if not specified
+    viewportWidth.value = 1080;
+    viewportHeight.value = 1748;
+
+    // Set navigation for offline mode
+    prevPageNumber.value = currentPage > 1 ? currentPage - 1 : null;
+    nextPageNumber.value = currentPage < 604 ? currentPage + 1 : null;
   }
 
   void _jumpToTargetPage() {
-    final idx = dataPage.indexWhere((e) => e.isTargetPage == true);
+    int idx = dataPage.indexWhere((e) => e.isTargetPage == true);
+
+    // If no target page marked, and we have multiple items (dummies),
+    // it's likely the middle one (the only non-dummy).
+    if (idx == -1) {
+      idx = dataPage.indexWhere((e) => e.id >= 0);
+    }
 
     currentPageIndex.value = idx != -1 ? idx : 0;
 
@@ -329,14 +638,21 @@ class QuranPageScreenController extends GetxController {
   }
 
   void playAyah(int index) async {
+    if (currentPageIndex.value >= dataPage.length) return;
     final pageData = dataPage[currentPageIndex.value];
     if (index >= pageData.ayahs.length) {
       stopAudio();
       return;
     }
 
-    final ayah = pageData.ayahs[index];
-    final audio = ayah.ayah.audio.firstWhereOrNull(
+    final ayahElement = pageData.ayahs[index];
+    final ayah = ayahElement.ayah;
+    if (ayah == null) {
+      playAyah(index + 1);
+      return;
+    }
+
+    final audio = ayah.audio.firstWhereOrNull(
       (a) => a.reciter?.code == selectedReciter.value,
     );
 
@@ -345,7 +661,7 @@ class QuranPageScreenController extends GetxController {
       return;
     }
 
-    playingAyahId.value = ayah.ayah.id;
+    playingAyahId.value = ayah.id;
     isPlaying.value = true;
 
     try {
@@ -362,7 +678,7 @@ class QuranPageScreenController extends GetxController {
 
     final pageData = dataPage[currentPageIndex.value];
     final idx = pageData.ayahs.indexWhere(
-      (e) => e.ayah.id == playingAyahId.value,
+      (e) => e.ayah?.id == playingAyahId.value,
     );
 
     if (idx != -1 && idx < pageData.ayahs.length - 1) {
@@ -384,7 +700,7 @@ class QuranPageScreenController extends GetxController {
       if (isPlaying.value) {
         final pageData = dataPage[currentPageIndex.value];
         final idx = pageData.ayahs.indexWhere(
-          (e) => e.ayah.id == playingAyahId.value,
+          (e) => e.ayah?.id == playingAyahId.value,
         );
         if (idx != -1) {
           playAyah(idx);
@@ -398,11 +714,13 @@ class QuranPageScreenController extends GetxController {
    * ======================= */
   void onSelectSurah(int id) {
     Get.back();
+    isFocus.value = true;
     fetchInitial(surahId: id);
   }
 
   void onSelectJuz(int id) {
     Get.back();
+    isFocus.value = false;
     fetchInitial(juzId: id);
   }
 
@@ -416,6 +734,7 @@ class QuranPageScreenController extends GetxController {
       return;
     }
     Get.back();
+    isFocus.value = true;
     fetchInitial(
       surahId: surahId.value,
       ayah: int.tryParse(searchAyahController.text),
@@ -424,6 +743,7 @@ class QuranPageScreenController extends GetxController {
 
   void onJumpToPage() {
     Get.back();
+    isFocus.value = true;
     fetchInitial(pageNumber: selectedPage.value);
   }
 
@@ -441,15 +761,20 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchDropdownSurah(String search) async {
     isDialogLoading.value = true;
     try {
-      final response = await http.get(
-        Uri.parse('${Url.baseUrl}${Url.dropdownSurah}?search=$search'),
+      final String response = await rootBundle.loadString(
+        'assets/data/ddl-surah.json',
       );
+      final List<DropdownSurah> allSurahs = dropdownSurahFromJson(response);
 
-      if (response.statusCode == 200) {
-        dropdownSurah.value = dropdownSurahFromJson(response.body);
+      if (search.isEmpty) {
+        dropdownSurah.value = allSurahs;
+      } else {
+        dropdownSurah.value = allSurahs
+            .where((s) => s.name.toLowerCase().contains(search.toLowerCase()))
+            .toList();
       }
     } catch (e) {
-      print("Error fetching dropdown surah: $e");
+      print("Error loading surah assets: $e");
     } finally {
       isDialogLoading.value = false;
     }
@@ -458,17 +783,187 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchDropdownJuz() async {
     isDialogLoading.value = true;
     try {
-      final response = await http.get(
-        Uri.parse('${Url.baseUrl}${Url.dropdownJuz}'),
-      );
-
-      if (response.statusCode == 200) {
-        dropdownJuz.value = dropdownJuzFromJson(response.body);
+      // Create Juz items with a loop (1-30)
+      final List<DropdownJuz> allJuz = [];
+      for (int i = 1; i <= 30; i++) {
+        allJuz.add(DropdownJuz(juzNomor: i, surah: []));
       }
+      dropdownJuz.value = allJuz;
     } catch (e) {
-      print("Error fetching dropdown juz: $e");
+      print("Error generating juz items: $e");
     } finally {
       isDialogLoading.value = false;
+    }
+  }
+
+  /* =======================
+   * BOOKMARK METHODS
+   * ======================= */
+  Future<void> loadBookmarks() async {
+    // This will now be handled via API if available,
+    // or we can fetch a specific list of user bookmarks.
+    // For now, removing SharedPreferences as requested.
+    bookmarks.clear();
+  }
+
+  Future<void> saveBookmark() async {
+    if (dataPage.isEmpty || currentPageIndex.value >= dataPage.length) return;
+
+    final selectedMarker = apiMarkers[selectedBookmarkDesign.value];
+
+    if (selectedMarker['isUse'] == true) {
+      Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColor.backgroundColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColor.primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.info_outline,
+                    color: AppColor.primaryColor,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Pindahkan Pembatas?',
+                  style: pBold18.copyWith(color: AppColor.primaryColor),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Ingin memindahkan pembatas ke halaman ini?',
+                  style: pRegular14.copyWith(color: Colors.grey[700]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Get.back(),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Batal',
+                          style: pSemiBold14.copyWith(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Get.back();
+                          _executeSaveBookmark();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColor.primaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Pindahkan',
+                          style: pSemiBold14.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      _executeSaveBookmark();
+    }
+  }
+
+  Future<void> _executeSaveBookmark() async {
+    try {
+      final currentPage = dataPage[currentPageIndex.value];
+      final selectedMarker = apiMarkers[selectedBookmarkDesign.value];
+
+      // API Call
+      try {
+        final response = await Request().post(
+          Url.saveMarkers,
+          data: {
+            'marker_id': selectedMarker['id'],
+            'quran_page_id': currentPage.id,
+          },
+        );
+
+        if (response.statusCode == 200) {
+          Get.snackbar(
+            'Berhasil',
+            'Halaman ${currentPage.pageNumber} ditandai.',
+            backgroundColor: AppColor.primaryColor.withOpacity(0.8),
+            colorText: Colors.white,
+          );
+          // Refresh list markers/bookmarks if needed
+          await fetchMarkers();
+        }
+      } catch (e) {
+        print("Error saving bookmark to API: $e");
+        Get.snackbar(
+          'Gagal',
+          'Gagal menyimpan penanda ke server.',
+          backgroundColor: Colors.red.withOpacity(0.7),
+          colorText: Colors.white,
+        );
+      }
+
+      isBookmarkVisible.value = false; // Close UI
+    } catch (e) {
+      print("Error in _executeSaveBookmark: $e");
+    }
+  }
+
+  Future<void> deleteBookmark(int index) async {
+    // Handle via API toggle-marker if necessary
+    // bookmarks.removeAt(index);
+  }
+
+  Future<void> fetchMarkers() async {
+    try {
+      final response = await Request().get(Url.listMarkers);
+      if (response.statusCode == 200) {
+        final data = response.data;
+        apiMarkers.value = List<Map<String, dynamic>>.from(data['data']);
+
+        // Set default selection if markers available
+        if (apiMarkers.isNotEmpty) {
+          final usedIdx = apiMarkers.indexWhere((m) => m['isUse'] == true);
+          selectedBookmarkDesign.value = usedIdx != -1 ? usedIdx : 0;
+          selectedMarkerId.value =
+              apiMarkers[selectedBookmarkDesign.value]['id'];
+        }
+      }
+    } catch (e) {
+      print("Error fetching markers: $e");
     }
   }
 }

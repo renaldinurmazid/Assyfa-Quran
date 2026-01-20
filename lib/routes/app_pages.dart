@@ -3,7 +3,7 @@ import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
-import 'package:quran_app/screen/charity_screen.dart';
+import 'package:quran_app/screen/charity/charity_screen.dart';
 import 'package:quran_app/screen/group/create_group_ngaji_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_show_screen.dart';
