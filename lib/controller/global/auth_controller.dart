@@ -8,6 +8,7 @@ import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_app/services/fcm_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get to => Get.find<AuthController>();
@@ -23,7 +24,7 @@ class AuthController extends GetxController {
     checkLoginStatus();
   }
 
-  void checkLoginStatus() async {
+  Future<void> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     token.value = prefs.getString('access_token') ?? '';
     if (token.value.isNotEmpty) {
@@ -32,6 +33,8 @@ class AuthController extends GetxController {
       if (userJson != null) {
         userData.value = jsonDecode(userJson);
       }
+      // Save FCM Token if logged in
+      FcmService.saveToken();
     }
   }
 
@@ -75,6 +78,7 @@ class AuthController extends GetxController {
 
         if (response.statusCode == 200) {
           final data = response.data;
+          print(data);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('access_token', data['token']);
           await prefs.setString('user_data', jsonEncode(data['user']));
@@ -82,6 +86,9 @@ class AuthController extends GetxController {
           token.value = data['token'];
           userData.value = data['user'];
           isLogin.value = true;
+
+          // Save FCM Token after successful login
+          FcmService.saveToken();
 
           Get.back();
           Get.snackbar("Success", "Login berhasil");
@@ -102,6 +109,8 @@ class AuthController extends GetxController {
   }
 
   Future<void> handleSignOut() async {
+    if (!isLogin.value) return;
+
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -223,5 +232,18 @@ class AuthController extends GetxController {
       Get.snackbar("Error", "Logout gagal, silahkan coba lagi nanti");
       print("SignOut Error: $error");
     }
+  }
+
+  void forceSignOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    await prefs.remove('user_data');
+
+    token.value = '';
+    userData.value = {};
+    isLogin.value = false;
+
+    // Optional: Back to initial screen if needed
+    // Get.offAllNamed(Routes.initial);
   }
 }

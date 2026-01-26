@@ -47,15 +47,9 @@ class Request {
             // Handle Unauthenticated
             try {
               if (get_ext.Get.isRegistered<AuthController>()) {
-                AuthController.to.handleSignOut();
+                AuthController.to.forceSignOut();
               }
             } catch (_) {}
-
-            get_ext.Get.snackbar(
-              'Session Expired',
-              'Silahkan login kembali',
-              snackPosition: get_ext.SnackPosition.BOTTOM,
-            );
           }
           return handler.next(e);
         },

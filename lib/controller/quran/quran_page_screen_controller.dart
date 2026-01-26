@@ -22,6 +22,8 @@ class QuranPageScreenController extends GetxController {
    * ======================= */
   final mode = QuranPaginationMode.browse.obs;
   final dataPage = <Datum>[].obs;
+  final startReadingPage = RxnInt();
+  final readingStartTime = DateTime.now();
 
   final isLoading = false.obs;
   final isLastPage = false.obs;
@@ -116,6 +118,7 @@ class QuranPageScreenController extends GetxController {
     await fetchInitial();
     if (AuthController.to.isLogin.value) {
       await fetchMarkers();
+      await loadBookmarks();
     }
     audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
@@ -335,6 +338,9 @@ class QuranPageScreenController extends GetxController {
             _jumpToTargetPage();
           } else {
             dataPage.value = data.data;
+            if (startReadingPage.value == null && dataPage.isNotEmpty) {
+              startReadingPage.value = dataPage.first.pageNumber;
+            }
           }
           isLoading.value = false;
           return;
@@ -619,6 +625,11 @@ class QuranPageScreenController extends GetxController {
 
     currentPageIndex.value = idx != -1 ? idx : 0;
 
+    // Track start page for history
+    if (startReadingPage.value == null && idx != -1) {
+      startReadingPage.value = dataPage[idx].pageNumber;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (pageController.hasClients) {
         pageController.jumpToPage(currentPageIndex.value);
@@ -800,10 +811,18 @@ class QuranPageScreenController extends GetxController {
    * BOOKMARK METHODS
    * ======================= */
   Future<void> loadBookmarks() async {
-    // This will now be handled via API if available,
-    // or we can fetch a specific list of user bookmarks.
-    // For now, removing SharedPreferences as requested.
-    bookmarks.clear();
+    if (!AuthController.to.isLogin.value) return;
+    try {
+      final response = await Request().get(Url.listUserMarkers);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        bookmarks.value = data
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+    } catch (e) {
+      print("Error loading bookmarks: $e");
+    }
   }
 
   Future<void> saveBookmark() async {
@@ -964,6 +983,46 @@ class QuranPageScreenController extends GetxController {
       }
     } catch (e) {
       print("Error fetching markers: $e");
+    }
+  }
+
+  /* =======================
+   * HISTORY
+   * ======================= */
+  Future<void> saveReadingHistory() async {
+    if (!AuthController.to.isLogin.value) return;
+    if (dataPage.isEmpty || currentPageIndex.value >= dataPage.length) return;
+
+    try {
+      final currentPage = dataPage[currentPageIndex.value];
+      final currentNum = currentPage.pageNumber;
+      final initialNum = startReadingPage.value ?? currentNum;
+
+      // Ensure start_page <= end_page for API validation
+      final startPage = initialNum < currentNum ? initialNum : currentNum;
+      final endPage = initialNum < currentNum ? currentNum : initialNum;
+
+      final duration = DateTime.now().difference(readingStartTime).inSeconds;
+
+      if (duration <= 15) return;
+
+      int? currentSurahId;
+      if (currentPage.ayahs.isNotEmpty) {
+        currentSurahId = currentPage.ayahs.first.ayah?.surahId;
+      }
+
+      await Request().post(
+        Url.readingHistory,
+        data: {
+          'surah_id': currentSurahId,
+          'start_page': startPage,
+          'end_page': endPage,
+          'read_date': DateTime.now().toIso8601String().split('T')[0],
+          'duration_seconds': duration,
+        },
+      );
+    } catch (e) {
+      print("Error saving reading history: $e");
     }
   }
 }

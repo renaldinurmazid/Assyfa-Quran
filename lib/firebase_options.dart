@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '319156609776',
     projectId: 'quranuna-995dc',
     storageBucket: 'quranuna-995dc.firebasestorage.app',
-    iosBundleId: 'com.example.quranApp',
+    iosBundleId: 'com.assyfa.quranapp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '319156609776',
     projectId: 'quranuna-995dc',
     storageBucket: 'quranuna-995dc.firebasestorage.app',
-    iosBundleId: 'com.example.quranApp',
+    iosBundleId: 'com.assyfa.quranapp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

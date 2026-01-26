@@ -25,7 +25,6 @@ class DzikirScreen extends StatelessWidget {
         backgroundColor: AppColor.backgroundColor,
         elevation: 1,
         surfaceTintColor: AppColor.backgroundColor,
-        shadowColor: AppColor.primaryColor,
         iconTheme: const IconThemeData(color: AppColor.primaryColor),
       ),
       body: Padding(

@@ -4,10 +4,13 @@ import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
+import 'package:quran_app/screen/charity/charity_show_screen.dart';
+import 'package:quran_app/screen/charity/charity_search_screen.dart';
 import 'package:quran_app/screen/group/create_group_ngaji_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_show_screen.dart';
 import 'package:quran_app/screen/group/group_ngaji_screen.dart';
+import 'package:quran_app/screen/group/group_search_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
 import 'package:quran_app/screen/main_screen.dart';
 import 'package:quran_app/screen/prayer_time_detail_screen.dart';
@@ -15,6 +18,10 @@ import 'package:quran_app/screen/quran_view/quran_list_detail_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_list_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_page_screen.dart';
 import 'package:quran_app/screen/group/show_group_screen.dart';
+import 'package:quran_app/screen/charity/charity_payment_screen.dart';
+import 'package:quran_app/screen/charity/charity_payment_detail_screen.dart';
+import 'package:quran_app/screen/charity/infaq_activity_screen.dart';
+import 'package:quran_app/screen/charity/infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/splash_screen.dart';
 
 class AppPages {
@@ -82,6 +89,18 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
+      name: Routes.charityShow,
+      page: () => const CharityShowScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.charitySearch,
+      page: () => const CharitySearchScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
       name: Routes.changeProfile,
       page: () => const ChangeProfileScreen(),
       transition: Transition.fadeIn,
@@ -96,6 +115,12 @@ class AppPages {
     GetPage(
       name: Routes.createGroupNgaji,
       page: () => const CreateGroupNgajiScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.groupSearch,
+      page: () => const GroupSearchScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
@@ -115,6 +140,30 @@ class AppPages {
       name: Routes.showMemberGroup,
       page: () => const ShowMemberScreen(),
       transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.charityPayment,
+      page: () => const CharityPaymentScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.charityPaymentDetail,
+      page: () => const CharityPaymentDetailScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.infaqActivity,
+      page: () => const InfaqActivityScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.infaqActivityDetail,
+      page: () => const InfaqActivityDetailScreen(),
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -18,35 +20,532 @@ class HomeScreen extends StatelessWidget {
     Get.put(TilawahController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
-      body: Column(
+      backgroundColor: const Color(0xFFFBFBFB),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await controller.getPrayerTime();
+            await controller.getCalendarToday();
+          },
+          color: AppColor.primaryColor,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildSliverAppBar(controller),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildQuickActions(controller),
+                      const SizedBox(height: 32),
+                      _buildSectionHeader('Program Spesial', () {}),
+                      const SizedBox(height: 16),
+                      _buildSlideBanner(controller),
+                      const SizedBox(height: 32),
+                      _buildFeaturedCard(),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(HomeScreenController controller) {
+    return SliverAppBar(
+      expandedHeight: 420,
+      pinned: true,
+      stretch: true,
+      backgroundColor: AppColor.primaryColor,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [
+          StretchMode.zoomBackground,
+          StretchMode.blurBackground,
+        ],
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/png/bg-palestine.png',
+              fit: BoxFit.cover,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.black.withOpacity(0.2),
+                    const Color(0xFFFBFBFB).withOpacity(0.8),
+                    const Color(0xFFFBFBFB),
+                  ],
+                ),
+              ),
+            ),
+            _buildHeroContent(controller),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroContent(HomeScreenController controller) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(controller),
+            const SizedBox(height: 32),
+            _buildPrayerGlassCard(controller),
+            const SizedBox(height: 24),
+            _buildQuranQuickAccess(controller),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(HomeScreenController controller) {
+    return Obx(() {
+      final isLogin = AuthController.to.isLogin.value;
+      final userData = AuthController.to.userData;
+      return Row(
         children: [
-          _buildHeroBanner(controller),
-          _buildMenu(),
-          _buildSlideBanner(controller),
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.5),
+                width: 2,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundImage: userData['profile_picture'] != null
+                  ? NetworkImage(userData['profile_picture']!)
+                  : null,
+              child: userData['profile_picture'] == null
+                  ? Icon(
+                      IconlyBold.profile,
+                      color: Colors.white.withOpacity(0.9),
+                      size: 20,
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isLogin ? 'Assalamu’alaikum,' : 'Selamat Datang,',
+                style: pRegular12.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ),
+              Text(
+                isLogin ? '${userData['name']}' : 'Orang Baik',
+                style: pBold16.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildPrayerGlassCard(HomeScreenController controller) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: InkWell(
+          onTap: () {
+            Get.toNamed('/prayer_time_detail');
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Obx(
+                          () => Text(
+                            controller.calendarToday.value,
+                            style: pMedium12.copyWith(color: Colors.white70),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Obx(
+                          () => Row(
+                            children: [
+                              const Icon(
+                                IconlyBold.location,
+                                color: Colors.orangeAccent,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${controller.kabKota.value}',
+                                style: pBold14.copyWith(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Obx(
+                      () => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          controller.countdownText.value.split(' ').first,
+                          style: pBold14.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Obx(
+                  () => SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: controller.displayPrayers.asMap().entries.map((
+                        entry,
+                      ) {
+                        int idx = entry.key;
+                        var prayer = entry.value;
+                        bool isCurrent = idx == 0;
+                        return Container(
+                          margin: const EdgeInsets.only(right: 28),
+                          child: Column(
+                            children: [
+                              Text(
+                                prayer['name']!.capitalizeFirst!,
+                                style: pRegular12.copyWith(
+                                  color: isCurrent
+                                      ? Colors.white
+                                      : Colors.white60,
+                                  fontWeight: isCurrent
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                prayer['time']!,
+                                style: pBold18.copyWith(
+                                  color: isCurrent
+                                      ? Colors.white
+                                      : Colors.white70,
+                                ),
+                              ),
+                              if (isCurrent)
+                                Container(
+                                  margin: EdgeInsets.only(top: 4),
+                                  height: 4,
+                                  width: 4,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.orangeAccent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuranQuickAccess(HomeScreenController controller) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Get.bottomSheet(_buildBottomSheetQuran(controller)),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                SvgPicture.asset('assets/images/svg/al-quran.svg', width: 50),
+                const SizedBox(height: 12),
+                Text('Al-Quran', style: pBold14),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Container(
+            height: 85,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Obx(() {
+              final isLogin = AuthController.to.isLogin.value;
+              return isLogin
+                  ? _buildTilawahStats(controller)
+                  : _buildLoginOffer(controller);
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTilawahStats(HomeScreenController controller) {
+    if (controller.isLoadingWeekly.value) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    }
+
+    final summary = controller.weeklyStats['summary'] as List? ?? [];
+    final totalPages = controller.weeklyStats['total_pages'] ?? 0;
+
+    // Find max value for scaling
+    double maxVal = 0;
+    for (var item in summary) {
+      if ((item['total_pages'] ?? 0).toDouble() > maxVal) {
+        maxVal = (item['total_pages'] ?? 0).toDouble();
+      }
+    }
+    if (maxVal < 5) maxVal = 5; // Default reference
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Progres Ngaji',
+                style: pRegular10.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '$totalPages Halaman',
+                style: pBold12.copyWith(color: AppColor.primaryColor),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: summary.map((item) {
+              final val = (item['total_pages'] ?? 0).toDouble();
+              final heightFactor = (val / maxVal).clamp(0.05, 1.0);
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 4.0,
+                    height: (25 * heightFactor).toDouble(),
+                    decoration: BoxDecoration(
+                      color: val > 0
+                          ? AppColor.primaryColor
+                          : AppColor.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item['day'],
+                    style: pRegular10.copyWith(
+                      fontSize: 8,
+                      color: val > 0 ? AppColor.primaryColor : Colors.grey,
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginOffer(HomeScreenController controller) {
+    return InkWell(
+      onTap: () => Get.dialog(buildLoginDialog(controller)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            IconlyLight.bookmark,
+            color: AppColor.primaryColor,
+            size: 18,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Login Yuk!',
+            style: pBold12.copyWith(color: AppColor.primaryColor),
+          ),
+          Text(
+            'Simpan Progres',
+            style: pRegular10.copyWith(color: Colors.grey),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildQuickActions(HomeScreenController controller) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildActionItem(
+          'Infaq',
+          'assets/images/svg/infaq.svg',
+          () => Get.toNamed(Routes.charity),
+          const Color(0xFFF0F9F1),
+        ),
+        _buildActionItem(
+          'Dzikir',
+          'assets/images/svg/dzikir.svg',
+          () => Get.toNamed(Routes.dzikir),
+          const Color(0xFFF0F7FF),
+        ),
+        _buildActionItem(
+          'Masjid',
+          'assets/images/svg/ic-mosque.svg',
+          () {},
+          const Color(0xFFFFF7ED),
+        ),
+        _buildActionItem(
+          'More',
+          'assets/images/svg/ic-info.svg',
+          () => Get.bottomSheet(_bottomSheetMoreMenu()),
+          const Color(0xFFFAF5FF),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionItem(
+    String label,
+    String asset,
+    VoidCallback onTap,
+    Color color,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            height: 65,
+            width: 65,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.6),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(asset, fit: BoxFit.contain),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: pSemiBold12.copyWith(fontSize: 11, color: Colors.black87),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, VoidCallback onTap) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: pBold18.copyWith(color: Colors.black87)),
+        TextButton(
+          onPressed: onTap,
+          child: Text(
+            'Lihat Semua',
+            style: pSemiBold14.copyWith(color: AppColor.primaryColor),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSlideBanner(HomeScreenController controller) {
     return SizedBox(
-      height: 158,
-      width: double.infinity,
+      height: 170,
       child: PageView.builder(
         controller: controller.sliderController,
-        scrollDirection: Axis.horizontal,
-        pageSnapping: true,
         itemCount: controller.dataBanner.length,
         itemBuilder: (context, index) {
           return Container(
-            margin: EdgeInsets.symmetric(horizontal: 10),
+            margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColor.primaryColor.withOpacity(0.2)),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(28),
               child: Image.asset(
                 controller.dataBanner[index],
                 fit: BoxFit.cover,
@@ -58,605 +557,50 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenu() {
+  Widget _buildFeaturedCard() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Get.toNamed(Routes.charity);
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 68,
-                  width: 68,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: -5,
-                          right: -5,
-                          bottom: -20,
-                          child: SvgPicture.asset(
-                            'assets/images/svg/infaq.svg',
-                            width: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text('Infaq', style: pSemiBold12.copyWith(fontSize: 11)),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Get.toNamed(Routes.dzikir);
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 68,
-                  width: 68,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: -5,
-                          right: -5,
-                          bottom: -25,
-                          child: SvgPicture.asset(
-                            'assets/images/svg/dzikir.svg',
-                            width: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text('Dzikir', style: pSemiBold12.copyWith(fontSize: 11)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                height: 68,
-                width: 68,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: -5,
-                        right: -5,
-                        bottom: -12,
-                        child: SvgPicture.asset(
-                          'assets/images/svg/ic-mosque.svg',
-                          width: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Kencleng\nMasjid',
-                style: pSemiBold12.copyWith(fontSize: 11),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          GestureDetector(
-            onTap: () {
-              Get.bottomSheet(_bottomSheetMoreMenu());
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 68,
-                  width: 68,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: SvgPicture.asset(
-                    'assets/images/svg/ic-info.svg',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text('More', style: pSemiBold12.copyWith(fontSize: 11)),
-              ],
-            ),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeroBanner(HomeScreenController controller) {
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 380,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/png/bg-palestine.png'),
-              colorFilter: ColorFilter.mode(
-                Color.fromARGB(100, 0, 0, 0),
-                BlendMode.srcOver,
-              ),
-              fit: BoxFit.cover,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColor.primaryColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              IconlyBold.shield_done,
+              color: AppColor.primaryColor,
+              size: 28,
             ),
           ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: 16,
-            decoration: const BoxDecoration(
-              color: AppColor.backgroundColor,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 50,
-          left: 12,
-          right: 20,
-          child: GestureDetector(
-            onTap: () {
-              Get.toNamed(Routes.prayerTimeDetail);
-            },
+          const SizedBox(width: 20),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Obx(
-                  () => Text(
-                    controller.calendarToday.value,
-                    style: pRegular12.copyWith(color: Colors.white),
-                  ),
-                ),
+                Text('Solidaritas Palestina', style: pBold16),
                 const SizedBox(height: 4),
-                Obx(
-                  () => SizedBox(
-                    height: 50,
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        final prayer = controller.displayPrayers[index];
-                        final nameRaw = prayer['name']!;
-                        final name =
-                            "${nameRaw[0].toUpperCase()}${nameRaw.substring(1)}";
-                        final time = prayer['time']!;
-                        final isFirst = index == 0;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              name,
-                              style: isFirst
-                                  ? pBold14.copyWith(color: Colors.white)
-                                  : pRegular14.copyWith(color: Colors.white),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              time,
-                              style: isFirst
-                                  ? pBold16.copyWith(color: Colors.white)
-                                  : pRegular14.copyWith(color: Colors.white),
-                            ),
-                          ],
-                        );
-                      },
-                      separatorBuilder: (context, index) {
-                        return Center(
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                            ),
-                            margin: const EdgeInsets.symmetric(horizontal: 12),
-                            width: 1,
-                            height: 15,
-                          ),
-                        );
-                      },
-                      itemCount: controller.displayPrayers.length,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Obx(
-                  () => Row(
-                    children: [
-                      AnimatedOpacity(
-                        opacity: controller.isPrayerArrived.value
-                            ? (controller.showHeartbeat.value ? 1.0 : 0.3)
-                            : 1.0,
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          controller.countdownText.value,
-                          style: pRegular12.copyWith(
-                            color: Colors.white,
-                            fontWeight: controller.isPrayerArrived.value
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Icon(IconlyBold.location, color: Colors.white, size: 12),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${controller.kabKota.value}, ${controller.provinsi.value}',
-                        style: pRegular12.copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
+                Text(
+                  'Bantu saudara kita di Gaza',
+                  style: pRegular12.copyWith(color: Colors.grey),
                 ),
               ],
             ),
           ),
-        ),
-        Positioned(
-          bottom: 40,
-          right: 0,
-          left: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.bottomSheet(_buildBottomSheetQuran(controller));
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/svg/al-quran.svg',
-                        width: 80,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Al-Quran',
-                        style: pSemiBold12.copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Obx(
-                        () => AuthController.to.isLogin.value
-                            ? _widgetDailyTilawah(controller)
-                            : _widgetBeforeLoginInfo(controller),
-                      ),
-                      const SizedBox(height: 8),
-                      // Container(
-                      //   width: double.infinity,
-                      //   padding: const EdgeInsets.symmetric(
-                      //     horizontal: 12,
-                      //     vertical: 4,
-                      //   ),
-                      //   decoration: BoxDecoration(
-                      //     color: AppColor.primaryColor,
-                      //     borderRadius: BorderRadius.circular(12),
-                      //   ),
-                      //   child: Row(
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     crossAxisAlignment: CrossAxisAlignment.center,
-                      //     children: [
-                      //       Text(
-                      //         '173.029.182',
-                      //         style: pBold14.copyWith(
-                      //           color: AppColor.backgroundColor,
-                      //         ),
-                      //       ),
-                      //       const SizedBox(width: 6),
-                      //       Text(
-                      //         'Halaman telah dibaca',
-                      //         style: pRegular12.copyWith(
-                      //           color: AppColor.backgroundColor,
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _widgetDailyTilawah(HomeScreenController controller) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 106,
-          child: RichText(
-            text: TextSpan(
-              text: 'Pekan ini kamu telah ngaji ',
-              style: pRegular12.copyWith(color: Colors.white),
-              children: [
-                TextSpan(
-                  text: '\n1',
-                  style: pSemiBold14.copyWith(color: AppColor.backgroundColor),
-                ),
-                TextSpan(
-                  text: '\nHalaman',
-                  style: pRegular12.copyWith(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(width: 1, height: 60, color: Colors.white),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _widgetBeforeLoginInfo(HomeScreenController controller) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 120,
-                  child: Text(
-                    'Login agar aktivitas ngajimu tercatat',
-                    style: pRegular10.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Get.dialog(buildLoginDialog(controller));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    minimumSize: const Size(80, 20),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    backgroundColor: Colors.transparent,
-                    side: const BorderSide(color: Colors.white),
-                  ),
-                  child: Text(
-                    'Login yuk!',
-                    style: pRegular10.copyWith(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget buildLoginDialog(HomeScreenController controller) {
-    return Dialog(
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColor.backgroundColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Column(
-                children: [
-                  Text(
-                    'Login yuk!',
-                    style: pSemiBold18.copyWith(color: AppColor.primaryColor),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Dapatkan akses gratis 6 jenis mushaf dan fitur menarik lainnya.',
-                    style: pRegular12,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 150,
-              child: PageView.builder(
-                controller: controller.bannerLoginController,
-                onPageChanged: (index) {
-                  controller.bannerLoginPage.value = index;
-                },
-                itemCount: controller.banner.length,
-                itemBuilder: (context, index) {
-                  return Image.asset(
-                    controller.banner[index],
-                    width: 60,
-                    height: 60,
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  controller.banner.length,
-                  (index) => Obx(
-                    () => Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      height: 6,
-                      width: 6,
-                      decoration: BoxDecoration(
-                        color: controller.bannerLoginPage.value == index
-                            ? AppColor.primaryColor
-                            : Colors.grey.shade400,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Obx(
-              () => InkWell(
-                onTap: AuthController.to.isLoading.value
-                    ? null
-                    : () async {
-                        await AuthController.to.handleSignIn();
-                        if (AuthController.to.isLogin.value) {
-                          Get.back(); // Tutup dialog setelah berhasil login
-                        }
-                      },
-                borderRadius: BorderRadius.circular(100),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: AppColor.primaryColor,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  child: AuthController.to.isLoading.value
-                      ? const Center(
-                          child: SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/png/google.png',
-                              width: 20,
-                              height: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Login dengan Google',
-                              style: pSemiBold12.copyWith(
-                                color: AppColor.backgroundColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(padding: EdgeInsets.all(0)),
-              child: Text(
-                'Login dengan akun lainnya',
-                style: pSemiBold12.copyWith(color: AppColor.primaryColor),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: RichText(
-                text: TextSpan(
-                  text: 'Dengan mendaftar, Anda setuju dengan ',
-                  style: pRegular12,
-                  children: [
-                    TextSpan(
-                      text: 'Syarat & Ketentuan',
-                      style: pSemiBold12.copyWith(color: AppColor.primaryColor),
-                    ),
-                    TextSpan(text: ' dan ', style: pRegular12),
-                    TextSpan(
-                      text: 'Kebijakan Privasi',
-                      style: pSemiBold12.copyWith(color: AppColor.primaryColor),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          const Icon(IconlyLight.arrow_right_2, color: Colors.grey, size: 20),
+        ],
       ),
     );
   }
@@ -678,21 +622,21 @@ class HomeScreen extends StatelessWidget {
         'route': Routes.quranPage,
       },
       {
-        'title': 'Indonesia Tajwid',
+        'title': 'Tajwid Indo',
         'asset': 'assets/images/svg/q-blue.svg',
         'is_pages': true,
         'slug': 'id-tajwid',
         'route': Routes.quranPage,
       },
       {
-        'title': 'Per Kata Tajwid',
+        'title': 'Per-Kata',
         'asset': 'assets/images/svg/q-green.svg',
         'is_pages': true,
         'slug': 'kata-tajwid',
         'route': Routes.quranPage,
       },
       {
-        'title': 'Latin Tajwid',
+        'title': 'Latin',
         'asset': 'assets/images/svg/q-blue.svg',
         'is_pages': true,
         'slug': 'latin-tajwid',
@@ -706,7 +650,7 @@ class HomeScreen extends StatelessWidget {
         'route': Routes.quranPage,
       },
       {
-        'title': 'Madinah Tajwid',
+        'title': 'Tajwid Md',
         'asset': 'assets/images/svg/q-yellow.svg',
         'is_pages': true,
         'slug': 'md-tajwid',
@@ -714,235 +658,74 @@ class HomeScreen extends StatelessWidget {
       },
     ];
     return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColor.backgroundColor,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              height: 2,
-              width: 100,
-              decoration: BoxDecoration(
-                color: AppColor.primaryColor,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Obx(() {
-            if (AuthController.to.isLogin.value == false ||
-                controller.isOfflineMode.value) {
-              return Container();
-            }
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Get.back();
-                      _showTilawahHistoryDialog();
-                    },
-                    child: Container(
-                      width: 130,
-                      height: 136,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: AppColor.primaryColor,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 3,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: AppColor.backgroundColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Tilawahku',
-                                style: pSemiBold12.copyWith(
-                                  color: AppColor.backgroundColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              'Terdapat ${Get.find<TilawahController>().bookmarks.length} tilawah',
-                              style: pRegular12.copyWith(
-                                color: AppColor.backgroundColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Al-Quran',
-                style: pMedium14.copyWith(color: AppColor.primaryColor),
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.72,
-              ),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: dataQuran.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    if (dataQuran[index]['is_pages'] as bool) {
-                      Get.back();
-                      Get.toNamed(
-                        Routes.quranPage,
-                        arguments: {'slug': dataQuran[index]['slug']},
-                      );
-                    } else {
-                      Get.back();
-                      Get.toNamed(Routes.quranList);
-                    }
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 78,
-                        height: 78,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: SvgPicture.asset(
-                            dataQuran[index]['asset'] as String,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        dataQuran[index]['title'] as String,
-                        style: pMedium10.copyWith(color: AppColor.primaryColor),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _bottomSheetMoreMenu() {
-    final List<Map<String, dynamic>> menu = [
-      // {
-      //   'title': 'Arah Kiblat',
-      //   'icon': 'assets/images/svg/ic-kabah.svg',
-      //   'route': null,
-      // },
-      {
-        'title': 'Grup Ngaji',
-        'icon': 'assets/images/svg/ic-group-ngaji.svg',
-        'route': Routes.groupNgaji,
-      },
-    ];
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
+      padding: const EdgeInsets.all(28),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Menu Lainnya', style: pRegular12),
-          const SizedBox(height: 20),
-          GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+          Container(
+            height: 5,
+            width: 50,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
             ),
+          ),
+          const SizedBox(height: 28),
+          _buildRiwayatCard(controller),
+          const SizedBox(height: 18),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Pilih Mushaf', style: pBold18),
+          ),
+          const SizedBox(height: 18),
+          GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: menu.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 20,
+              childAspectRatio: 0.72,
+            ),
+            itemCount: dataQuran.length,
             itemBuilder: (context, index) {
+              final item = dataQuran[index];
               return InkWell(
                 onTap: () {
-                  if (menu[index]['route'] != null) {
-                    Get.back();
-                    Get.toNamed(menu[index]['route']);
+                  Get.back();
+                  if (item['is_pages'] as bool) {
+                    Get.toNamed(
+                      Routes.quranPage,
+                      arguments: {'slug': item['slug']},
+                    );
+                  } else {
+                    Get.toNamed(Routes.quranList);
                   }
                 },
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
-                      padding: const EdgeInsets.all(4),
+                      height: 65,
+                      width: 65,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         child: SvgPicture.asset(
-                          menu[index]['icon'] as String,
-                          width: 120,
+                          item['asset'] as String,
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      menu[index]['title'] as String,
-                      style: pSemiBold10.copyWith(color: AppColor.primaryColor),
+                      item['title'] as String,
+                      style: pMedium10,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -955,147 +738,274 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildRiwayatCard(HomeScreenController controller) {
+    return Obx(() {
+      if (!AuthController.to.isLogin.value || controller.isOfflineMode.value)
+        return const SizedBox();
+      return InkWell(
+        onTap: () {
+          Get.back();
+          _showTilawahHistoryDialog();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColor.primaryColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColor.primaryColor.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(IconlyBold.bookmark, color: Colors.white, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Riwayat Tilawah',
+                      style: pBold16.copyWith(color: Colors.white),
+                    ),
+                    Text(
+                      'Lanjutkan bacaan terakhirmu',
+                      style: pRegular12.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                IconlyLight.arrow_right_2,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _bottomSheetMoreMenu() {
+    final menu = [
+      {
+        'title': 'Grup Ngaji',
+        'icon': 'assets/images/svg/ic-group-ngaji.svg',
+        'route': Routes.groupNgaji,
+      },
+    ];
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Layanan Lainnya', style: pBold18),
+          const SizedBox(height: 18),
+          GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 0.8,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: menu.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                if (menu[index]['route'] != null) {
+                  Get.back();
+                  Get.toNamed(menu[index]['route'] as String);
+                }
+              },
+              child: Column(
+                children: [
+                  Container(
+                    height: 65,
+                    width: 65,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: SvgPicture.asset(menu[index]['icon'] as String),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    menu[index]['title'] as String,
+                    style: pSemiBold10,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildLoginDialog(HomeScreenController controller) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Login Sekarang',
+              style: pBold20.copyWith(color: AppColor.primaryColor),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Simpan riwayat ngaji dan nikmati fitur lainnya',
+              style: pRegular12,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 140,
+              child: PageView.builder(
+                controller: controller.bannerLoginController,
+                itemCount: controller.banner.length,
+                itemBuilder: (context, index) =>
+                    Image.asset(controller.banner[index]),
+              ),
+            ),
+            const SizedBox(height: 32),
+            Obx(
+              () => ElevatedButton(
+                onPressed: AuthController.to.isLoading.value
+                    ? null
+                    : () => AuthController.to.handleSignIn(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primaryColor,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 10,
+                  shadowColor: AppColor.primaryColor.withOpacity(0.4),
+                ),
+                child: AuthController.to.isLoading.value
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/png/google.png',
+                            width: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Login dengan Google',
+                            style: pBold14.copyWith(color: Colors.white),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showTilawahHistoryDialog() {
     final tilawahController = Get.put(TilawahController());
     tilawahController.loadAllBookmarks();
-
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: Container(
-          width: double.infinity,
-          constraints: BoxConstraints(maxHeight: Get.height * 0.7),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColor.backgroundColor,
-            borderRadius: BorderRadius.circular(24),
-          ),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Riwayat Tilawah',
-                    style: pBold18.copyWith(color: AppColor.primaryColor),
-                  ),
+                  Text('Riwayat', style: pBold20),
                   IconButton(
                     onPressed: () => Get.back(),
                     icon: const Icon(
                       IconlyLight.close_square,
                       color: Colors.grey,
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Flexible(
                 child: Obx(() {
-                  if (tilawahController.isLoading.value &&
-                      tilawahController.bookmarks.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: CircularProgressIndicator(
-                          color: AppColor.primaryColor,
-                        ),
-                      ),
+                  if (tilawahController.isLoading.value)
+                    return const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(),
                     );
-                  }
-
-                  if (tilawahController.bookmarks.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Column(
-                        children: [
-                          Icon(
-                            IconlyLight.bookmark,
-                            size: 48,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Belum ada riwayat',
-                            style: pMedium14.copyWith(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                  if (tilawahController.bookmarks.isEmpty)
+                    return const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Text('Belum ada data'),
                     );
-                  }
-
-                  return ListView.separated(
+                  return ListView.builder(
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: tilawahController.bookmarks.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1, color: Colors.grey),
                     itemBuilder: (context, index) {
-                      final bookmark = tilawahController.bookmarks[index];
-                      final surahName = bookmark['surah_name'] ?? '';
-                      final pageNumber = bookmark['page_number'];
-                      final quranType = bookmark['quran_type'] ?? 'Quran';
-
-                      return InkWell(
+                      final b = tilawahController.bookmarks[index];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColor.primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            IconlyBold.document,
+                            color: AppColor.primaryColor,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(b['surah_name'], style: pBold14),
+                        subtitle: Text(
+                          'Halaman ${b['page_number']}',
+                          style: pRegular12,
+                        ),
+                        trailing: const Icon(
+                          IconlyLight.arrow_right_2,
+                          size: 16,
+                        ),
                         onTap: () {
                           Get.back();
                           Get.toNamed(
                             Routes.quranPage,
                             arguments: {
-                              'slug':
-                                  (bookmark['quran_type_slug'] ??
-                                  quranType.toLowerCase().replaceAll(' ', '-')),
-                              'page_number': pageNumber,
+                              'slug': b['quran_type_slug'] ?? 'id',
+                              'page_number': b['page_number'],
                             },
                           );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColor.primaryColor.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  IconlyLight.document,
-                                  size: 18,
-                                  color: AppColor.primaryColor,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      surahName,
-                                      style: pBold14.copyWith(
-                                        color: Colors.grey.shade800,
-                                      ),
-                                    ),
-                                    Text(
-                                      '$quranType • Halaman $pageNumber',
-                                      style: pRegular12.copyWith(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                IconlyLight.arrow_right_2,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                            ],
-                          ),
-                        ),
                       );
                     },
                   );

@@ -29,6 +29,7 @@ class Data {
   int userId;
   DateTime createdAt;
   bool isMyGroup;
+  WeeklyHistory weeklyHistory;
   CreatedBy createdBy;
   List<GroupUser> groupUser;
 
@@ -41,6 +42,7 @@ class Data {
     required this.userId,
     required this.createdAt,
     required this.isMyGroup,
+    required this.weeklyHistory,
     required this.createdBy,
     required this.groupUser,
   });
@@ -54,6 +56,7 @@ class Data {
     userId: json["user_id"],
     createdAt: DateTime.parse(json["created_at"]),
     isMyGroup: json["is_my_group"],
+    weeklyHistory: WeeklyHistory.fromJson(json["weekly_history"]),
     createdBy: CreatedBy.fromJson(json["created_by"]),
     groupUser: List<GroupUser>.from(
       json["group_user"].map((x) => GroupUser.fromJson(x)),
@@ -69,9 +72,41 @@ class Data {
     "user_id": userId,
     "created_at": createdAt.toIso8601String(),
     "is_my_group": isMyGroup,
+    "weekly_history": weeklyHistory.toJson(),
     "created_by": createdBy.toJson(),
     "group_user": List<dynamic>.from(groupUser.map((x) => x.toJson())),
   };
+}
+
+class WeeklyHistory {
+  List<Summary> summary;
+  int totalPages;
+
+  WeeklyHistory({required this.summary, required this.totalPages});
+
+  factory WeeklyHistory.fromJson(Map<String, dynamic> json) => WeeklyHistory(
+    summary: List<Summary>.from(
+      json["summary"].map((x) => Summary.fromJson(x)),
+    ),
+    totalPages: json["total_pages"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "summary": List<dynamic>.from(summary.map((x) => x.toJson())),
+    "total_pages": totalPages,
+  };
+}
+
+class Summary {
+  String day;
+  int totalPages;
+
+  Summary({required this.day, required this.totalPages});
+
+  factory Summary.fromJson(Map<String, dynamic> json) =>
+      Summary(day: json["day"], totalPages: json["total_pages"]);
+
+  Map<String, dynamic> toJson() => {"day": day, "total_pages": totalPages};
 }
 
 class CreatedBy {

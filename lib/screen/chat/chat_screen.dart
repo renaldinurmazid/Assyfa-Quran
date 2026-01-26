@@ -1,72 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:intl/intl.dart';
+import 'package:quran_app/controller/notification_controller.dart';
+import 'package:quran_app/models/notification_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ChatScreen extends StatelessWidget {
   const ChatScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Dummy Data for System Notifications
-    final List<Map<String, dynamic>> systemNotifications = [
-      {
-        'id': 1,
-        'title': 'Target Tercapai!',
-        'message':
-            'Selamat! Kamu telah menyelesaikan target tilawah hari ini (Surat Al-Baqarah: 1-20).',
-        'type': 'achievement',
-        'time': '10:30',
-        'isRead': false,
-        'icon': IconlyBold.star,
-        'color': Colors.amber,
-      },
-      {
-        'id': 2,
-        'title': 'Waktunya Dzikir',
-        'message':
-            'Sudahkah kamu berdzikir pagi ini? Luangkan waktu 5 menit untuk menenangkan jiwa.',
-        'type': 'reminder',
-        'time': '08:00',
-        'isRead': true,
-        'icon': IconlyBold.time_circle,
-        'color': AppColor.primaryColor,
-      },
-      {
-        'id': 3,
-        'title': 'Info Update',
-        'message':
-            'Fitur Grup Ngaji kini lebih stabil. Cek pembaruan terbaru di Play Store.',
-        'type': 'system',
-        'time': 'Kemarin',
-        'isRead': true,
-        'icon': IconlyBold.info_square,
-        'color': Colors.blue,
-      },
-      {
-        'id': 4,
-        'title': 'Donasi Diterima',
-        'message':
-            'Infaq Anda untuk "Renovasi Masjid Al-Ikhlas" telah berhasil diverifikasi. Syukran!',
-        'type': 'transaction',
-        'time': 'Kemarin',
-        'isRead': false,
-        'icon': IconlyBold.wallet,
-        'color': Colors.green,
-      },
-      {
-        'id': 5,
-        'title': 'Anggota Baru',
-        'message':
-            'Seorang anggota baru saja bergabung ke grup ngaji "Assyfa Community".',
-        'type': 'group',
-        'time': 'Kemarin',
-        'isRead': true,
-        'icon': IconlyBold.add_user,
-        'color': Colors.purple,
-      },
-    ];
+    final controller = Get.put(NotificationController());
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
@@ -81,26 +28,68 @@ class ChatScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Notifikasi Terbaru', style: pBold18),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Tandai Dibaca',
-                      style: pMedium12.copyWith(color: AppColor.primaryColor),
-                    ),
-                  ),
+                  Obx(() {
+                    if (controller.notifications.isEmpty)
+                      return const SizedBox();
+                    return TextButton(
+                      onPressed: () => controller.markAllAsRead(),
+                      child: Text(
+                        'Tandai Dibaca',
+                        style: pMedium12.copyWith(color: AppColor.primaryColor),
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final notification = systemNotifications[index];
-                return _buildNotificationTile(notification);
-              }, childCount: systemNotifications.length),
-            ),
-          ),
+          Obx(() {
+            if (controller.isLoading.value &&
+                controller.notifications.isEmpty) {
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildShimmerTile(),
+                    childCount: 5,
+                  ),
+                ),
+              );
+            }
+
+            if (controller.notifications.isEmpty) {
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        IconlyLight.notification,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Belum ada notifikasi',
+                        style: pMedium14.copyWith(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final notification = controller.notifications[index];
+                  return _buildNotificationTile(notification, controller);
+                }, childCount: controller.notifications.length),
+              ),
+            );
+          }),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
@@ -187,16 +176,24 @@ class ChatScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNotificationTile(Map<String, dynamic> notification) {
+  Widget _buildNotificationTile(
+    NotificationModel notification,
+    NotificationController controller,
+  ) {
+    final category = notification.scheduledNotification?.categoryNotification;
+    final Color bgColor = category?.bgColor != null
+        ? _HexColor(category!.bgColor!)
+        : AppColor.primaryColor.withOpacity(0.1);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: notification['isRead']
+        color: (notification.isRead ?? true)
             ? Colors.white
             : AppColor.primaryColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: notification['isRead']
+          color: (notification.isRead ?? true)
               ? Colors.grey.shade50
               : AppColor.primaryColor.withOpacity(0.1),
           width: 1,
@@ -212,7 +209,11 @@ class ChatScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            if (notification.id != null) {
+              controller.markAsRead(notification.id!);
+            }
+          },
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -220,16 +221,20 @@ class ChatScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: notification['color'].withOpacity(0.1),
+                    color: bgColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    notification['icon'],
-                    color: notification['color'],
-                    size: 20,
-                  ),
+                  child: category?.icon != null
+                      ? Image.network(category!.icon!)
+                      : const Icon(
+                          IconlyBold.notification,
+                          color: AppColor.primaryColor,
+                          size: 20,
+                        ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -239,23 +244,28 @@ class ChatScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            notification['title'],
-                            style: pBold14.copyWith(
-                              color: notification['isRead']
-                                  ? Colors.black87
-                                  : AppColor.primaryColor,
+                          Expanded(
+                            child: Text(
+                              notification.title ?? '-',
+                              style: pBold14.copyWith(
+                                color: (notification.isRead ?? true)
+                                    ? Colors.black87
+                                    : AppColor.primaryColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
-                            notification['time'],
+                            _formatTime(notification.createdAt),
                             style: pRegular10.copyWith(color: Colors.grey),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        notification['message'],
+                        notification.body ?? '-',
                         style: pRegular12.copyWith(
                           color: Colors.grey.shade700,
                           height: 1.4,
@@ -264,7 +274,7 @@ class ChatScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!notification['isRead'])
+                if (!(notification.isRead ?? true))
                   Container(
                     width: 8,
                     height: 8,
@@ -281,4 +291,82 @@ class ChatScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildShimmerTile() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade50),
+      ),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(width: 150, height: 10, color: Colors.white),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    height: 10,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(DateTime? date) {
+    if (date == null) return '';
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}j';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}h';
+    } else {
+      return DateFormat('dd/MM').format(date);
+    }
+  }
+}
+
+class _HexColor extends Color {
+  static int _getColorFromHex(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF$hexColor";
+    }
+    return int.parse(hexColor, radix: 16);
+  }
+
+  _HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
 }

@@ -134,11 +134,11 @@ class ProfileScreen extends StatelessWidget {
             icon: IconlyLight.edit,
             onTap: () => Get.toNamed(Routes.changeProfile),
           ),
-          // _menuItem(
-          //   title: 'Aktivitas Tilawah',
-          //   icon: IconlyLight.chart,
-          //   onTap: () {}, // To be implemented
-          // ),
+          _menuItem(
+            title: 'Aktivitas Infaq',
+            icon: IconlyLight.chart,
+            onTap: () => Get.toNamed(Routes.infaqActivity),
+          ),
           const SizedBox(height: 24),
           Text(
             'Lainnya',

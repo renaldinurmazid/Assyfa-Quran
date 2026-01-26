@@ -17,7 +17,10 @@ class TilawahkuScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       body: RefreshIndicator(
-        onRefresh: () => controller.loadAllBookmarks(),
+        onRefresh: () async {
+          await controller.loadAllBookmarks();
+          await controller.fetchWeeklyStats();
+        },
         color: AppColor.primaryColor,
         edgeOffset: 100,
         child: CustomScrollView(
@@ -26,6 +29,12 @@ class TilawahkuScreen extends StatelessWidget {
           ),
           slivers: [
             _buildAppBar(controller),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                child: _buildWeeklyChart(controller),
+              ),
+            ),
             Obx(() {
               if (controller.isLoading.value && controller.bookmarks.isEmpty) {
                 return const SliverFillRemaining(
@@ -98,6 +107,153 @@ class TilawahkuScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildWeeklyChart(TilawahController controller) {
+    return Obx(() {
+      if (controller.isLoadingWeekly.value) {
+        return Container(
+          height: 180,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final summary = controller.weeklyStats['summary'] as List? ?? [];
+      final totalPages = controller.weeklyStats['total_pages'] ?? 0;
+
+      double maxVal = 0;
+      for (var item in summary) {
+        if ((item['total_pages'] ?? 0).toDouble() > maxVal) {
+          maxVal = (item['total_pages'] ?? 0).toDouble();
+        }
+      }
+      if (maxVal < 5) maxVal = 5;
+
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Statistik Mingguan',
+                      style: pBold16.copyWith(color: AppColor.primaryColor),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Total $totalPages Halaman Terbaca',
+                      style: pRegular12.copyWith(color: Colors.grey),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColor.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        IconlyBold.calendar,
+                        size: 14,
+                        color: AppColor.primaryColor,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '7 Hari',
+                        style: pBold10.copyWith(color: AppColor.primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 100,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: summary.map((item) {
+                  final val = (item['total_pages'] ?? 0).toDouble();
+                  final heightFactor = (val / maxVal).clamp(0.05, 1.0);
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${item['total_pages']}',
+                        style: pMedium12.copyWith(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        width: 12,
+                        height: (80 * heightFactor).toDouble(),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: val > 0
+                                ? [
+                                    AppColor.primaryColor,
+                                    AppColor.primaryColor.withOpacity(0.6),
+                                  ]
+                                : [Colors.grey.shade200, Colors.grey.shade100],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: val > 0
+                              ? [
+                                  BoxShadow(
+                                    color: AppColor.primaryColor.withOpacity(
+                                      0.2,
+                                    ),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        item['day'],
+                        style: pMedium12.copyWith(
+                          color: val > 0 ? AppColor.primaryColor : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildAppBar(TilawahController controller) {
@@ -193,8 +349,8 @@ class TilawahkuScreen extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  height: 85,
-                  width: 65,
+                  height: 60,
+                  width: 60,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),

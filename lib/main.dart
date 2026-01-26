@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/firebase_options.dart';
 import 'package:quran_app/routes/app_pages.dart';
 
+import 'package:quran_app/services/fcm_service.dart';
 import 'package:quran_app/services/notification_service.dart';
 
 void main() async {
@@ -15,6 +16,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FcmService.init();
   runApp(const MyApp());
 }
 

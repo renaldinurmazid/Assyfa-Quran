@@ -14,122 +14,200 @@ class QuranListScreen extends StatelessWidget {
     final controller = Get.put(QuranListScreenController());
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
-      appBar: AppBar(
-        title: Text('Quran Per-Ayat', style: pMedium16),
-        centerTitle: true,
-        backgroundColor: AppColor.backgroundColor,
-        elevation: 1,
-        surfaceTintColor: AppColor.backgroundColor,
-        shadowColor: AppColor.primaryColor,
-        iconTheme: const IconThemeData(color: AppColor.primaryColor),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-            child: TextInput(
-              onChanged: controller.onSearch,
-              controller: controller.searchController,
-              hintText: 'Cari nama surah',
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 150.0,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: AppColor.primaryColor,
+            surfaceTintColor: AppColor.primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: Text(
+                'Quran Per-Ayat',
+                style: pSemiBold16.copyWith(color: Colors.white),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColor.primaryColor,
+                      AppColor.primaryColor.withOpacity(0.8),
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: -20,
+                      top: -20,
+                      child: Icon(
+                        Icons.menu_book,
+                        size: 150,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Assalamu\'alaikum',
+                    style: pMedium14.copyWith(
+                      color: AppColor.primaryColor.withOpacity(0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Mari beribadah hari ini',
+                    style: pSemiBold20.copyWith(color: AppColor.primaryColor),
+                  ),
+                  const SizedBox(height: 20),
+                  TextInput(
+                    onChanged: controller.onSearch,
+                    controller: controller.searchController,
+                    hintText: 'Cari nama surah...',
+                  ),
+                ],
+              ),
             ),
           ),
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(
+          Obx(() {
+            if (controller.isLoading.value) {
+              return const SliverFillRemaining(
+                child: Center(
                   child: CircularProgressIndicator(
                     color: AppColor.primaryColor,
                   ),
-                );
-              }
-              return ListView.separated(
-                itemBuilder: (context, index) {
+                ),
+              );
+            }
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
                   final quran = controller.quranList[index];
-                  return GestureDetector(
-                    onTap: () async {
-                      await Get.toNamed(
-                        Routes.quranListDetail,
-                        arguments: quran.nomor,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 16,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColor.primaryColor,
-                              shape: BoxShape.circle,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () async {
+                        await Get.toNamed(
+                          Routes.quranListDetail,
+                          arguments: quran.nomor,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: Text(
-                              quran.nomor.toString(),
-                              style: pMedium14.copyWith(
-                                color: AppColor.backgroundColor,
-                              ),
-                            ),
+                          ],
+                          border: Border.all(
+                            color: AppColor.primaryColor.withOpacity(0.05),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        child: Row(
+                          children: [
+                            Stack(
+                              alignment: Alignment.center,
                               children: [
-                                Text(quran.namaLatin, style: pMedium16),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      quran.tempatTurun,
-                                      style: pMedium14.copyWith(
-                                        color: AppColor.primaryColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      height: 4,
-                                      width: 4,
-                                      decoration: BoxDecoration(
-                                        color: AppColor.primaryColor,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      quran.jumlahAyat.toString(),
-                                      style: pMedium14.copyWith(
-                                        color: AppColor.primaryColor,
-                                      ),
-                                    ),
-                                  ],
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppColor.primaryColor.withAlpha(20),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Text(
+                                  quran.nomor.toString(),
+                                  style: pBold14.copyWith(
+                                    color: AppColor.primaryColor,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            quran.nama,
-                            style: pMedium18.copyWith(
-                              color: AppColor.primaryColor,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    quran.namaLatin,
+                                    style: pSemiBold16.copyWith(
+                                      color: AppColor.primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        quran.tempatTurun.toUpperCase(),
+                                        style: pMedium10.copyWith(
+                                          color: AppColor.primaryColor
+                                              .withOpacity(0.5),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        height: 3,
+                                        width: 3,
+                                        decoration: BoxDecoration(
+                                          color: AppColor.primaryColor
+                                              .withOpacity(0.3),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${quran.jumlahAyat} AYAT',
+                                        style: pMedium10.copyWith(
+                                          color: AppColor.primaryColor
+                                              .withOpacity(0.5),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              quran.nama,
+                              style: pBold20.copyWith(
+                                color: AppColor.primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
-                },
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemCount: controller.quranList.length,
-              );
-            }),
-          ),
+                }, childCount: controller.quranList.length),
+              ),
+            );
+          }),
         ],
       ),
     );

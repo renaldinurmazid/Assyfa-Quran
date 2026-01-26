@@ -6,6 +6,9 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app/api/request.dart';
+import 'package:quran_app/api/url.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
@@ -23,6 +26,9 @@ class HomeScreenController extends GetxController {
   final isPrayerArrived = false.obs;
   final showHeartbeat = true.obs;
   DateTime? prayerArrivalTime;
+
+  final weeklyStats = <String, dynamic>{}.obs;
+  final isLoadingWeekly = false.obs;
 
   Timer? bannerTimer;
   Timer? loginBannerTimer;
@@ -51,6 +57,18 @@ class HomeScreenController extends GetxController {
     _checkConnection();
     _listenToConnectivity();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (AuthController.to.isLogin.value) {
+        fetchWeeklyStats();
+      }
+
+      ever(AuthController.to.isLogin, (bool? loggedIn) {
+        if (loggedIn == true) {
+          fetchWeeklyStats();
+        } else {
+          weeklyStats.clear();
+        }
+      });
+
       // Listen to jadwalToday changes
       ever(jadwalToday, (_) {
         if (jadwalToday.isNotEmpty) {
@@ -359,5 +377,20 @@ class HomeScreenController extends GetxController {
     ) {
       isOfflineMode.value = results.contains(ConnectivityResult.none);
     });
+  }
+
+  Future<void> fetchWeeklyStats() async {
+    if (!AuthController.to.isLogin.value) return;
+    isLoadingWeekly.value = true;
+    try {
+      final response = await Request().get(Url.readingHistoryWeekly);
+      if (response.statusCode == 200) {
+        weeklyStats.value = response.data['data'];
+      }
+    } catch (e) {
+      print("Error fetching weekly stats: $e");
+    } finally {
+      isLoadingWeekly.value = false;
+    }
   }
 }

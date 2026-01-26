@@ -6,6 +6,9 @@ class TilawahController extends GetxController {
   final bookmarks = <Map<String, dynamic>>[].obs;
   final isLoading = false.obs;
 
+  final weeklyStats = <String, dynamic>{}.obs;
+  final isLoadingWeekly = false.obs;
+
   final List<String> slugs = [
     'per-ayat',
     'id',
@@ -30,6 +33,21 @@ class TilawahController extends GetxController {
   void onInit() {
     super.onInit();
     loadAllBookmarks();
+    fetchWeeklyStats();
+  }
+
+  Future<void> fetchWeeklyStats() async {
+    isLoadingWeekly.value = true;
+    try {
+      final response = await Request().get(Url.readingHistoryWeekly);
+      if (response.statusCode == 200) {
+        weeklyStats.value = response.data['data'];
+      }
+    } catch (e) {
+      print("Error loading weekly stats: $e");
+    } finally {
+      isLoadingWeekly.value = false;
+    }
   }
 
   Future<void> loadAllBookmarks() async {

@@ -73,7 +73,7 @@ class MainScreen extends StatelessWidget {
               activeIcon: Icon(IconlyBold.bookmark),
             ),
             BottomNavigationBarItem(
-              icon: Icon(IconlyLight.chat),
+              icon: Icon(IconlyLight.notification),
               label: 'Pesan',
               activeIcon: Icon(IconlyBold.chat),
             ),

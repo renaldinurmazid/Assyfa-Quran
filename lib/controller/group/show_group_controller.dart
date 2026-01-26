@@ -160,4 +160,48 @@ class ShowGroupController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  bool get isMember {
+    if (group.value == null) return false;
+    if (!AuthController.to.isLogin.value) return false;
+    final currentUserId = AuthController.to.userData['id'];
+    return group.value!.groupUser.any((gu) => gu.userId == currentUserId);
+  }
+
+  Future<void> joinGroup() async {
+    try {
+      if (!AuthController.to.isLogin.value) {
+        Get.snackbar('Peringatan', 'Silakan login terlebih dahulu');
+        return;
+      }
+
+      isLoading.value = true;
+      final currentUserId = AuthController.to.userData['id'];
+      final response = await http.post(
+        Uri.parse("${Url.baseUrl}${Url.groups}/add-user"),
+        headers: {
+          'Authorization': 'Bearer ${AuthController.to.token.value}',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': currentUserId,
+          'group_id': group.value!.id,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await fetchGroupDetail(group.value!.id);
+        await Get.find<GroupNgajiScreenController>().fetchMyGroups();
+        Get.snackbar('Success', 'Berhasil bergabung ke grup');
+      } else {
+        final data = jsonDecode(response.body);
+        Get.snackbar('Error', data['message'] ?? 'Gagal bergabung ke grup');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Terjadi kesalahan saat bergabung');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }
