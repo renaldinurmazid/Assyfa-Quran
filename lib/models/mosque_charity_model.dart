@@ -36,6 +36,7 @@ class MosqueCharityData {
   String? longitude;
   int currentAmount;
   List<MosqueCharityUpdate> updates;
+  String? shareUrl;
 
   MosqueCharityData({
     required this.id,
@@ -49,6 +50,7 @@ class MosqueCharityData {
     this.longitude,
     required this.currentAmount,
     required this.updates,
+    this.shareUrl,
   });
 
   factory MosqueCharityData.fromJson(Map<String, dynamic> json) =>
@@ -73,6 +75,7 @@ class MosqueCharityData {
                 json["updates"].map((x) => MosqueCharityUpdate.fromJson(x)),
               )
             : [],
+        shareUrl: json["share_url"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -87,6 +90,7 @@ class MosqueCharityData {
     "longitude": longitude,
     "current_amount": currentAmount,
     "updates": List<dynamic>.from(updates.map((x) => x.toJson())),
+    "share_url": shareUrl,
   };
 }
 

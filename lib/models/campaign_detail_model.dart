@@ -42,6 +42,7 @@ class CampaignData {
   int percentage;
   int donaturCount;
   List<CampaignUpdate> updates;
+  String? shareUrl;
 
   CampaignData({
     required this.id,
@@ -54,6 +55,7 @@ class CampaignData {
     required this.percentage,
     required this.donaturCount,
     required this.updates,
+    this.shareUrl,
   });
 
   factory CampaignData.fromJson(Map<String, dynamic> json) => CampaignData(
@@ -71,6 +73,7 @@ class CampaignData {
             json["updates"].map((x) => CampaignUpdate.fromJson(x)),
           )
         : [],
+    shareUrl: json["share_url"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -84,6 +87,7 @@ class CampaignData {
     "percentage": percentage,
     "donatur_count": donaturCount,
     "updates": List<dynamic>.from(updates.map((x) => x.toJson())),
+    "share_url": shareUrl,
   };
 }
 

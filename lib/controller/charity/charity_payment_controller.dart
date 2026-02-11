@@ -69,6 +69,7 @@ class CharityPaymentController extends GetxController {
         'amount': int.parse(nominalController.text),
         'guest_name': nameController.text,
         'guest_phone': phoneController.text,
+        'referral_code': AuthController.to.referralCode.value,
       };
 
       final response = await Request().post(Url.donations, data: data);

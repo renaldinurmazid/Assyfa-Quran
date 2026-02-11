@@ -8,6 +8,8 @@ import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:quran_app/api/url.dart';
 
 class MosqueCharityShowScreen extends StatelessWidget {
   const MosqueCharityShowScreen({super.key});
@@ -126,6 +128,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
       pinned: true,
       elevation: 0,
       backgroundColor: AppColor.primaryColor,
+      leadingWidth: 70,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
@@ -140,6 +143,25 @@ class MosqueCharityShowScreen extends StatelessWidget {
           ),
         ),
       ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundColor: Colors.black26,
+            child: IconButton(
+              icon: const Icon(Icons.share, color: Colors.white, size: 20),
+              onPressed: () {
+                final shareUrl =
+                    mosque.shareUrl ?? '${Url.baseUrl}/api/m/${mosque.id}';
+                Share.share(
+                  'Yuk bantu pembangunan "${mosque.name}" di Assyfa Quran! Klik link berikut: $shareUrl',
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,

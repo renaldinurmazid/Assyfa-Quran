@@ -3,9 +3,11 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:quran_app/controller/charity/charity_show_controller.dart';
 import 'package:quran_app/models/campaign_detail_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/api/url.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
@@ -77,6 +79,7 @@ class CharityShowScreen extends StatelessWidget {
       pinned: true,
       elevation: 0,
       backgroundColor: AppColor.primaryColor,
+      leadingWidth: 70,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
@@ -91,6 +94,25 @@ class CharityShowScreen extends StatelessWidget {
           ),
         ),
       ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundColor: Colors.black.withOpacity(0.3),
+            child: IconButton(
+              icon: const Icon(Icons.share, color: Colors.white, size: 20),
+              onPressed: () {
+                final shareUrl =
+                    campaign.shareUrl ?? '${Url.baseUrl}/api/c/${campaign.id}';
+                Share.share(
+                  'Yuk bantu kampanye "${campaign.title}" di Assyfa Quran! Klik link berikut: $shareUrl',
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
