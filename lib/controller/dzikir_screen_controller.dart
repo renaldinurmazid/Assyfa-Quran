@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class DzikirScreenController extends GetxController {
@@ -18,5 +19,9 @@ class DzikirScreenController extends GetxController {
       dzikirCount.value = 0;
     }
     dzikirCount.value++;
+
+    if (dzikirCount.value == maxDzikirCount.value) {
+      HapticFeedback.vibrate();
+    }
   }
 }

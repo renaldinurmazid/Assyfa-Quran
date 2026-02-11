@@ -409,7 +409,7 @@ class ShowGroupScreen extends StatelessWidget {
         const SizedBox(height: 4),
         Container(
           width: 12,
-          height: 60 * heightFactor + 10,
+          height: 20 * heightFactor + 10,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,

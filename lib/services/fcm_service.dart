@@ -1,8 +1,12 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/theme/app_color.dart';
 
 class FcmService {
   static final FirebaseMessaging _firebaseMessaging =
@@ -51,27 +55,74 @@ class FcmService {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // Handle foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       print('Got a message whilst in the foreground!');
-      RemoteNotification? notification = message.notification;
+      print('Message data: ${message.data}');
 
-      if (notification != null) {
-        print('Displaying foreground notification: ${notification.title}');
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channelDescription: channel.description,
-              icon: '@mipmap/ic_launcher',
-              importance: Importance.max,
-              priority: Priority.high,
+      RemoteNotification? notification = message.notification;
+      String? title = notification?.title ?? message.data['title'];
+      String? body = notification?.body ?? message.data['body'];
+      String? imageUrl =
+          notification?.android?.imageUrl ??
+          notification?.apple?.imageUrl ??
+          message.data['image'] ??
+          message.data['image_url'];
+
+      if (title != null || body != null) {
+        print('Displaying foreground notification: $title');
+        try {
+          int notificationId =
+              notification?.hashCode ?? DateTime.now().millisecond;
+
+          String? largeIconPath;
+          String? bigPicturePath;
+
+          if (imageUrl != null && imageUrl.isNotEmpty) {
+            bigPicturePath = await _downloadAndSaveFile(
+              imageUrl,
+              'notification_big_picture_$notificationId',
+            );
+            largeIconPath = bigPicturePath;
+          }
+
+          await flutterLocalNotificationsPlugin.show(
+            notificationId,
+            title ?? 'Notifikasi Baru',
+            body ?? '',
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channelDescription: channel.description,
+                icon: '@mipmap/ic_launcher',
+                importance: Importance.max,
+                priority: Priority.high,
+                ticker: 'ticker',
+                playSound: true,
+                enableVibration: true,
+                color: AppColor.primaryColor,
+                styleInformation: bigPicturePath != null
+                    ? BigPictureStyleInformation(
+                        FilePathAndroidBitmap(bigPicturePath),
+                        largeIcon: FilePathAndroidBitmap(largeIconPath!),
+                        contentTitle: title,
+                        summaryText: body,
+                      )
+                    : null,
+              ),
+              iOS: DarwinNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+                attachments: bigPicturePath != null
+                    ? [DarwinNotificationAttachment(bigPicturePath)]
+                    : null,
+              ),
             ),
-          ),
-        );
+          );
+        } catch (e) {
+          print('Error showing local notification: $e');
+        }
       }
     });
 
@@ -103,6 +154,26 @@ class FcmService {
       }
     } catch (e) {
       print("Error saving FCM Token: $e");
+    }
+  }
+
+  static Future<String?> _downloadAndSaveFile(
+    String url,
+    String fileName,
+  ) async {
+    try {
+      final Directory directory = await getTemporaryDirectory();
+      final String filePath = '${directory.path}/$fileName';
+      final Response response = await Dio().get(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final File file = File(filePath);
+      await file.writeAsBytes(response.data);
+      return filePath;
+    } catch (e) {
+      print('Error downloading file: $e');
+      return null;
     }
   }
 }

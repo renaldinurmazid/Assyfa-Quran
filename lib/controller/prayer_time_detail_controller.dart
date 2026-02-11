@@ -1,15 +1,38 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app/services/notification_service.dart';
 
 class PrayerTimeDetailController extends GetxController {
+  final player = AudioPlayer();
+
+  @override
+  void onClose() {
+    _timer?.cancel();
+    _heartbeatTimer?.cancel();
+    player.dispose();
+    super.onClose();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    NotificationService.init();
+    loadDataFromPrefs();
+    loadNotificationSettings();
+    _startTimer();
+  }
+
   final calendarToday = '-'.obs;
   final calendarMasehi = '-'.obs;
   final kabKota = 'KOTA JAKARTA'.obs;
   final provinsi = 'DKI JAKARTA'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
+  final notificationSettings =
+      <String, String>{}.obs; // stores 'silent', 'beep', 'adzan'
   final isLoading = false.obs;
   final nextPrayerName = 'Isya'.obs;
   final nextPrayerTime = '00:00'.obs;
@@ -19,20 +42,6 @@ class PrayerTimeDetailController extends GetxController {
   Timer? _timer;
   Timer? _heartbeatTimer;
   DateTime? _prayerArrivalTime;
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadDataFromPrefs();
-    _startTimer();
-  }
-
-  @override
-  void onClose() {
-    _timer?.cancel();
-    _heartbeatTimer?.cancel();
-    super.onClose();
-  }
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -90,6 +99,7 @@ class PrayerTimeDetailController extends GetxController {
 
           // Calculate next prayer
           _calculateNextPrayer();
+          _schedulePrayerNotifications(); // Add this
         }
       }
     } catch (e) {
@@ -98,6 +108,110 @@ class PrayerTimeDetailController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  Future<void> loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = [
+      'Imsak',
+      'Subuh',
+      'Terbit',
+      'Dhuhur',
+      'Asar',
+      'Maghrib',
+      'Isya',
+    ];
+    for (var key in keys) {
+      notificationSettings[key] = prefs.getString('notif_$key') ?? 'adzan';
+      // Default Imsak & Terbit to silent if not set, else beep or silent. Adzan not avail.
+      if (isImsakOrTerbit(key) && notificationSettings[key] == 'adzan') {
+        notificationSettings[key] = 'silent';
+      }
+    }
+  }
+
+  // ...
+
+  Future<void> saveNotificationSetting(String prayerName, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('notif_$prayerName', value);
+    notificationSettings[prayerName] = value;
+    _schedulePrayerNotifications(); // Reschedule when settings change
+  }
+
+  // ...
+
+  Future<void> _schedulePrayerNotifications() async {
+    // Basic implementation: schedule for today's remaining prayers
+    final now = DateTime.now();
+    // Mapping from jadwal keys to notificationSettings keys
+    final keyMap = {
+      'subuh': 'Subuh',
+      'dzuhur': 'Dhuhur',
+      'ashar': 'Asar',
+      'maghrib': 'Maghrib',
+      'isya': 'Isya',
+    };
+
+    if (jadwalToday.isEmpty) return;
+
+    // Cancel all previous schedules first?
+    // Ideally yes, but let's just overwrite by ID.
+    // ID scheme: 1=Subuh, 2=Dzuhur, etc. or unique hash.
+
+    int idCounter = 1;
+    for (var entry in keyMap.entries) {
+      final jadwalKey = entry.key;
+      final notifKey = entry.value;
+
+      final timeStr = jadwalToday[jadwalKey] as String?;
+      if (timeStr == null) continue;
+
+      final parts = timeStr.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      DateTime scheduledTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
+
+      // If time passed, schedule for tomorrow?
+      // Logic: if passed, it's irrelevant for today.
+      if (scheduledTime.isBefore(now)) {
+        scheduledTime = scheduledTime.add(const Duration(days: 1));
+      }
+
+      final setting = notificationSettings[notifKey] ?? 'adzan';
+      String soundName = 'silent';
+      if (setting == 'beep')
+        soundName = 'beep';
+      else if (setting == 'adzan') {
+        if (notifKey == 'Subuh')
+          soundName = 'adzan_subuh';
+        else
+          soundName = 'adzan_general';
+      }
+
+      if (soundName != 'silent') {
+        await NotificationService.schedulePrayerNotification(
+          id: idCounter,
+          title: 'Waktu $notifKey Telah Tiba',
+          body: 'Mari tunaikan sholat $notifKey',
+          scheduledTime: scheduledTime,
+          soundName: soundName,
+        );
+      } else {
+        // Cancel if silent
+        await NotificationService.cancel(idCounter);
+      }
+      idCounter++;
+    }
+  }
+
+  // ...
 
   void _updateCountdown() {
     if (nextPrayerTime.value == '00:00' || jadwalToday.isEmpty) {
@@ -163,6 +277,7 @@ class PrayerTimeDetailController extends GetxController {
       _prayerArrivalTime = now;
       isPrayerArrived.value = true;
       countdown.value = 'Telah tiba';
+      _playNotification(nextPrayerName.value);
       return;
     }
 
@@ -178,6 +293,28 @@ class PrayerTimeDetailController extends GetxController {
     final minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
     final seconds = (difference.inSeconds % 60).toString().padLeft(2, '0');
     countdown.value = '-$hours:$minutes:$seconds';
+  }
+
+  Future<void> _playNotification(String prayerName) async {
+    final setting =
+        notificationSettings[prayerName] ??
+        (isImsakOrTerbit(prayerName) ? 'silent' : 'adzan');
+
+    if (setting == 'silent') return;
+
+    try {
+      if (setting == 'beep') {
+        await player.play(AssetSource('audio/beep.wav'));
+      } else if (setting == 'adzan') {
+        if (prayerName.toLowerCase() == 'subuh') {
+          await player.play(AssetSource('audio/adzan_subuh.mp3'));
+        } else {
+          await player.play(AssetSource('audio/adzan_general.mp3'));
+        }
+      }
+    } catch (e) {
+      print('Error playing audio: $e');
+    }
   }
 
   void _calculateNextPrayer() {
@@ -250,5 +387,10 @@ class PrayerTimeDetailController extends GetxController {
       final seconds = (difference.inSeconds % 60).toString().padLeft(2, '0');
       countdown.value = '-$hours:$minutes:$seconds';
     }
+  }
+
+  bool isImsakOrTerbit(String prayerName) {
+    return prayerName.toLowerCase() == 'imsak' ||
+        prayerName.toLowerCase() == 'terbit';
   }
 }

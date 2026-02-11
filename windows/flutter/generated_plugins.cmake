@@ -3,11 +3,15 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_links
+  audioplayers_windows
   connectivity_plus
   file_selector_windows
   firebase_auth
   firebase_core
+  flutter_timezone
   geolocator_windows
+  share_plus
   url_launcher_windows
 )
 

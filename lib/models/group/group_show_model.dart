@@ -32,6 +32,7 @@ class Data {
   WeeklyHistory weeklyHistory;
   CreatedBy createdBy;
   List<GroupUser> groupUser;
+  String? shareUrl;
 
   Data({
     required this.id,
@@ -45,6 +46,7 @@ class Data {
     required this.weeklyHistory,
     required this.createdBy,
     required this.groupUser,
+    this.shareUrl,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -61,6 +63,7 @@ class Data {
     groupUser: List<GroupUser>.from(
       json["group_user"].map((x) => GroupUser.fromJson(x)),
     ),
+    shareUrl: json["share_url"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +78,7 @@ class Data {
     "weekly_history": weeklyHistory.toJson(),
     "created_by": createdBy.toJson(),
     "group_user": List<dynamic>.from(groupUser.map((x) => x.toJson())),
+    "share_url": shareUrl,
   };
 }
 

@@ -22,4 +22,12 @@ abstract class Routes {
   static const charityPaymentDetail = '/charity_payment_detail';
   static const infaqActivity = '/infaq_activity';
   static const infaqActivityDetail = '/infaq_activity_detail';
+  static const mosqueCharity = '/mosque_charity';
+  static const mosqueCharityShow = '/mosque_charity_show';
+  static const mosqueMap = '/mosque_map';
+  static const mosqueCharityPayment = '/mosque_charity_payment';
+  static const mosqueCharityPaymentDetail = '/mosque_charity_payment_detail';
+  static const mosqueInfaqActivityDetail = '/mosque_infaq_activity_detail';
+  static const leaderboard = '/leaderboard';
+  static const appShareLeaderboard = '/app_share_leaderboard';
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/controller/charity/charity_show_controller.dart';
+import 'package:quran_app/models/campaign_detail_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -49,7 +50,13 @@ class CharityShowScreen extends StatelessWidget {
                           thickness: 1,
                           color: Color(0xFFF1F1F1),
                         ),
-                        _buildDescriptionSection(campaign),
+                        _buildTabSection(controller),
+                        const SizedBox(height: 24),
+                        Obx(
+                          () => controller.selectedTab.value == 0
+                              ? _buildDescriptionSection(campaign)
+                              : _buildUpdatesSection(campaign),
+                        ),
                         const SizedBox(height: 100), // Space for bottom button
                       ],
                     ),
@@ -112,18 +119,6 @@ class CharityShowScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColor.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            'Kemanusiaan',
-            style: pSemiBold12.copyWith(color: AppColor.primaryColor),
-          ),
-        ),
-        const SizedBox(height: 12),
         Text(
           campaign.title,
           style: pBold20.copyWith(color: AppColor.textColor, height: 1.4),
@@ -224,17 +219,175 @@ class CharityShowScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTabSection(CharityShowController controller) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F1F1), width: 1)),
+      ),
+      child: Row(
+        children: [
+          _buildTabItem(label: 'Deskripsi', index: 0, controller: controller),
+          _buildTabItem(
+            label: 'Update',
+            index: 1,
+            controller: controller,
+            showBadge: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabItem({
+    required String label,
+    required int index,
+    required CharityShowController controller,
+    bool showBadge = false,
+  }) {
+    return Obx(() {
+      final isSelected = controller.selectedTab.value == index;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => controller.selectedTab.value = index,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isSelected
+                      ? AppColor.primaryColor
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: isSelected
+                      ? pBold14.copyWith(color: AppColor.primaryColor)
+                      : pMedium14.copyWith(color: Colors.grey[500]),
+                ),
+                if (showBadge &&
+                    controller.campaign.value!.updates.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColor.primaryColor
+                          : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${controller.campaign.value!.updates.length}',
+                      style: pBold10.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
   Widget _buildDescriptionSection(campaign) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Cerita Kebaikan',
-          style: pBold16.copyWith(color: AppColor.textColor),
+        HtmlWidget(
+          campaign.description,
+          textStyle: pRegular14.copyWith(
+            height: 1.6,
+            color: AppColor.textColor,
+          ),
         ),
-        const SizedBox(height: 12),
-        HtmlWidget(campaign.description, textStyle: pRegular12),
       ],
+    );
+  }
+
+  Widget _buildUpdatesSection(CampaignData campaign) {
+    if (campaign.updates.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: [
+              Icon(IconlyLight.info_square, size: 48, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                'Belum ada update kampanye',
+                style: pMedium14.copyWith(color: Colors.grey[500]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: campaign.updates.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 24),
+      itemBuilder: (context, index) {
+        final update = campaign.updates[index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: AppColor.primaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  update.createdAtFormatted,
+                  style: pBold12.copyWith(color: AppColor.primaryColor),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEEEEEE)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    update.title,
+                    style: pBold14.copyWith(color: AppColor.textColor),
+                  ),
+                  const SizedBox(height: 12),
+                  HtmlWidget(
+                    update.content,
+                    textStyle: pRegular12.copyWith(
+                      height: 1.5,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

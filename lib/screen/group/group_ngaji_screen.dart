@@ -264,16 +264,6 @@ class GroupNgajiScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.share_outlined,
-                                color: AppColor.primaryColor,
-                                size: 20,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
                           ],
                         ),
                       ),

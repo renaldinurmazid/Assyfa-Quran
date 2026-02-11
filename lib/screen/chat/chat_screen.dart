@@ -17,81 +17,91 @@ class ChatScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Notifikasi Terbaru', style: pBold18),
-                  Obx(() {
-                    if (controller.notifications.isEmpty)
-                      return const SizedBox();
-                    return TextButton(
-                      onPressed: () => controller.markAllAsRead(),
-                      child: Text(
-                        'Tandai Dibaca',
-                        style: pMedium12.copyWith(color: AppColor.primaryColor),
-                      ),
-                    );
-                  }),
-                ],
+      body: RefreshIndicator(
+        onRefresh: () => controller.fetchNotifications(),
+        color: AppColor.primaryColor,
+        edgeOffset:
+            100, // Offset to show below the initial app bar state if needed
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            _buildSliverAppBar(),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Notifikasi Terbaru', style: pBold18),
+                    Obx(() {
+                      if (controller.notifications.isEmpty)
+                        return const SizedBox();
+                      return TextButton(
+                        onPressed: () => controller.markAllAsRead(),
+                        child: Text(
+                          'Tandai Dibaca',
+                          style: pMedium12.copyWith(
+                            color: AppColor.primaryColor,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
             ),
-          ),
-          Obx(() {
-            if (controller.isLoading.value &&
-                controller.notifications.isEmpty) {
+            Obx(() {
+              if (controller.isLoading.value &&
+                  controller.notifications.isEmpty) {
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildShimmerTile(),
+                      childCount: 5,
+                    ),
+                  ),
+                );
+              }
+
+              if (controller.notifications.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          IconlyLight.notification,
+                          size: 64,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Belum ada notifikasi',
+                          style: pMedium14.copyWith(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _buildShimmerTile(),
-                    childCount: 5,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final notification = controller.notifications[index];
+                    return _buildNotificationTile(notification, controller);
+                  }, childCount: controller.notifications.length),
                 ),
               );
-            }
-
-            if (controller.notifications.isEmpty) {
-              return SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        IconlyLight.notification,
-                        size: 64,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Belum ada notifikasi',
-                        style: pMedium14.copyWith(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final notification = controller.notifications[index];
-                  return _buildNotificationTile(notification, controller);
-                }, childCount: controller.notifications.length),
-              ),
-            );
-          }),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+            }),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -104,18 +114,7 @@ class ChatScreen extends StatelessWidget {
       backgroundColor: AppColor.primaryColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
-        onPressed: () => Get.back(),
-      ),
       title: Text('Pesan Sistem', style: pBold18.copyWith(color: Colors.white)),
-      actions: [
-        IconButton(
-          icon: const Icon(IconlyLight.setting, color: Colors.white),
-          onPressed: () {},
-        ),
-        const SizedBox(width: 8),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,

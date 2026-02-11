@@ -25,9 +25,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -41,48 +47,31 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAKrzPKZY08PZaDSTQxI_gXfZO3rbk35Vw',
-    appId: '1:319156609776:web:54b7536a03356248455835',
-    messagingSenderId: '319156609776',
-    projectId: 'quranuna-995dc',
-    authDomain: 'quranuna-995dc.firebaseapp.com',
-    storageBucket: 'quranuna-995dc.firebasestorage.app',
-    measurementId: 'G-TB3G1EPXE5',
+    apiKey: 'AIzaSyAqBCfnrgK2WWYaHz8BU0KUqmYZIGG1Xxs',
+    appId: '1:801779467180:web:2ea3e1d2158c841eaa3009',
+    messagingSenderId: '801779467180',
+    projectId: 'quranuna-1924-623d4',
+    authDomain: 'quranuna-1924-623d4.firebaseapp.com',
+    storageBucket: 'quranuna-1924-623d4.firebasestorage.app',
+    measurementId: 'G-8L01YSFPYP',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBsC655ytDJ3_Fh47zELPaifp8edgtN7y8',
-    appId: '1:319156609776:android:2c2f3afdab9902ba455835',
-    messagingSenderId: '319156609776',
-    projectId: 'quranuna-995dc',
-    storageBucket: 'quranuna-995dc.firebasestorage.app',
+    apiKey: 'AIzaSyBFpnrVq1EimSS1YybR8PoNlGtwvNGYuow',
+    appId: '1:801779467180:android:4c954848f7d75d36aa3009',
+    messagingSenderId: '801779467180',
+    projectId: 'quranuna-1924-623d4',
+    storageBucket: 'quranuna-1924-623d4.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyATbRa3XiCeBpb7FBTA4xUe7Bmabx89VEc',
-    appId: '1:319156609776:ios:ebfdb22e015eefb4455835',
-    messagingSenderId: '319156609776',
-    projectId: 'quranuna-995dc',
-    storageBucket: 'quranuna-995dc.firebasestorage.app',
+    apiKey: 'AIzaSyBQtOYp_yHYTUVpkQZxz1tNDvlBzBbuMuc',
+    appId: '1:801779467180:ios:08850c6790fbc709aa3009',
+    messagingSenderId: '801779467180',
+    projectId: 'quranuna-1924-623d4',
+    storageBucket: 'quranuna-1924-623d4.firebasestorage.app',
+    androidClientId: '801779467180-joph7k7tdpocu3an9cmti59qu94vhlrf.apps.googleusercontent.com',
+    iosClientId: '801779467180-p83tdkqva6su4p998vcv2d42pmv1ef6n.apps.googleusercontent.com',
     iosBundleId: 'com.assyfa.quranapp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyATbRa3XiCeBpb7FBTA4xUe7Bmabx89VEc',
-    appId: '1:319156609776:ios:ebfdb22e015eefb4455835',
-    messagingSenderId: '319156609776',
-    projectId: 'quranuna-995dc',
-    storageBucket: 'quranuna-995dc.firebasestorage.app',
-    iosBundleId: 'com.assyfa.quranapp',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAKrzPKZY08PZaDSTQxI_gXfZO3rbk35Vw',
-    appId: '1:319156609776:web:681143ac3fef12e5455835',
-    messagingSenderId: '319156609776',
-    projectId: 'quranuna-995dc',
-    authDomain: 'quranuna-995dc.firebaseapp.com',
-    storageBucket: 'quranuna-995dc.firebasestorage.app',
-    measurementId: 'G-Q9MH4JLVG3',
   );
 }

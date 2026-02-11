@@ -10,6 +10,8 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 
+import 'package:quran_app/models/banner_model.dart';
+
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
   final defaultIdCity = '58a2fc6ed39fd083f55d4182bf88826d';
@@ -34,10 +36,8 @@ class HomeScreenController extends GetxController {
   Timer? loginBannerTimer;
 
   final sliderController = PageController();
-  final dataBanner = [
-    'assets/images/png/banner-1.png',
-    'assets/images/png/banner-2.png',
-  ];
+  final dataBanner = <BannerData>[].obs;
+  final isLoadingBanner = false.obs;
 
   final bannerLoginController = PageController();
   final bannerLoginPage = 0.obs;
@@ -53,6 +53,7 @@ class HomeScreenController extends GetxController {
     getCalendarToday();
     getPrayerTime();
     _startTimer();
+    fetchBanners();
     autoSlideBanner();
     _checkConnection();
     _listenToConnectivity();
@@ -391,6 +392,21 @@ class HomeScreenController extends GetxController {
       print("Error fetching weekly stats: $e");
     } finally {
       isLoadingWeekly.value = false;
+    }
+  }
+
+  Future<void> fetchBanners() async {
+    isLoadingBanner.value = true;
+    try {
+      final response = await Request().get(Url.banners);
+      if (response.statusCode == 200) {
+        final bannerResponse = BannerResponse.fromJson(response.data);
+        dataBanner.assignAll(bannerResponse.data);
+      }
+    } catch (e) {
+      print("Error fetching banners: $e");
+    } finally {
+      isLoadingBanner.value = false;
     }
   }
 }

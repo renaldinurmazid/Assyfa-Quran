@@ -10,6 +10,8 @@ import 'package:quran_app/controller/quran/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,6 +29,7 @@ class HomeScreen extends StatelessWidget {
           onRefresh: () async {
             await controller.getPrayerTime();
             await controller.getCalendarToday();
+            await controller.fetchWeeklyStats();
           },
           color: AppColor.primaryColor,
           child: CustomScrollView(
@@ -41,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       _buildQuickActions(controller),
                       const SizedBox(height: 32),
-                      _buildSectionHeader('Program Spesial', () {}),
+                      _buildSectionHeader('Program Spesial'),
                       const SizedBox(height: 16),
                       _buildSlideBanner(controller),
                       const SizedBox(height: 32),
@@ -304,9 +307,8 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                SvgPicture.asset('assets/images/svg/al-quran.svg', width: 50),
-                const SizedBox(height: 12),
-                Text('Al-Quran', style: pBold14),
+                Image.asset('assets/images/png/quran.png', width: 76),
+                Text('Quranuna', style: pSemiBold14),
               ],
             ),
           ),
@@ -446,25 +448,25 @@ class HomeScreen extends StatelessWidget {
       children: [
         _buildActionItem(
           'Infaq',
-          'assets/images/svg/infaq.svg',
+          'assets/images/png/infaq.png',
           () => Get.toNamed(Routes.charity),
           const Color(0xFFF0F9F1),
         ),
         _buildActionItem(
           'Dzikir',
-          'assets/images/svg/dzikir.svg',
+          'assets/images/png/dzikir.png',
           () => Get.toNamed(Routes.dzikir),
           const Color(0xFFF0F7FF),
         ),
         _buildActionItem(
-          'Masjid',
-          'assets/images/svg/ic-mosque.svg',
-          () {},
+          'Infaq Masjid',
+          'assets/images/png/masjid.png',
+          () => Get.toNamed(Routes.mosqueCharity),
           const Color(0xFFFFF7ED),
         ),
         _buildActionItem(
           'More',
-          'assets/images/svg/ic-info.svg',
+          'assets/images/png/menu.png',
           () => Get.bottomSheet(_bottomSheetMoreMenu()),
           const Color(0xFFFAF5FF),
         ),
@@ -482,22 +484,10 @@ class HomeScreen extends StatelessWidget {
       onTap: onTap,
       child: Column(
         children: [
-          Container(
+          SizedBox(
             height: 65,
             width: 65,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.6),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: SvgPicture.asset(asset, fit: BoxFit.contain),
+            child: Image.asset(asset, fit: BoxFit.contain, width: 120),
           ),
           const SizedBox(height: 10),
           Text(
@@ -509,50 +499,79 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, VoidCallback onTap) {
+  Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: pBold18.copyWith(color: Colors.black87)),
-        TextButton(
-          onPressed: onTap,
-          child: Text(
-            'Lihat Semua',
-            style: pSemiBold14.copyWith(color: AppColor.primaryColor),
-          ),
-        ),
-      ],
+      children: [Text(title, style: pBold18.copyWith(color: Colors.black87))],
     );
   }
 
   Widget _buildSlideBanner(HomeScreenController controller) {
-    return SizedBox(
-      height: 170,
-      child: PageView.builder(
-        controller: controller.sliderController,
-        itemCount: controller.dataBanner.length,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+    return Obx(() {
+      if (controller.isLoadingBanner.value) {
+        return _buildBannerShimmer();
+      }
+
+      if (controller.dataBanner.isEmpty) {
+        return const SizedBox();
+      }
+
+      return SizedBox(
+        height: 170,
+        child: PageView.builder(
+          controller: controller.sliderController,
+          itemCount: controller.dataBanner.length,
+          itemBuilder: (context, index) {
+            final banner = controller.dataBanner[index];
+            return GestureDetector(
+              onTap: () async {
+                final url = Uri.parse(banner.redirectTo);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: Image.asset(
-                controller.dataBanner[index],
-                fit: BoxFit.cover,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Image.network(
+                    banner.cover,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(IconlyLight.image, color: Colors.grey),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildBannerShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 170,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+        ),
       ),
     );
   }
@@ -795,8 +814,18 @@ class HomeScreen extends StatelessWidget {
     final menu = [
       {
         'title': 'Grup Ngaji',
-        'icon': 'assets/images/svg/ic-group-ngaji.svg',
+        'icon': 'assets/images/png/group.png',
         'route': Routes.groupNgaji,
+      },
+      {
+        'title': 'Leaderboard',
+        'icon': 'assets/images/png/leaderboard.png',
+        'route': Routes.leaderboard,
+      },
+      {
+        'title': 'Penyebar Al-Quran',
+        'icon': 'assets/images/png/share.png',
+        'route': Routes.appShareLeaderboard,
       },
     ];
     return Container(
@@ -814,7 +843,7 @@ class HomeScreen extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
+              crossAxisCount: 3,
               childAspectRatio: 0.8,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
@@ -829,15 +858,14 @@ class HomeScreen extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 65,
                     width: 65,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(22),
+                    child: Image.asset(
+                      menu[index]['icon'] as String,
+                      fit: BoxFit.contain,
+                      width: 120,
                     ),
-                    child: SvgPicture.asset(menu[index]['icon'] as String),
                   ),
                   const SizedBox(height: 10),
                   Text(

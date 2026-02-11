@@ -49,7 +49,7 @@ class MainScreen extends StatelessWidget {
       }),
       bottomNavigationBar: Obx(() {
         return BottomNavigationBar(
-          unselectedItemColor: AppColor.primaryColor.withOpacity(0.2),
+          unselectedItemColor: Colors.grey.shade600,
           selectedItemColor: AppColor.primaryColor,
           onTap: controller.changeTabIndex,
           currentIndex: controller.tabIndex.value,
@@ -59,7 +59,7 @@ class MainScreen extends StatelessWidget {
           backgroundColor: AppColor.backgroundColor,
           selectedLabelStyle: pMedium12.copyWith(color: AppColor.primaryColor),
           unselectedLabelStyle: pRegular12.copyWith(
-            color: AppColor.primaryColor.withOpacity(0.2),
+            color: Colors.grey.shade600,
           ),
           items: const [
             BottomNavigationBarItem(

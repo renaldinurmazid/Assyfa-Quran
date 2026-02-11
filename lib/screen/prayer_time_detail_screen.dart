@@ -382,14 +382,38 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                   : AppColor.textColor,
                             ),
                           ),
-                          if (isNext) ...[
-                            const SizedBox(width: 8),
-                            const Icon(
-                              IconlyBold.volume_up,
-                              color: AppColor.primaryColor,
-                              size: 16,
-                            ),
-                          ],
+                          const SizedBox(width: 18),
+                          Obx(() {
+                            final prayerName = prayerTime['name'] as String;
+                            // Default value logic: Imsak/Terbit -> silent, Others -> adzan
+                            final defaultValue =
+                                controller.isImsakOrTerbit(prayerName)
+                                ? 'silent'
+                                : 'adzan';
+                            final setting =
+                                controller.notificationSettings[prayerName] ??
+                                defaultValue;
+
+                            IconData iconData;
+                            if (setting == 'silent') {
+                              iconData = IconlyBold.volume_off;
+                            } else if (setting == 'beep') {
+                              iconData = IconlyBold.volume_up;
+                            } else {
+                              iconData = IconlyBold.voice;
+                            }
+
+                            return InkWell(
+                              onTap: () {
+                                Get.dialog(_selectNotification(prayerName));
+                              },
+                              child: Icon(
+                                iconData,
+                                color: AppColor.primaryColor,
+                                size: 20,
+                              ),
+                            );
+                          }),
                         ],
                       ),
                     );
@@ -397,6 +421,175 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                 );
               }),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _selectNotification(String prayerName) {
+    final controller = Get.find<PrayerTimeDetailController>();
+    bool isImsakOrTerbit = controller.isImsakOrTerbit(prayerName);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        child: Obx(() {
+          final currentSetting =
+              controller.notificationSettings[prayerName] ??
+              (isImsakOrTerbit ? 'silent' : 'adzan');
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColor.primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      IconlyBold.notification,
+                      color: AppColor.primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Notifikasi $prayerName',
+                          style: pBold16.copyWith(color: AppColor.textColor),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Pilih suara notifikasi waktu sholat',
+                          style: pRegular12.copyWith(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildNotificationOption(
+                title: 'Diam',
+                icon: IconlyBold.volume_off,
+                value: 'silent',
+                groupValue: currentSetting,
+                onChanged: (val) {
+                  if (val != null) {
+                    controller.saveNotificationSetting(prayerName, val);
+                    Get.back();
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildNotificationOption(
+                title: 'Beep',
+                icon: IconlyBold.volume_up,
+                value: 'beep',
+                groupValue: currentSetting,
+                onChanged: (val) {
+                  if (val != null) {
+                    controller.saveNotificationSetting(prayerName, val);
+                    Get.back();
+                  }
+                },
+              ),
+              if (!isImsakOrTerbit) ...[
+                const SizedBox(height: 12),
+                _buildNotificationOption(
+                  title: 'Adzan',
+                  icon: IconlyBold.voice,
+                  value: 'adzan',
+                  groupValue: currentSetting,
+                  onChanged: (val) {
+                    if (val != null) {
+                      controller.saveNotificationSetting(prayerName, val);
+                      Get.back();
+                    }
+                  },
+                ),
+              ],
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: pSemiBold14.copyWith(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildNotificationOption({
+    required String title,
+    required IconData icon,
+    required String value,
+    required String groupValue,
+    required Function(String?) onChanged,
+  }) {
+    final isSelected = value == groupValue;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColor.primaryColor.withOpacity(0.05)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColor.primaryColor : Colors.grey.shade200,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? AppColor.primaryColor : Colors.grey,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: isSelected
+                    ? pSemiBold14.copyWith(color: AppColor.primaryColor)
+                    : pMedium14.copyWith(color: AppColor.textColor),
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColor.primaryColor,
+                size: 20,
+              ),
           ],
         ),
       ),

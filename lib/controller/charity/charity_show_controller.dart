@@ -7,6 +7,7 @@ class CharityShowController extends GetxController {
   final int campaignId = Get.arguments['id'];
   var isLoading = true.obs;
   var campaign = Rxn<CampaignData>();
+  var selectedTab = 0.obs;
 
   @override
   void onInit() {

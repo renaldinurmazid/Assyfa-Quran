@@ -1,7 +1,16 @@
 import 'package:get/get.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
+import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
+import 'package:quran_app/screen/leaderboard/leaderboard_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_show_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_payment_detail_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_payment_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_map_screen.dart';
+
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
 import 'package:quran_app/screen/charity/charity_show_screen.dart';
@@ -163,6 +172,54 @@ class AppPages {
     GetPage(
       name: Routes.infaqActivityDetail,
       page: () => const InfaqActivityDetailScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharity,
+      page: () => const MosqueCharityScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharityShow,
+      page: () => const MosqueCharityShowScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueMap,
+      page: () => const MosqueMapScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharityPayment,
+      page: () => const MosqueCharityPaymentScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharityPaymentDetail,
+      page: () => const MosqueCharityPaymentDetailScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueInfaqActivityDetail,
+      page: () => const MosqueInfaqActivityDetailScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.leaderboard,
+      page: () => const LeaderboardScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.appShareLeaderboard,
+      page: () => const AppShareLeaderboardScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

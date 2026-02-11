@@ -27,4 +27,13 @@ class Url {
 
   static const String donations = '/api/donations';
   static const String saveFcmToken = '/api/save-fcm-token';
+
+  static const String mosqueCharity = '/api/mosque-charities';
+  static const String banners = '/api/banners';
+
+  static const String mosqueCharityPayment = '/api/mosque-donations';
+  static const String leaderboard = '/api/reading-history/leaderboard';
+  static const String myReferral = '/api/my-referral';
+
+  static const String appShareLeaderboard = '/api/app-share/leaderboard';
 }

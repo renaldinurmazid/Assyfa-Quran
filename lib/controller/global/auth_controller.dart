@@ -17,11 +17,26 @@ class AuthController extends GetxController {
   RxBool isLoading = false.obs;
   RxString token = ''.obs;
   RxMap userData = {}.obs;
+  RxString referralCode = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
     checkLoginStatus();
+    _loadReferralCode();
+
+    // Auto save referral code when changed
+    ever(referralCode, (String? code) async {
+      if (code != null && code.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('referral_code_temp', code);
+      }
+    });
+  }
+
+  Future<void> _loadReferralCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    referralCode.value = prefs.getString('referral_code_temp') ?? '';
   }
 
   Future<void> checkLoginStatus() async {
@@ -44,7 +59,7 @@ class AuthController extends GetxController {
 
       await GoogleSignIn.instance.initialize(
         serverClientId:
-            '319156609776-sg6slus8rcdmde9uimh3ra61q4kbr86m.apps.googleusercontent.com',
+            '801779467180-a86s8gt9catgv8eagncpibe6n6o9ui6c.apps.googleusercontent.com',
       );
 
       final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
@@ -73,7 +88,11 @@ class AuthController extends GetxController {
         final response = await Request().post(
           Url.loginGoogle,
           useToken: false,
-          data: {'firebase_token': firebaseToken},
+          data: {
+            'firebase_token': firebaseToken,
+            if (referralCode.value.isNotEmpty)
+              'referral_code': referralCode.value,
+          },
         );
 
         if (response.statusCode == 200) {
@@ -89,6 +108,11 @@ class AuthController extends GetxController {
 
           // Save FCM Token after successful login
           FcmService.saveToken();
+
+          // Clear referral code after success
+          referralCode.value = '';
+          final prefsClear = await SharedPreferences.getInstance();
+          await prefsClear.remove('referral_code_temp');
 
           Get.back();
           Get.snackbar("Success", "Login berhasil");

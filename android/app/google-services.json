@@ -1,56 +1,40 @@
 {
   "project_info": {
-    "project_number": "319156609776",
-    "project_id": "quranuna-995dc",
-    "storage_bucket": "quranuna-995dc.firebasestorage.app"
+    "project_number": "801779467180",
+    "project_id": "quranuna-1924-623d4",
+    "storage_bucket": "quranuna-1924-623d4.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:319156609776:android:2c2f3afdab9902ba455835",
+        "mobilesdk_app_id": "1:801779467180:android:4c954848f7d75d36aa3009",
         "android_client_info": {
           "package_name": "com.quranuna.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "319156609776-8jqefgeghhdehmdtfiqv9oe8or8ik3sk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.quranuna.app",
-            "certificate_hash": "bcbbb1d882af234fb72da09238e61128615f84d8"
-          }
-        },
-        {
-          "client_id": "319156609776-e8f3kkd2u4errh7hsf2fstcrqbh6q9b0.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.quranuna.app",
-            "certificate_hash": "5bc81e7c202707934464a8fceead784baa91fd1e"
-          }
-        },
-        {
-          "client_id": "319156609776-sg6slus8rcdmde9uimh3ra61q4kbr86m.apps.googleusercontent.com",
+          "client_id": "801779467180-a86s8gt9catgv8eagncpibe6n6o9ui6c.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBsC655ytDJ3_Fh47zELPaifp8edgtN7y8"
+          "current_key": "AIzaSyBFpnrVq1EimSS1YybR8PoNlGtwvNGYuow"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "319156609776-sg6slus8rcdmde9uimh3ra61q4kbr86m.apps.googleusercontent.com",
+              "client_id": "801779467180-a86s8gt9catgv8eagncpibe6n6o9ui6c.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "319156609776-5c5ts4e1vc649ftsqiujmqo64aeq346v.apps.googleusercontent.com",
+              "client_id": "801779467180-p83tdkqva6su4p998vcv2d42pmv1ef6n.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.quranApp"
+                "bundle_id": "com.assyfa.quranapp"
               }
             }
           ]

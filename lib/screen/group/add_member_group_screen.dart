@@ -14,7 +14,6 @@ class AddMemberGroupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(AddMemberGroupController());
-    const String inviteLink = 'https://quranapp.id/app190289881';
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
@@ -28,7 +27,10 @@ class AddMemberGroupScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInviteCard(inviteLink),
+                  Obx(
+                    () =>
+                        _buildInviteCard(controller.shareUrl.value, controller),
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     'Tambah dari Daftar',
@@ -111,7 +113,9 @@ class AddMemberGroupScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInviteCard(String link) {
+  Widget _buildInviteCard(String link, AddMemberGroupController controller) {
+    final displayLink = link.isNotEmpty ? link : 'Memuat tautan...';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -151,19 +155,19 @@ class AddMemberGroupScreen extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Bagikan Tautan',
+                'Bagikan Tautan Grup',
                 style: pBold16.copyWith(color: Colors.white),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
-            'Ajak teman atau kerabat bergabung ke grup dengan membagikan tautan di bawah ini.',
+            'Ajak teman bergabung dengan membagikan link landing page premium grup ini.',
             style: pRegular12.copyWith(color: Colors.white.withOpacity(0.9)),
           ),
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(16),
@@ -173,18 +177,20 @@ class AddMemberGroupScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    link,
+                    displayLink,
                     style: pMedium12.copyWith(color: Colors.white),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
+                // Copy Button
                 InkWell(
                   onTap: () {
+                    if (link.isEmpty) return;
                     Clipboard.setData(ClipboardData(text: link));
                     Get.snackbar(
                       'Tersalin',
-                      'Tautan undangan telah disalin ke papan klip',
+                      'Tautan undangan telah disalin',
                       snackPosition: SnackPosition.BOTTOM,
                       backgroundColor: Colors.white,
                       colorText: AppColor.primaryColor,
@@ -198,6 +204,23 @@ class AddMemberGroupScreen extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.copy_rounded,
+                      color: AppColor.primaryColor,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Share Button
+                InkWell(
+                  onTap: () => controller.shareGroup(),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.share_rounded,
                       color: AppColor.primaryColor,
                       size: 18,
                     ),

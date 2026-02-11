@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/controller/charity/infaq_activity_controller.dart';
-import 'package:quran_app/models/donation_history_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
@@ -34,51 +33,203 @@ class InfaqActivityScreen extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Obx(() {
-        if (controller.isLoading.value && controller.donations.isEmpty) {
-          return _buildLoadingState();
-        }
-
-        if (controller.donations.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => controller.fetchDonationHistory(isRefresh: true),
-          color: AppColor.primaryColor,
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            itemCount:
-                controller.donations.length +
-                (controller.hasNextPage.value ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == controller.donations.length) {
-                controller.loadMore();
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+      body: Column(
+        children: [
+          _buildTabs(controller),
+          Expanded(
+            child: Obx(() {
+              if (controller.selectedTab.value == 0) {
+                return _buildInfaqList(controller);
+              } else {
+                return _buildMosqueInfaqList(controller);
               }
-
-              final donation = controller.donations[index];
-              return _buildHistoryCard(donation);
-            },
+            }),
           ),
-        );
-      }),
+        ],
+      ),
     );
   }
 
-  Widget _buildHistoryCard(DonationHistoryItem donation) {
-    final date = DateFormat('dd MMM yyyy, HH:mm').format(donation.createdAt);
+  Widget _buildTabs(InfaqActivityController controller) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Obx(
+        () => Row(
+          children: [
+            Expanded(
+              child: _buildTabItem(
+                label: 'Infaq',
+                isSelected: controller.selectedTab.value == 0,
+                onTap: () => controller.changeTab(0),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildTabItem(
+                label: 'Infaq Masjid',
+                isSelected: controller.selectedTab.value == 1,
+                onTap: () => controller.changeTab(1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabItem({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColor.primaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: pBold14.copyWith(
+              color: isSelected ? Colors.white : Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfaqList(InfaqActivityController controller) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.donations.isEmpty) {
+        return _buildLoadingState();
+      }
+
+      if (controller.donations.isEmpty) {
+        return _buildEmptyState();
+      }
+
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchDonationHistory(isRefresh: true),
+        color: AppColor.primaryColor,
+        child: ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          itemCount:
+              controller.donations.length +
+              (controller.hasNextPage.value ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == controller.donations.length) {
+              controller.loadMore();
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final donation = controller.donations[index];
+            return _buildHistoryCard(
+              title: donation.campaign.title,
+              image: donation.campaign.coverImage,
+              orderId: donation.orderId,
+              amount: donation.formattedAmount,
+              status: donation.status,
+              date: donation.createdAt,
+              onTap: () => Get.toNamed(
+                Routes.infaqActivityDetail,
+                arguments: donation.id,
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildMosqueInfaqList(InfaqActivityController controller) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.mosqueDonations.isEmpty) {
+        return _buildLoadingState();
+      }
+
+      if (controller.mosqueDonations.isEmpty) {
+        return _buildEmptyState();
+      }
+
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchMosqueDonationHistory(isRefresh: true),
+        color: AppColor.primaryColor,
+        child: ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          itemCount:
+              controller.mosqueDonations.length +
+              (controller.mosqueHasNextPage.value ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == controller.mosqueDonations.length) {
+              controller.loadMore();
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final donation = controller.mosqueDonations[index];
+            return _buildHistoryCard(
+              title: donation.mosqueCharity.name,
+              image: donation.mosqueCharity.coverImage,
+              orderId: donation.orderId,
+              amount: donation.formattedAmount,
+              status: donation.status,
+              date: donation.createdAt,
+              onTap: () {
+                Get.toNamed(
+                  Routes.mosqueInfaqActivityDetail,
+                  arguments: donation.id,
+                );
+              },
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildHistoryCard({
+    required String title,
+    required String image,
+    required String orderId,
+    required String amount,
+    required String status,
+    required DateTime date,
+    required VoidCallback onTap,
+  }) {
+    final formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(date);
 
     Color statusColor;
     String statusText;
 
-    switch (donation.status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'pending':
         statusColor = Colors.orange;
         statusText = 'Menunggu';
@@ -89,7 +240,7 @@ class InfaqActivityScreen extends StatelessWidget {
         break;
       default:
         statusColor = Colors.red;
-        statusText = donation.status;
+        statusText = status;
     }
 
     return Container(
@@ -108,9 +259,7 @@ class InfaqActivityScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            Get.toNamed(Routes.infaqActivityDetail, arguments: donation.id);
-          },
+          onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -120,7 +269,7 @@ class InfaqActivityScreen extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    donation.campaign.coverImage,
+                    image,
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -142,7 +291,7 @@ class InfaqActivityScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              donation.campaign.title,
+                              title,
                               style: pBold14,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -167,7 +316,7 @@ class InfaqActivityScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        donation.orderId,
+                        orderId,
                         style: pMedium10.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(height: 8),
@@ -175,13 +324,13 @@ class InfaqActivityScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            donation.formattedAmount,
+                            amount,
                             style: pBold14.copyWith(
                               color: AppColor.primaryColor,
                             ),
                           ),
                           Text(
-                            date,
+                            formattedDate,
                             style: pRegular10.copyWith(color: Colors.grey),
                           ),
                         ],

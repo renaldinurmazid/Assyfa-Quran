@@ -194,7 +194,7 @@ class TilawahkuScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             SizedBox(
-              height: 100,
+              height: 140,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -212,7 +212,7 @@ class TilawahkuScreen extends StatelessWidget {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
                         width: 12,
-                        height: (80 * heightFactor).toDouble(),
+                        height: (40 * heightFactor).toDouble(),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,

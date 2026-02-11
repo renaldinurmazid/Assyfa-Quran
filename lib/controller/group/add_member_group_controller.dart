@@ -7,6 +7,7 @@ import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/controller/group/show_group_controller.dart';
 import 'package:quran_app/models/group/user_for_group_list.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AddMemberGroupController extends GetxController {
   final isLoading = false.obs;
@@ -14,13 +15,45 @@ class AddMemberGroupController extends GetxController {
   final filteredUsers = <Datum>[].obs;
   final searchController = TextEditingController();
   int? groupId;
+  final shareUrl = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
     groupId = Get.arguments;
     fetchUsers();
+    fetchGroupShareUrl();
     searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> fetchGroupShareUrl() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${Url.baseUrl}${Url.groups}/$groupId"),
+        headers: {
+          'Authorization': 'Bearer ${AuthController.to.token.value}',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        shareUrl.value = data['data']['share_url'] ?? '';
+      }
+    } catch (e) {
+      print("Error fetching share url: $e");
+    }
+  }
+
+  void shareGroup() {
+    if (shareUrl.value.isNotEmpty) {
+      Share.share(
+        'Yuk bergabung ke grup ngaji saya di Assyfa Quran! Klik link berikut: ${shareUrl.value}',
+        subject: 'Undangan Grup Ngaji',
+      );
+    } else {
+      Get.snackbar('Gagal', 'Tautan berbagi belum tersedia');
+    }
   }
 
   @override

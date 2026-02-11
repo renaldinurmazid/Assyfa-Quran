@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/controller/profile_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -11,6 +12,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ProfileScreenController());
+
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: AppBar(
@@ -26,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Obx(() => _buildProfileHeader()),
             const SizedBox(height: 20),
-            _buildMenuSection(),
+            _buildMenuSection(controller),
             const SizedBox(height: 40),
           ],
         ),
@@ -118,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuSection() {
+  Widget _buildMenuSection(ProfileScreenController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -145,6 +148,15 @@ class ProfileScreen extends StatelessWidget {
             style: pSemiBold14.copyWith(color: Colors.grey.shade400),
           ),
           const SizedBox(height: 16),
+          Obx(
+            () => _menuItem(
+              title: controller.isLoadingShare.value
+                  ? 'Mempersiapkan...'
+                  : 'Share Aplikasi',
+              icon: Icons.share,
+              onTap: () => controller.shareApp(),
+            ),
+          ),
           // _menuItem(
           //   title: 'Tentang Aplikasi',
           //   icon: IconlyLight.info_circle,
