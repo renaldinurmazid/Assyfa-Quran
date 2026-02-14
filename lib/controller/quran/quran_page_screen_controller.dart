@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +24,7 @@ class QuranPageScreenController extends GetxController {
   final mode = QuranPaginationMode.browse.obs;
   final dataPage = <Datum>[].obs;
   final startReadingPage = RxnInt();
-  final readingStartTime = DateTime.now();
+  var readingStartTime = DateTime.now();
 
   final isLoading = false.obs;
   final isLastPage = false.obs;
@@ -198,6 +199,10 @@ class QuranPageScreenController extends GetxController {
     int? ayah,
     int? pageNumber,
   }) async {
+    // Save current reading session before starting a new one
+    await saveReadingHistory();
+    _resetReadingSession();
+
     isLoading.value = true;
     isLastPage.value = false;
     currentPageIndex.value = 0;
@@ -284,12 +289,17 @@ class QuranPageScreenController extends GetxController {
       if (juzId == 30) targetPage = 582;
     }
 
-    // If all params are null, fallback to args (history)
+    // If all params are null, fallback to args (history) or last reading page
     if (targetPage == null &&
         surahId == null &&
         juzId == null &&
         ayah == null) {
       targetPage = args?['page_number'];
+
+      // If still no target page, check local storage for last reading page
+      if (targetPage == null) {
+        targetPage = await _getLastReadingPage(slug);
+      }
     }
 
     final isOnline = await _checkConnection();
@@ -496,6 +506,9 @@ class QuranPageScreenController extends GetxController {
       fetchByPageNumber(selectedDatum.pageNumber);
       return;
     }
+
+    // Save last reading page to local storage
+    _saveLastReadingPage(selectedDatum.pageNumber);
 
     if (mode.value == QuranPaginationMode.browse) {
       if (index >= dataPage.length - 2) {
@@ -989,6 +1002,11 @@ class QuranPageScreenController extends GetxController {
   /* =======================
    * HISTORY
    * ======================= */
+  void _resetReadingSession() {
+    startReadingPage.value = null;
+    readingStartTime = DateTime.now();
+  }
+
   Future<void> saveReadingHistory() async {
     if (!AuthController.to.isLogin.value) return;
     if (dataPage.isEmpty || currentPageIndex.value >= dataPage.length) return;
@@ -1021,8 +1039,35 @@ class QuranPageScreenController extends GetxController {
           'duration_seconds': duration,
         },
       );
+
+      // Save last reading page to local storage
+      _saveLastReadingPage(currentNum);
     } catch (e) {
       print("Error saving reading history: $e");
+    }
+  }
+
+  /* =======================
+   * LAST READING LOCAL STORAGE
+   * ======================= */
+  Future<void> _saveLastReadingPage(int pageNumber) async {
+    try {
+      final Map<String, dynamic>? args = Get.arguments;
+      final slug = args?['slug'] ?? 'mushaf_standard';
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('last_reading_page_$slug', pageNumber);
+    } catch (e) {
+      print("Error saving last reading page: $e");
+    }
+  }
+
+  Future<int?> _getLastReadingPage(String slug) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt('last_reading_page_$slug');
+    } catch (e) {
+      print("Error getting last reading page: $e");
+      return null;
     }
   }
 }

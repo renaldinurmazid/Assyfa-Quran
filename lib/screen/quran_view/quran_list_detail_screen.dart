@@ -26,14 +26,14 @@ class QuranListDetailScreen extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: AppColor.backgroundColor,
         iconTheme: const IconThemeData(color: AppColor.primaryColor),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Share or bookmark logic could go here
-            },
-            icon: const Icon(Icons.share_outlined),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       // Share or bookmark logic could go here
+        //     },
+        //     icon: const Icon(Icons.share_outlined),
+        //   ),
+        // ],
       ),
       body: Obx(
         () => controller.isLoading.value
