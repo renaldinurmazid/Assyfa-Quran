@@ -129,9 +129,19 @@ class ChangeProfileScreen extends StatelessWidget {
                 controller: controller.nameController,
                 hintText: 'Masukkan nama lengkap',
               ),
-
               const SizedBox(height: 24),
-
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Nomor Telepon', style: pSemiBold14),
+              ),
+              const SizedBox(height: 10),
+              TextInput(
+                controller: controller.phoneController,
+                hintText: 'Nomor Telepon Anda',
+                keyboardType: TextInputType.phone,
+                readOnly: false,
+              ),
+              const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text('Email', style: pSemiBold14),

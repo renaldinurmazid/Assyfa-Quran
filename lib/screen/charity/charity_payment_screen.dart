@@ -73,94 +73,90 @@ class CharityPaymentScreen extends StatelessWidget {
               _buildSectionHeader('Pilih Metode Pembayaran'),
               const SizedBox(height: 12),
               Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.paymentMethods.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final method = controller.paymentMethods[index];
-                    return Obx(() {
-                      final isSelected =
-                          controller.selectedPaymentMethod.value?.id ==
-                          method.id;
-                      return GestureDetector(
-                        onTap: () => controller.selectPaymentMethod(method),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColor.primaryColor
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: method.logo.isNotEmpty
-                                    ? SvgPicture.network(
-                                        method.logo,
-                                        placeholderBuilder: (context) =>
-                                            const Center(
-                                              child: SizedBox(
-                                                width: 12,
-                                                height: 12,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              ),
-                                            ),
-                                      )
-                                    : const Icon(
-                                        IconlyLight.wallet,
-                                        size: 20,
-                                        color: Colors.grey,
-                                      ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  method.name,
-                                  style: pSemiBold14.copyWith(
-                                    color: isSelected
-                                        ? AppColor.primaryColor
-                                        : AppColor.textColor,
-                                  ),
-                                ),
-                              ),
-                              if (isSelected)
-                                const Icon(
-                                  IconlyBold.tick_square,
-                                  color: AppColor.primaryColor,
-                                  size: 24,
-                                ),
-                            ],
-                          ),
+                final selected = controller.selectedPaymentMethod.value;
+                return GestureDetector(
+                  onTap: () =>
+                      _showPaymentMethodBottomSheet(context, controller),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selected != null
+                            ? AppColor.primaryColor
+                            : Colors.grey.shade200,
+                        width: selected != null ? 2 : 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      );
-                    });
-                  },
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        if (selected != null) ...[
+                          Container(
+                            width: 48,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: selected.logo.isNotEmpty
+                                ? SvgPicture.network(
+                                    selected.logo,
+                                    placeholderBuilder: (context) =>
+                                        const Center(
+                                          child: SizedBox(
+                                            width: 12,
+                                            height: 12,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        ),
+                                  )
+                                : const Icon(
+                                    IconlyLight.wallet,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              selected.name,
+                              style: pSemiBold14.copyWith(
+                                color: AppColor.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          const Icon(
+                            IconlyLight.wallet,
+                            size: 22,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              'Pilih metode pembayaran',
+                              style: pRegular14.copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                        const Icon(
+                          IconlyLight.arrow_down_2,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               }),
               const SizedBox(height: 48),
@@ -261,5 +257,163 @@ class CharityPaymentScreen extends StatelessWidget {
         ),
       );
     });
+  }
+
+  void _showPaymentMethodBottomSheet(
+    BuildContext context,
+    CharityPaymentController controller,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColor.backgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      isScrollControlled: true,
+      builder: (_) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.3,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                // Drag handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Pilih Metode Pembayaran',
+                        style: pBold16.copyWith(color: AppColor.textColor),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.grey,
+                          size: 22,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(20),
+                      itemCount: controller.paymentMethods.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final method = controller.paymentMethods[index];
+                        return Obx(() {
+                          final isSelected =
+                              controller.selectedPaymentMethod.value?.id ==
+                              method.id;
+                          return GestureDetector(
+                            onTap: () {
+                              controller.selectPaymentMethod(method);
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColor.primaryColor
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: method.logo.isNotEmpty
+                                        ? SvgPicture.network(
+                                            method.logo,
+                                            placeholderBuilder: (context) =>
+                                                const Center(
+                                                  child: SizedBox(
+                                                    width: 12,
+                                                    height: 12,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  ),
+                                                ),
+                                          )
+                                        : const Icon(
+                                            IconlyLight.wallet,
+                                            size: 20,
+                                            color: Colors.grey,
+                                          ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      method.name,
+                                      style: pSemiBold14.copyWith(
+                                        color: isSelected
+                                            ? AppColor.primaryColor
+                                            : AppColor.textColor,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(
+                                      IconlyBold.tick_square,
+                                      color: AppColor.primaryColor,
+                                      size: 24,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        });
+                      },
+                    );
+                  }),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

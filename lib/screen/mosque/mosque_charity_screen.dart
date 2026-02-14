@@ -341,7 +341,7 @@ class MosqueCharityScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Rp ${mosque.currentAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                                    mosque.collectedAmount,
                                     style: pBold12.copyWith(
                                       color: AppColor.primaryColor,
                                     ),

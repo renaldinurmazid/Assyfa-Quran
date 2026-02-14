@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 class ChangeProfileController extends GetxController {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
+  final phoneController = TextEditingController();
 
   final isLoading = false.obs;
   final Rx<File?> selectedImage = Rx<File?>(null);
@@ -22,6 +23,7 @@ class ChangeProfileController extends GetxController {
     // Isi field dengan data yang sudah ada
     nameController.text = AuthController.to.userData['name'] ?? '';
     emailController.text = AuthController.to.userData['email'] ?? '';
+    phoneController.text = AuthController.to.userData['phone_number'] ?? '';
   }
 
   Future<void> pickImage() async {
@@ -51,6 +53,7 @@ class ChangeProfileController extends GetxController {
       });
 
       request.fields['name'] = nameController.text;
+      request.fields['phone_number'] = phoneController.text;
 
       if (selectedImage.value != null) {
         request.files.add(

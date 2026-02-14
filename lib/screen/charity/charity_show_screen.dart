@@ -46,7 +46,7 @@ class CharityShowScreen extends StatelessWidget {
                         const SizedBox(height: 24),
                         _buildProgressSection(campaign),
                         const SizedBox(height: 24),
-                        _buildDonaturSection(campaign),
+                        _buildStatsSection(campaign),
                         const Divider(
                           height: 48,
                           thickness: 1,
@@ -54,11 +54,13 @@ class CharityShowScreen extends StatelessWidget {
                         ),
                         _buildTabSection(controller),
                         const SizedBox(height: 24),
-                        Obx(
-                          () => controller.selectedTab.value == 0
-                              ? _buildDescriptionSection(campaign)
-                              : _buildUpdatesSection(campaign),
-                        ),
+                        Obx(() {
+                          final tab = controller.selectedTab.value;
+                          if (tab == 0)
+                            return _buildDescriptionSection(campaign);
+                          if (tab == 1) return _buildUpdatesSection(campaign);
+                          return _buildFundraiserSection(campaign);
+                        }),
                         const SizedBox(height: 100), // Space for bottom button
                       ],
                     ),
@@ -218,31 +220,121 @@ class CharityShowScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDonaturSection(campaign) {
-    return InkWell(
-      onTap: () {
-        Get.toNamed(Routes.charityDonatur, arguments: campaign.id);
-      },
-      child: Row(
-        children: [
-          const Icon(IconlyLight.user_1, color: AppColor.primaryColor, size: 20),
-          const SizedBox(width: 4),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${campaign.donaturCount} ',
-                  style: pBold14.copyWith(color: AppColor.textColor),
+  Widget _buildStatsSection(CampaignData campaign) {
+    return Row(
+      children: [
+        Expanded(
+          child: InkWell(
+            onTap: () {
+              Get.toNamed(Routes.charityDonatur, arguments: campaign.id);
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColor.primaryColor.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColor.primaryColor.withOpacity(0.12),
                 ),
-                TextSpan(
-                  text: 'Donatur telah bergabung',
-                  style: pRegular14.copyWith(color: Colors.grey[600]),
-                ),
-              ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColor.primaryColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      IconlyBold.heart,
+                      color: AppColor.primaryColor,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${campaign.donaturCount}',
+                          style: pBold16.copyWith(color: AppColor.primaryColor),
+                        ),
+                        Text(
+                          'Donatur',
+                          style: pRegular10.copyWith(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    IconlyLight.arrow_right_2,
+                    size: 16,
+                    color: Colors.grey[400],
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: InkWell(
+            onTap: () {
+              // Switch to fundraiser tab
+              final controller = Get.find<CharityShowController>();
+              controller.selectedTab.value = 2;
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0).withOpacity(0.6),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange.withOpacity(0.15)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      IconlyBold.star,
+                      color: Colors.orange,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${campaign.fundraiserCount}',
+                          style: pBold16.copyWith(color: Colors.orange[800]),
+                        ),
+                        Text(
+                          'Fundraiser',
+                          style: pRegular10.copyWith(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    IconlyLight.arrow_right_2,
+                    size: 16,
+                    color: Colors.grey[400],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -260,6 +352,7 @@ class CharityShowScreen extends StatelessWidget {
             controller: controller,
             showBadge: true,
           ),
+          _buildTabItem(label: 'Fundraiser', index: 2, controller: controller),
         ],
       ),
     );
@@ -415,6 +508,164 @@ class CharityShowScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildFundraiserSection(CampaignData campaign) {
+    if (campaign.fundraisers.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: [
+              Icon(IconlyLight.star, size: 48, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                'Belum ada fundraiser',
+                style: pMedium14.copyWith(color: Colors.grey[500]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Bagikan campaign ini dan jadilah\nfundraiser pertama!',
+                textAlign: TextAlign.center,
+                style: pRegular12.copyWith(
+                  color: Colors.grey[400],
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: campaign.fundraisers.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final fundraiser = campaign.fundraisers[index];
+        final rank = index + 1;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: rank <= 3
+                ? const Color(0xFFFFF8E1).withOpacity(0.5)
+                : const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: rank <= 3
+                  ? Colors.orange.withOpacity(0.15)
+                  : const Color(0xFFEEEEEE),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Rank badge
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: rank == 1
+                      ? Colors.amber
+                      : rank == 2
+                      ? Colors.grey[400]
+                      : rank == 3
+                      ? Colors.orange[300]
+                      : Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$rank',
+                  style: pBold12.copyWith(
+                    color: rank <= 3 ? Colors.white : Colors.grey[600],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Avatar
+              _buildFundraiserAvatar(fundraiser.name),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fundraiser.name,
+                      style: pSemiBold14.copyWith(color: AppColor.textColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          IconlyLight.user_1,
+                          size: 13,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${fundraiser.totalReferral} orang diajak',
+                          style: pRegular10.copyWith(
+                            color: Colors.grey[500],
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Amount collected
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  fundraiser.totalCollected,
+                  style: pSemiBold10.copyWith(color: Colors.orange[800]),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFundraiserAvatar(String name) {
+    final initials = name.isNotEmpty
+        ? name
+              .split(' ')
+              .take(2)
+              .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
+              .join()
+        : '?';
+
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.withOpacity(0.7),
+            Colors.deepOrange.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      alignment: Alignment.center,
+      child: Text(initials, style: pBold12.copyWith(color: Colors.white)),
     );
   }
 

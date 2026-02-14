@@ -10,6 +10,7 @@ import 'package:quran_app/screen/mosque/mosque_charity_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_show_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_payment_detail_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_payment_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_donatur_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_map_screen.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
@@ -227,6 +228,12 @@ class AppPages {
     GetPage(
       name: Routes.charityDonatur,
       page: () => const CharityDonaturScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharityDonatur,
+      page: () => const MosqueCharityDonaturScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

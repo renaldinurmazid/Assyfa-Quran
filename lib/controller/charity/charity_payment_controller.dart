@@ -27,7 +27,7 @@ class CharityPaymentController extends GetxController {
     // Pre-fill user data if logged in
     if (AuthController.to.isLogin.value) {
       nameController.text = AuthController.to.userData['name'] ?? '';
-      phoneController.text = AuthController.to.userData['phone'] ?? '';
+      phoneController.text = AuthController.to.userData['phone_number'] ?? '';
     }
     fetchPaymentMethods();
   }

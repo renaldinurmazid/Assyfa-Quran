@@ -32,10 +32,15 @@ class MosqueCharityData {
   String city;
   String? description;
   String? targetAmount;
+  String collectedAmount;
+  int percentage;
   String? latitude;
   String? longitude;
-  int currentAmount;
+  String currentAmount;
+  int donaturCount;
+  int fundraiserCount;
   List<MosqueCharityUpdate> updates;
+  List<MosqueCharityFundraiser> fundraisers;
   String? shareUrl;
 
   MosqueCharityData({
@@ -46,10 +51,15 @@ class MosqueCharityData {
     required this.city,
     this.description,
     this.targetAmount,
+    required this.collectedAmount,
+    required this.percentage,
     this.latitude,
     this.longitude,
     required this.currentAmount,
+    required this.donaturCount,
+    required this.fundraiserCount,
     required this.updates,
+    required this.fundraisers,
     this.shareUrl,
   });
 
@@ -62,17 +72,23 @@ class MosqueCharityData {
         city: json["city"],
         description: json["description"],
         targetAmount: json["target_amount"],
+        collectedAmount: json["collected_amount"] ?? 'Rp0',
+        percentage: json["percentage"] ?? 0,
         latitude: json["latitude"]?.toString(),
         longitude: json["longitude"]?.toString(),
-        currentAmount: json["current_amount"] is String
-            ? (int.tryParse(
-                    json["current_amount"].replaceAll(RegExp(r'[^0-9]'), ''),
-                  ) ??
-                  0)
-            : (json["current_amount"] ?? 0),
+        currentAmount: json["current_amount"] ?? 'Rp0',
+        donaturCount: json["donatur_count"] ?? 0,
+        fundraiserCount: json["fundraiser_count"] ?? 0,
         updates: json["updates"] != null
             ? List<MosqueCharityUpdate>.from(
                 json["updates"].map((x) => MosqueCharityUpdate.fromJson(x)),
+              )
+            : [],
+        fundraisers: json["fundraisers"] != null
+            ? List<MosqueCharityFundraiser>.from(
+                json["fundraisers"].map(
+                  (x) => MosqueCharityFundraiser.fromJson(x),
+                ),
               )
             : [],
         shareUrl: json["share_url"],
@@ -86,10 +102,15 @@ class MosqueCharityData {
     "city": city,
     "description": description,
     "target_amount": targetAmount,
+    "collected_amount": collectedAmount,
+    "percentage": percentage,
     "latitude": latitude,
     "longitude": longitude,
     "current_amount": currentAmount,
+    "donatur_count": donaturCount,
+    "fundraiser_count": fundraiserCount,
     "updates": List<dynamic>.from(updates.map((x) => x.toJson())),
+    "fundraisers": List<dynamic>.from(fundraisers.map((x) => x.toJson())),
     "share_url": shareUrl,
   };
 }
@@ -136,5 +157,34 @@ class MosqueCharityUpdate {
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
     "created_at_formatted": createdAtFormatted,
+  };
+}
+
+class MosqueCharityFundraiser {
+  int id;
+  String name;
+  int totalReferral;
+  String totalCollected;
+
+  MosqueCharityFundraiser({
+    required this.id,
+    required this.name,
+    required this.totalReferral,
+    required this.totalCollected,
+  });
+
+  factory MosqueCharityFundraiser.fromJson(Map<String, dynamic> json) =>
+      MosqueCharityFundraiser(
+        id: json["id"],
+        name: json["name"] ?? 'Anonim',
+        totalReferral: json["total_referral"] ?? 0,
+        totalCollected: json["total_collected"] ?? 'Rp0',
+      );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "total_referral": totalReferral,
+    "total_collected": totalCollected,
   };
 }

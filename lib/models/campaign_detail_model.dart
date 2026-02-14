@@ -41,7 +41,9 @@ class CampaignData {
   String collectedAmount;
   int percentage;
   int donaturCount;
+  int fundraiserCount;
   List<CampaignUpdate> updates;
+  List<CampaignFundraiser> fundraisers;
   String? shareUrl;
 
   CampaignData({
@@ -54,7 +56,9 @@ class CampaignData {
     required this.collectedAmount,
     required this.percentage,
     required this.donaturCount,
+    required this.fundraiserCount,
     required this.updates,
+    required this.fundraisers,
     this.shareUrl,
   });
 
@@ -68,9 +72,15 @@ class CampaignData {
     collectedAmount: json["collected_amount"],
     percentage: json["percentage"],
     donaturCount: json["donatur_count"],
+    fundraiserCount: json["fundraiser_count"] ?? 0,
     updates: json["updates"] != null
         ? List<CampaignUpdate>.from(
             json["updates"].map((x) => CampaignUpdate.fromJson(x)),
+          )
+        : [],
+    fundraisers: json["fundraisers"] != null
+        ? List<CampaignFundraiser>.from(
+            json["fundraisers"].map((x) => CampaignFundraiser.fromJson(x)),
           )
         : [],
     shareUrl: json["share_url"],
@@ -86,7 +96,9 @@ class CampaignData {
     "collected_amount": collectedAmount,
     "percentage": percentage,
     "donatur_count": donaturCount,
+    "fundraiser_count": fundraiserCount,
     "updates": List<dynamic>.from(updates.map((x) => x.toJson())),
+    "fundraisers": List<dynamic>.from(fundraisers.map((x) => x.toJson())),
     "share_url": shareUrl,
   };
 }
@@ -132,5 +144,34 @@ class CampaignUpdate {
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
     "created_at_formatted": createdAtFormatted,
+  };
+}
+
+class CampaignFundraiser {
+  int id;
+  String name;
+  int totalReferral;
+  String totalCollected;
+
+  CampaignFundraiser({
+    required this.id,
+    required this.name,
+    required this.totalReferral,
+    required this.totalCollected,
+  });
+
+  factory CampaignFundraiser.fromJson(Map<String, dynamic> json) =>
+      CampaignFundraiser(
+        id: json["id"],
+        name: json["name"] ?? 'Anonim',
+        totalReferral: json["total_referral"] ?? 0,
+        totalCollected: json["total_collected"] ?? 'Rp0',
+      );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "total_referral": totalReferral,
+    "total_collected": totalCollected,
   };
 }
