@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
+import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
@@ -220,6 +221,12 @@ class AppPages {
     GetPage(
       name: Routes.appShareLeaderboard,
       page: () => const AppShareLeaderboardScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.charityDonatur,
+      page: () => const CharityDonaturScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

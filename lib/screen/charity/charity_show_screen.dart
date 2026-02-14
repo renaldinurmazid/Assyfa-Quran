@@ -219,25 +219,30 @@ class CharityShowScreen extends StatelessWidget {
   }
 
   Widget _buildDonaturSection(campaign) {
-    return Row(
-      children: [
-        const Icon(IconlyLight.user_1, color: AppColor.primaryColor, size: 20),
-        const SizedBox(width: 12),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: '${campaign.donaturCount} ',
-                style: pBold14.copyWith(color: AppColor.textColor),
-              ),
-              TextSpan(
-                text: 'Donatur telah bergabung',
-                style: pRegular14.copyWith(color: Colors.grey[600]),
-              ),
-            ],
+    return InkWell(
+      onTap: () {
+        Get.toNamed(Routes.charityDonatur, arguments: campaign.id);
+      },
+      child: Row(
+        children: [
+          const Icon(IconlyLight.user_1, color: AppColor.primaryColor, size: 20),
+          const SizedBox(width: 4),
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${campaign.donaturCount} ',
+                  style: pBold14.copyWith(color: AppColor.textColor),
+                ),
+                TextSpan(
+                  text: 'Donatur telah bergabung',
+                  style: pRegular14.copyWith(color: Colors.grey[600]),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

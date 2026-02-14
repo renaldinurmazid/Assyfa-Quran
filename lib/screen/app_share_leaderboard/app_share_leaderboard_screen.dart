@@ -127,17 +127,17 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           Icon(
             IconlyLight.user,
             size: 80,
-            color: Colors.white.withOpacity(0.3),
+            color: AppColor.primaryColor.withOpacity(0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'Belum ada data penyebar',
-            style: pBold16.copyWith(color: Colors.white),
+            style: pBold16.copyWith(color: AppColor.primaryColor),
           ),
           const SizedBox(height: 4),
           Text(
             'Ajak teman Anda sekarang!',
-            style: pRegular12.copyWith(color: Colors.white70),
+            style: pRegular12.copyWith(color: AppColor.primaryColor),
           ),
         ],
       ),
