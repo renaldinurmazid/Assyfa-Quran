@@ -1,6 +1,6 @@
 class Url {
-  // static const String baseUrl = 'https://quran.titiktolak.com';
-  static const String baseUrl = 'http://192.168.100.4:8000';
+  static const String baseUrl = 'https://quran.titiktolak.com';
+  // static const String baseUrl = 'http://192.168.100.4:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';

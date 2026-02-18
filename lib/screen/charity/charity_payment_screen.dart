@@ -316,7 +316,11 @@ class CharityPaymentScreen extends StatelessWidget {
                 Expanded(
                   child: Obx(() {
                     if (controller.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColor.primaryColor,
+                        ),
+                      );
                     }
                     return ListView.separated(
                       controller: scrollController,
@@ -365,6 +369,16 @@ class CharityPaymentScreen extends StatelessWidget {
                                     child: method.logo.isNotEmpty
                                         ? SvgPicture.network(
                                             method.logo,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      IconlyLight.image,
+                                                      color: Colors.grey,
+                                                      size: 16,
+                                                    ),
+                                                  );
+                                                },
                                             placeholderBuilder: (context) =>
                                                 const Center(
                                                   child: SizedBox(

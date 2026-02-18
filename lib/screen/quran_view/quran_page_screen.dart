@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/quran/quran_page_screen_controller.dart';
+import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
@@ -208,6 +209,12 @@ class QuranPageScreen extends StatelessWidget {
                             DeviceOrientation.portraitUp,
                             DeviceOrientation.portraitDown,
                           ]);
+                        }
+                        if (value == 'info') {
+                          Get.toNamed(
+                            Routes.quranPageInfo,
+                            arguments: {'slug': controller.currentSlug.value},
+                          );
                         }
                       },
                       icon: Icon(

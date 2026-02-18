@@ -119,7 +119,22 @@ class CharityShowScreen extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(campaign.coverImage, fit: BoxFit.cover),
+            Image.network(
+              campaign.coverImage,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[100],
+                  child: const Center(
+                    child: Icon(
+                      IconlyLight.image,
+                      color: Colors.grey,
+                      size: 40,
+                    ),
+                  ),
+                );
+              },
+            ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

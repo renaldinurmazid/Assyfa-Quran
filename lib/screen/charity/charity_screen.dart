@@ -131,16 +131,7 @@ class CharityScreen extends StatelessWidget {
   Widget _buildSectionHeader(String title, VoidCallback onTap) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: pBold18.copyWith(color: Colors.black87)),
-        TextButton(
-          onPressed: onTap,
-          child: Text(
-            'Lihat Semua',
-            style: pSemiBold14.copyWith(color: AppColor.primaryColor),
-          ),
-        ),
-      ],
+      children: [Text(title, style: pBold18.copyWith(color: Colors.black87))],
     );
   }
 
@@ -184,13 +175,29 @@ class CharityScreen extends StatelessWidget {
                         children: [
                           Container(
                             width: double.infinity,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(24),
+                              ),
+                            ),
+                            child: ClipRRect(
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(24),
                               ),
-                              image: DecorationImage(
-                                image: NetworkImage(charity.coverImage),
+                              child: Image.network(
+                                charity.coverImage,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[100],
+                                    child: const Center(
+                                      child: Icon(
+                                        IconlyLight.image,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -328,9 +335,24 @@ class CharityScreen extends StatelessWidget {
                       width: 85,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        image: DecorationImage(
-                          image: NetworkImage(charity.coverImage),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          charity.coverImage,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[100],
+                              child: const Center(
+                                child: Icon(
+                                  IconlyLight.image,
+                                  color: Colors.grey,
+                                  size: 20,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),

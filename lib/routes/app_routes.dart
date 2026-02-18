@@ -32,4 +32,5 @@ abstract class Routes {
   static const appShareLeaderboard = '/app_share_leaderboard';
   static const charityDonatur = '/charity_donatur';
   static const mosqueCharityDonatur = '/mosque_charity_donatur';
+  static const quranPageInfo = '/quran_page_info';
 }

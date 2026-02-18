@@ -36,6 +36,8 @@ class QuranPageScreenController extends GetxController {
   final prevPageNumber = Rxn<dynamic>();
   final nextPageNumber = Rxn<int>();
 
+  final currentSlug = ''.obs;
+
   final viewportWidth = 0.0.obs;
   final viewportHeight = 0.0.obs;
 
@@ -210,6 +212,7 @@ class QuranPageScreenController extends GetxController {
 
     final Map<String, dynamic>? args = Get.arguments;
     final slug = args?['slug'] ?? 'mushaf_standard';
+    currentSlug.value = slug;
     int? targetPage = pageNumber;
 
     // Sync class-level state if param is provided

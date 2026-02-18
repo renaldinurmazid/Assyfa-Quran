@@ -124,6 +124,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 100),
           Icon(
             IconlyLight.user,
             size: 80,
