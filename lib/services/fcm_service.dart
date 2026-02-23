@@ -7,6 +7,7 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FcmService {
   static final FirebaseMessaging _firebaseMessaging =
@@ -34,8 +35,19 @@ class FcmService {
     // Initialize local notifications for foreground
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+
+    final DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
     // Create the channel on Android
@@ -137,24 +149,71 @@ class FcmService {
     // For now, we call it in a way that respects AuthController status
   }
 
-  static Future<void> saveToken() async {
-    try {
-      if (!AuthController.to.isLogin.value) return;
+  static String? _lastToken;
+  static bool _isSaving = false;
+  static bool _hasUnauthorizedError = false;
 
+  static Future<void> saveToken() async {
+    if (_isSaving) return;
+    if (_hasUnauthorizedError) return;
+    if (!AuthController.to.isLogin.value) return;
+
+    _isSaving = true;
+    try {
       String? token = await _firebaseMessaging.getToken();
       if (token != null) {
-        print("FCM Token: $token");
+        // Double check login status after async call
+        if (!AuthController.to.isLogin.value) {
+          _isSaving = false;
+          return;
+        }
+
+        // Check if token already saved in this session
+        if (token == _lastToken) {
+          _isSaving = false;
+          return;
+        }
+
+        // Check if token already saved in SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final savedToken = prefs.getString('saved_fcm_token');
+        if (token == savedToken) {
+          _lastToken = token;
+          _isSaving = false;
+          return;
+        }
+
+        print("Saving FCM Token: $token");
         final response = await Request().post(
           Url.saveFcmToken,
           data: {'fcm_token': token},
         );
+
         if (response.statusCode == 200) {
+          _lastToken = token;
+          await prefs.setString('saved_fcm_token', token);
           print("FCM Token saved successfully");
         }
       }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        _hasUnauthorizedError = true;
+        print(
+          "FCM Token save failed (401): Stopping further attempts this session.",
+        );
+      } else {
+        print("Error saving FCM Token (Dio): $e");
+      }
     } catch (e) {
       print("Error saving FCM Token: $e");
+    } finally {
+      _isSaving = false;
     }
+  }
+
+  static void resetUnauthorizedError() {
+    _hasUnauthorizedError = false;
+    _lastToken = null;
   }
 
   static Future<String?> _downloadAndSaveFile(

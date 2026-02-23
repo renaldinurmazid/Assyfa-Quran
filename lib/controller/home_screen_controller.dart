@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/api/request.dart';
@@ -11,6 +12,7 @@ import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 
 import 'package:quran_app/models/banner_model.dart';
+import 'package:quran_app/models/prayer_model.dart';
 
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
@@ -20,6 +22,9 @@ class HomeScreenController extends GetxController {
   final provinsi = 'DKI JAKARTA'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
   final isOfflineMode = false.obs;
+
+  final prayers = <PrayerItem>[].obs;
+  final isLoadingPrayers = false.obs;
 
   final displayPrayers = <Map<String, String>>[].obs;
   Timer? timer;
@@ -55,6 +60,7 @@ class HomeScreenController extends GetxController {
     _startTimer();
     fetchBanners();
     autoSlideBanner();
+    fetchPrayers();
     _checkConnection();
     _listenToConnectivity();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -65,8 +71,10 @@ class HomeScreenController extends GetxController {
       ever(AuthController.to.isLogin, (bool? loggedIn) {
         if (loggedIn == true) {
           fetchWeeklyStats();
+          fetchPrayers();
         } else {
           weeklyStats.clear();
+          fetchPrayers(); // Re-fetch to clear isMyPrayer/isAmened status
         }
       });
 
@@ -407,6 +415,71 @@ class HomeScreenController extends GetxController {
       print("Error fetching banners: $e");
     } finally {
       isLoadingBanner.value = false;
+    }
+  }
+
+  Future<void> fetchPrayers() async {
+    isLoadingPrayers.value = true;
+    try {
+      final response = await Request().get(Url.prayers);
+      if (response.statusCode == 200) {
+        final prayerResponse = PrayerResponse.fromJson(response.data);
+        prayers.assignAll(prayerResponse.data ?? []);
+      }
+    } catch (e) {
+      print("Error fetching prayers: $e");
+    } finally {
+      isLoadingPrayers.value = false;
+    }
+  }
+
+  Future<void> toggleAmen(int prayerId) async {
+    try {
+      final response = await Request().post(
+        Url.amenPrayer(prayerId),
+        data: {},
+        useToken: true,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        final index = prayers.indexWhere((p) => p.id == prayerId);
+        if (index != -1) {
+          final current = prayers[index];
+          // Local update to improve responsiveness
+          prayers[index] = PrayerItem(
+            id: current.id,
+            content: current.content,
+            isAnonymous: current.isAnonymous,
+            userName: current.userName,
+            userProfile: current.userProfile,
+            publishedAt: current.publishedAt,
+            amensCount: data['amens_count'],
+            latestAmens: current.latestAmens,
+            isAmened: true, // Assuming success means it's now amened
+            isMyPrayer: current.isMyPrayer,
+          );
+        }
+        Get.snackbar(
+          'Aamiin',
+          response.data['message'] ?? 'Doa telah diaminkan',
+          backgroundColor: AppColor.primaryColor,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(20),
+        );
+      } else if (response.data['status'] == 'error') {
+        Get.snackbar(
+          'Informasi',
+          response.data['message'] ?? 'Anda sudah mengaminkan doa ini',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(20),
+        );
+      }
+    } catch (e) {
+      print("Error toggling amen: $e");
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:quran_app/controller/blog_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/controller/quran/tilawah_controller.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(HomeScreenController());
+    final blogController = Get.put(BlogController());
     Get.put(TilawahController());
 
     return Scaffold(
@@ -30,26 +32,69 @@ class HomeScreen extends StatelessWidget {
             await controller.getPrayerTime();
             await controller.getCalendarToday();
             await controller.fetchWeeklyStats();
+            await controller.fetchPrayers();
+            await blogController.refreshBlogs();
           },
           color: AppColor.primaryColor,
           child: CustomScrollView(
+            controller: blogController.scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               _buildSliverAppBar(controller),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
                       _buildQuickActions(controller),
-                      const SizedBox(height: 32),
-                      _buildSectionHeader('Program Spesial'),
+                      const SizedBox(height: 20),
+                      // _buildSectionHeader('Program Spesial'),
                       const SizedBox(height: 16),
                       _buildSlideBanner(controller),
                       const SizedBox(height: 32),
-                      _buildFeaturedCard(),
-                      const SizedBox(height: 40),
+                      _buildSectionHeader(
+                        'Saling Mendoakan',
+                        true,
+                        InkWell(
+                          onTap: () {
+                            final isLogin = AuthController.to.isLogin.value;
+                            if (isLogin) {
+                              Get.toNamed(Routes.createPrayer);
+                            } else {
+                              Get.dialog(buildLoginDialog(controller));
+                            }
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(IconlyBroken.plus, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Buat Doa',
+                                style: pSemiBold12.copyWith(
+                                  color: AppColor.primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildListDoa(controller),
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        'Taman Syurga',
+                        false,
+                        const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildListBlog(controller),
+                      const SizedBox(height: 32),
+                      // _buildFeaturedCard(),
+                      // const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -104,7 +149,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildHeroContent(HomeScreenController controller) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        padding: const EdgeInsets.fromLTRB(14, 20, 14, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -467,7 +512,7 @@ class HomeScreen extends StatelessWidget {
         _buildActionItem(
           'More',
           'assets/images/png/menu.png',
-          () => Get.bottomSheet(_bottomSheetMoreMenu()),
+          () => Get.bottomSheet(_bottomSheetMoreMenu(controller)),
           const Color(0xFFFAF5FF),
         ),
       ],
@@ -499,10 +544,24 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(
+    String title,
+    bool isShowAction,
+    Widget actionWidget,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(title, style: pBold18.copyWith(color: Colors.black87))],
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: pSemiBold16.copyWith(
+            color: Colors.black87,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        isShowAction ? actionWidget : const SizedBox.shrink(),
+      ],
     );
   }
 
@@ -513,7 +572,15 @@ class HomeScreen extends StatelessWidget {
       }
 
       if (controller.dataBanner.isEmpty) {
-        return const SizedBox();
+        return SizedBox(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Belum ada program.',
+              style: pRegular12.copyWith(color: Colors.grey),
+            ),
+          ),
+        );
       }
 
       return SizedBox(
@@ -531,7 +598,6 @@ class HomeScreen extends StatelessWidget {
                 }
               },
               child: Container(
-                margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
@@ -567,7 +633,7 @@ class HomeScreen extends StatelessWidget {
       highlightColor: Colors.grey[100]!,
       child: Container(
         height: 170,
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(28),
@@ -682,77 +748,79 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 5,
-            width: 50,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 5,
+              width: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
-          _buildRiwayatCard(controller),
-          const SizedBox(height: 18),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Pilih Mushaf', style: pBold18),
-          ),
-          const SizedBox(height: 18),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 20,
-              childAspectRatio: 0.72,
+            const SizedBox(height: 28),
+            _buildRiwayatCard(controller),
+            const SizedBox(height: 18),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Pilih Mushaf', style: pBold18),
             ),
-            itemCount: dataQuran.length,
-            itemBuilder: (context, index) {
-              final item = dataQuran[index];
-              return InkWell(
-                onTap: () {
-                  Get.back();
-                  if (item['is_pages'] as bool) {
-                    Get.toNamed(
-                      Routes.quranPage,
-                      arguments: {'slug': item['slug']},
-                    );
-                  } else {
-                    Get.toNamed(Routes.quranList);
-                  }
-                },
-                child: Column(
-                  children: [
-                    Container(
-                      height: 65,
-                      width: 65,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: SvgPicture.asset(
-                          item['asset'] as String,
-                          fit: BoxFit.cover,
+            const SizedBox(height: 18),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 20,
+                childAspectRatio: 0.72,
+              ),
+              itemCount: dataQuran.length,
+              itemBuilder: (context, index) {
+                final item = dataQuran[index];
+                return InkWell(
+                  onTap: () {
+                    Get.back();
+                    if (item['is_pages'] as bool) {
+                      Get.toNamed(
+                        Routes.quranPage,
+                        arguments: {'slug': item['slug']},
+                      );
+                    } else {
+                      Get.toNamed(Routes.quranList);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 65,
+                        width: 65,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: SvgPicture.asset(
+                            item['asset'] as String,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item['title'] as String,
-                      style: pMedium10,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
+                      const SizedBox(height: 8),
+                      Text(
+                        item['title'] as String,
+                        style: pMedium10,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -810,7 +878,7 @@ class HomeScreen extends StatelessWidget {
     });
   }
 
-  Widget _bottomSheetMoreMenu() {
+  Widget _bottomSheetMoreMenu(HomeScreenController controller) {
     final menu = [
       {
         'title': 'Grup Ngaji',
@@ -851,6 +919,13 @@ class HomeScreen extends StatelessWidget {
             itemCount: menu.length,
             itemBuilder: (context, index) => InkWell(
               onTap: () {
+                if (menu[index]['route'] == Routes.groupNgaji &&
+                    !AuthController.to.isLogin.value) {
+                  Get.back();
+                  Get.dialog(buildLoginDialog(controller));
+                  return;
+                }
+
                 if (menu[index]['route'] != null) {
                   Get.back();
                   Get.toNamed(menu[index]['route'] as String);
@@ -1031,6 +1106,7 @@ class HomeScreen extends StatelessWidget {
                             arguments: {
                               'slug': b['quran_type_slug'] ?? 'id',
                               'page_number': b['page_number'],
+                              'marker_id': b['marker_id'],
                             },
                           );
                         },
@@ -1045,4 +1121,512 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildListBlog(HomeScreenController controller) {
+  final blogController = BlogController.to;
+  return Obx(() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Category Filter - Always visible
+        SizedBox(
+          height: 30,
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                final isSelected =
+                    blogController.selectedCategoryId.value == null;
+                return InkWell(
+                  onTap: () => blogController.filterByCategory(null),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColor.primaryColor
+                            : AppColor.primaryColor.withOpacity(0.1),
+                      ),
+                      color: isSelected
+                          ? AppColor.primaryColor
+                          : AppColor.primaryColor.withOpacity(0.1),
+                    ),
+                    child: Text(
+                      'Semua',
+                      style: pSemiBold10.copyWith(
+                        color: isSelected ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                );
+              }
+              final category = blogController.categories[index - 1];
+              final isSelected =
+                  blogController.selectedCategoryId.value == category.id;
+              return InkWell(
+                onTap: () => blogController.filterByCategory(category.id),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColor.primaryColor
+                          : AppColor.primaryColor.withOpacity(0.1),
+                    ),
+                    color: isSelected
+                        ? AppColor.primaryColor
+                        : AppColor.primaryColor.withOpacity(0.1),
+                  ),
+                  child: Text(
+                    category.name ?? '-',
+                    style: pSemiBold10.copyWith(
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemCount: blogController.categories.length + 1,
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Blog content area
+        if (blogController.isLoading.value && blogController.blogs.isEmpty)
+          _buildBlogShimmer()
+        else if (blogController.blogs.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Text(
+                'Belum ada blog.',
+                style: pRegular12.copyWith(color: Colors.grey),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) {
+              final blog = blogController.blogs[index];
+              return InkWell(
+                onTap: () => Get.toNamed(Routes.showBlog, arguments: blog.slug),
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColor.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        image: blog.thumbnail != null
+                            ? DecorationImage(
+                                image: NetworkImage(blog.thumbnail!),
+                                fit: BoxFit.cover,
+                                colorFilter: ColorFilter.mode(
+                                  Colors.black.withOpacity(0.50),
+                                  BlendMode.darken,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (blog.category?.icon != null)
+                            Image.network(
+                              blog.category!.icon!,
+                              width: 20,
+                              height: 20,
+                            )
+                          else
+                            const Icon(
+                              Icons.category,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          const SizedBox(width: 8),
+                          Text(
+                            blog.category?.name ?? 'General',
+                            style: pMedium12.copyWith(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              blog.title ?? '-',
+                              style: pSemiBold14.copyWith(color: Colors.white),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.thumb_up,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${blog.likes ?? 0}',
+                                style: pMedium12.copyWith(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemCount: blogController.blogs.length,
+          ),
+        if (blogController.isLoadingMore.value)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColor.primaryColor,
+              ),
+            ),
+          ),
+      ],
+    );
+  });
+}
+
+Widget _buildBlogShimmer() {
+  return ListView.separated(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemBuilder: (context, index) => Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 160,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    ),
+    separatorBuilder: (context, index) => const SizedBox(height: 16),
+    itemCount: 3,
+  );
+}
+
+Widget _buildListDoa(HomeScreenController controller) {
+  return Align(
+    alignment: Alignment.centerLeft,
+    child: Obx(() {
+      if (controller.isLoadingPrayers.value && controller.prayers.isEmpty) {
+        return SizedBox(
+          height: 195,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
+            itemBuilder: (context, index) => Shimmer.fromColors(
+              baseColor: Colors.grey[200]!,
+              highlightColor: Colors.grey[50]!,
+              child: Container(
+                width: 260,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (controller.prayers.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              'Belum ada doa hari ini.',
+              style: pRegular12.copyWith(color: Colors.grey),
+            ),
+          ),
+        );
+      }
+
+      return SizedBox(
+        height: 195,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          itemCount: controller.prayers.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            final prayer = controller.prayers[index];
+            return GestureDetector(
+              onTap: () {
+                if (AuthController.to.isLogin.value) {
+                  Get.toNamed(Routes.showPrayer, arguments: prayer.id);
+                } else {
+                  Get.dialog(const HomeScreen().buildLoginDialog(controller));
+                }
+              },
+              child: Container(
+                width: 280,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade100, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: AppColor.primaryColor.withOpacity(
+                            0.1,
+                          ),
+                          backgroundImage:
+                              (prayer.isAnonymous == false &&
+                                  prayer.userProfile != null)
+                              ? NetworkImage(prayer.userProfile!)
+                              : null,
+                          child:
+                              (prayer.isAnonymous == true ||
+                                  prayer.userProfile == null)
+                              ? Text(
+                                  (prayer.isAnonymous == true)
+                                      ? 'H'
+                                      : (prayer.userName?[0].toUpperCase() ??
+                                            'U'),
+                                  style: pBold14.copyWith(
+                                    color: AppColor.primaryColor,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                prayer.isAnonymous == true
+                                    ? 'Hamba Allah'
+                                    : (prayer.userName ?? 'User'),
+                                style: pSemiBold12.copyWith(
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                prayer.publishedAt ?? '-',
+                                style: pRegular10.copyWith(
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: Text(
+                        prayer.content ?? '-',
+                        style: pRegular12.copyWith(
+                          color: AppColor.primaryColor,
+                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Lihat Selengkapnya',
+                      style: pRegular10.copyWith(color: AppColor.textColor),
+                    ),
+                    prayer.amensCount != 0
+                        ? Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  if (prayer.latestAmens != null &&
+                                      prayer.latestAmens!.isNotEmpty) ...[
+                                    SizedBox(
+                                      width:
+                                          (prayer.latestAmens!.length > 3
+                                                  ? 3
+                                                  : prayer
+                                                        .latestAmens!
+                                                        .length) *
+                                              18.0 +
+                                          10,
+                                      height: 24,
+                                      child: Stack(
+                                        children: List.generate(
+                                          prayer.latestAmens!.length > 3
+                                              ? 3
+                                              : prayer.latestAmens!.length,
+                                          (idx) {
+                                            final amenUser =
+                                                prayer.latestAmens![idx];
+                                            return Positioned(
+                                              left: idx * 18.0,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: CircleAvatar(
+                                                  radius: 10,
+                                                  backgroundColor: AppColor
+                                                      .primaryColor
+                                                      .withOpacity(0.2),
+                                                  backgroundImage:
+                                                      amenUser.userProfile !=
+                                                          null
+                                                      ? NetworkImage(
+                                                          amenUser.userProfile!,
+                                                        )
+                                                      : null,
+                                                  child:
+                                                      amenUser.userProfile ==
+                                                          null
+                                                      ? Text(
+                                                          amenUser.userName?[0]
+                                                                  .toUpperCase() ??
+                                                              'A',
+                                                          style: pBold10.copyWith(
+                                                            fontSize: 8,
+                                                            color: AppColor
+                                                                .primaryColor,
+                                                          ),
+                                                        )
+                                                      : null,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                  ],
+                                  Text(
+                                    'di Aamiinkan ${prayer.amensCount ?? 0} kali',
+                                    style: pRegular10.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                        : const SizedBox(),
+                    const SizedBox(height: 8),
+                    if (prayer.isMyPrayer != true)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              if (AuthController.to.isLogin.value) {
+                                controller.toggleAmen(prayer.id!);
+                              } else {
+                                Get.dialog(
+                                  const HomeScreen().buildLoginDialog(
+                                    controller,
+                                  ),
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(100),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: prayer.isAmened == true
+                                    ? AppColor.primaryColor
+                                    : AppColor.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                'Aamiin',
+                                style: pSemiBold10.copyWith(
+                                  color: prayer.isAmened == true
+                                      ? Colors.white
+                                      : AppColor.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }),
+  );
 }

@@ -3,9 +3,39 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/charity/charity_payment_controller.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
+import 'package:flutter/services.dart' hide TextInput;
+import 'package:intl/intl.dart';
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Remove all dots for parsing
+    String cleanText = newValue.text.replaceAll('.', '');
+
+    // Handle the case where the input is not a number
+    double? value = double.tryParse(cleanText);
+    if (value == null) return oldValue;
+
+    final formatter = NumberFormat.decimalPattern('id');
+    String newText = formatter.format(value);
+
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
+}
 
 class CharityPaymentScreen extends StatelessWidget {
   const CharityPaymentScreen({super.key});
@@ -19,7 +49,7 @@ class CharityPaymentScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Infaq Sekarang',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
         ),
         leading: IconButton(
           icon: const Icon(
@@ -40,10 +70,49 @@ class CharityPaymentScreen extends StatelessWidget {
             children: [
               _buildSectionHeader('Nominal Infaq'),
               const SizedBox(height: 12),
-              TextInput(
+              TextField(
                 controller: controller.nominalController,
-                hintText: 'Contoh: 50000',
+                cursorColor: AppColor.primaryColor,
+                style: pSemiBold14.copyWith(color: AppColor.primaryColor),
                 keyboardType: TextInputType.number,
+                textAlign: TextAlign.end,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyInputFormatter(),
+                ],
+                decoration: InputDecoration(
+                  hintText: '0',
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      'Rp ',
+                      style: pSemiBold14.copyWith(color: AppColor.primaryColor),
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 0,
+                    minHeight: 0,
+                  ),
+                  hintStyle: pRegular12.copyWith(
+                    color: AppColor.primaryColor.withOpacity(0.2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: AppColor.primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: AppColor.primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColor.primaryColor),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -58,17 +127,77 @@ class CharityPaymentScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               _buildSectionHeader('Data Diri'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               TextInput(
                 controller: controller.nameController,
                 hintText: 'Nama Lengkap',
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Obx(
+                    () => SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: controller.isAnonymous.value,
+                        onChanged: (value) {
+                          controller.isAnonymous.value = value!;
+                        },
+                        activeColor: AppColor.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        side: BorderSide(
+                          color: AppColor.primaryColor.withOpacity(0.2),
+                        ),
+                        materialTapTargetSize: MaterialTapTargetSize.padded,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Sembunyikan nama saya (Anonim)', style: pRegular12),
+                ],
+              ),
+              const SizedBox(height: 18),
               TextInput(
                 controller: controller.phoneController,
                 hintText: 'Nomor WhatsApp',
                 keyboardType: TextInputType.phone,
               ),
+              const SizedBox(height: 12),
+              AuthController.to.userData['phone_number'] == null
+                  ? Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow.shade100.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.yellow.shade300,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            IconlyLight.info_square,
+                            color: Colors.yellow.shade900,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Lengkapi nomor telepon di profilmu yuk, supaya transaksi berikutnya jadi lebih praktis!',
+                              style: pRegular12.copyWith(
+                                color: Colors.yellow.shade900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
               const SizedBox(height: 24),
               _buildSectionHeader('Pilih Metode Pembayaran'),
               const SizedBox(height: 12),
@@ -185,7 +314,7 @@ class CharityPaymentScreen extends StatelessWidget {
               backgroundColor: AppColor.primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               elevation: 0,
             ),
@@ -200,7 +329,7 @@ class CharityPaymentScreen extends StatelessWidget {
                   )
                 : Text(
                     'Lanjutkan Pembayaran',
-                    style: pBold16.copyWith(color: Colors.white),
+                    style: pSemiBold16.copyWith(color: Colors.white),
                   ),
           ),
         ),
@@ -211,7 +340,7 @@ class CharityPaymentScreen extends StatelessWidget {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: pBold14.copyWith(color: AppColor.textColor.withOpacity(0.8)),
+      style: pSemiBold14.copyWith(color: AppColor.textColor.withOpacity(0.8)),
     );
   }
 
@@ -224,11 +353,13 @@ class CharityPaymentScreen extends StatelessWidget {
       final isSelected = controller.selectedNominal.value == value;
       return GestureDetector(
         onTap: () {
-          controller.nominalController.text = value;
+          final formatter = NumberFormat.decimalPattern('id');
+          final formattedValue = formatter.format(double.parse(value));
+          controller.nominalController.text = formattedValue;
           // Trigger reactivity if needed, though controller.text isn't observable
           // But we can check it in the Obx
           controller.nominalController.selection = TextSelection.fromPosition(
-            TextPosition(offset: value.length),
+            TextPosition(offset: formattedValue.length),
           );
         },
         child: Container(

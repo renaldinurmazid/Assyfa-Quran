@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/firebase_options.dart';
 import 'package:quran_app/routes/app_pages.dart';
+import 'package:quran_app/bindings/global_binding.dart';
 
 import 'package:quran_app/services/fcm_service.dart';
 import 'package:quran_app/services/notification_service.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(),
+      initialBinding: GlobalBinding(),
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
     );

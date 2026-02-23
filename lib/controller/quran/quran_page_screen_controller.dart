@@ -14,6 +14,7 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/services/quran_offline_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 enum QuranPaginationMode { browse, page }
 
@@ -111,6 +112,9 @@ class QuranPageScreenController extends GetxController {
   void onInit() async {
     super.onInit();
 
+    // Prevent screen from sleeping while reading Al-Quran
+    WakelockPlus.enable();
+
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -136,6 +140,7 @@ class QuranPageScreenController extends GetxController {
 
   @override
   void onClose() {
+    WakelockPlus.disable();
     audioPlayer.dispose();
     _searchTimer?.cancel();
     searchAyahController.dispose();
@@ -982,6 +987,49 @@ class QuranPageScreenController extends GetxController {
     // bookmarks.removeAt(index);
   }
 
+  void initMarkerSelection() {
+    if (apiMarkers.isEmpty) return;
+
+    final Map<String, dynamic>? args = Get.arguments;
+    final passedMarkerId = args?['marker_id'];
+
+    int targetIdx = -1;
+
+    // 1. If currently on a page that HAS a bookmark, select that bookmark's marker
+    if (dataPage.isNotEmpty && currentPageIndex.value < dataPage.length) {
+      final currentPageNum = dataPage[currentPageIndex.value].pageNumber;
+      final existing = bookmarks.firstWhereOrNull(
+        (b) =>
+            b['page_number'] == currentPageNum &&
+            b['quran_type_slug'] == currentSlug.value,
+      );
+      if (existing != null) {
+        targetIdx = apiMarkers.indexWhere(
+          (m) => m['id'] == existing['marker_id'],
+        );
+      }
+    }
+
+    // 2. If not found, and passed from context (tilawahku/history)
+    if (targetIdx == -1 && passedMarkerId != null) {
+      targetIdx = apiMarkers.indexWhere((m) => m['id'] == passedMarkerId);
+    }
+
+    // 3. If not found or not passed, find first UNUSED marker
+    if (targetIdx == -1) {
+      targetIdx = apiMarkers.indexWhere((m) => m['isUse'] == false);
+    }
+
+    // 4. Fallback to first USED marker
+    if (targetIdx == -1) {
+      targetIdx = apiMarkers.indexWhere((m) => m['isUse'] == true);
+    }
+
+    // Apply
+    selectedBookmarkDesign.value = targetIdx != -1 ? targetIdx : 0;
+    selectedMarkerId.value = apiMarkers[selectedBookmarkDesign.value]['id'];
+  }
+
   Future<void> fetchMarkers() async {
     try {
       final response = await Request().get(Url.listMarkers);
@@ -989,13 +1037,8 @@ class QuranPageScreenController extends GetxController {
         final data = response.data;
         apiMarkers.value = List<Map<String, dynamic>>.from(data['data']);
 
-        // Set default selection if markers available
-        if (apiMarkers.isNotEmpty) {
-          final usedIdx = apiMarkers.indexWhere((m) => m['isUse'] == true);
-          selectedBookmarkDesign.value = usedIdx != -1 ? usedIdx : 0;
-          selectedMarkerId.value =
-              apiMarkers[selectedBookmarkDesign.value]['id'];
-        }
+        // Initial selection setup
+        initMarkerSelection();
       }
     } catch (e) {
       print("Error fetching markers: $e");

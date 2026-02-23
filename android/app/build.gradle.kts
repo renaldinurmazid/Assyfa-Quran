@@ -32,11 +32,18 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+        val alias = keystoreProperties.getProperty("keyAlias")
+        val keyPass = keystoreProperties.getProperty("keyPassword")
+        val storePath = keystoreProperties.getProperty("storeFile")
+        val storePass = keystoreProperties.getProperty("storePassword")
+
+        if (alias != null && keyPass != null && storePath != null && storePass != null) {
+            create("release") {
+                keyAlias = alias
+                keyPassword = keyPass
+                storeFile = file(storePath)
+                storePassword = storePass
+            }
         }
     }
 
@@ -53,8 +60,9 @@ android {
 
     buildTypes {
         release {
-            // Hapus baris yang "debug", sisakan yang ini:
-            signingConfig = signingConfigs.getByName("release")
+            // Gunakan signingConfig "release" jika tersedia, jika tidak gunakan "debug"
+            val releaseConfig = signingConfigs.findByName("release")
+            signingConfig = releaseConfig ?: signingConfigs.getByName("debug")
             
             // Tambahkan ini untuk optimasi (opsional)
             isMinifyEnabled = true

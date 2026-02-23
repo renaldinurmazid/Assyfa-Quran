@@ -17,6 +17,7 @@ class CharityPaymentController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   var selectedNominal = ''.obs;
+  var isAnonymous = false.obs;
 
   @override
   void onInit() {
@@ -66,10 +67,11 @@ class CharityPaymentController extends GetxController {
       final data = {
         'campaign_id': campaignId,
         'payment_methode_id': selectedPaymentMethod.value!.id,
-        'amount': int.parse(nominalController.text),
+        'amount': int.parse(nominalController.text.replaceAll('.', '')),
         'guest_name': nameController.text,
         'guest_phone': phoneController.text,
         'referral_code': AuthController.to.referralCode.value,
+        'is_anonymous': isAnonymous.value,
       };
 
       final response = await Request().post(Url.donations, data: data);

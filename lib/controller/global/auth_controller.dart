@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app/services/fcm_service.dart';
+import 'package:quran_app/services/referrer_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get to => Get.find<AuthController>();
@@ -22,16 +24,21 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    checkLoginStatus();
-    _loadReferralCode();
+    _initAsync();
 
     // Auto save referral code when changed
-    ever(referralCode, (String? code) async {
-      if (code != null && code.isNotEmpty) {
+    ever(referralCode, (String code) async {
+      if (code.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('referral_code_temp', code);
       }
     });
+  }
+
+  Future<void> _initAsync() async {
+    await checkLoginStatus();
+    await _loadReferralCode();
+    ReferrerService.checkReferrer(this);
   }
 
   Future<void> _loadReferralCode() async {
@@ -48,8 +55,6 @@ class AuthController extends GetxController {
       if (userJson != null) {
         userData.value = jsonDecode(userJson);
       }
-      // Save FCM Token if logged in
-      FcmService.saveToken();
     }
   }
 
@@ -97,7 +102,6 @@ class AuthController extends GetxController {
 
         if (response.statusCode == 200) {
           final data = response.data;
-          print(data);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('access_token', data['token']);
           await prefs.setString('user_data', jsonEncode(data['user']));
@@ -106,6 +110,8 @@ class AuthController extends GetxController {
           userData.value = data['user'];
           isLogin.value = true;
 
+          // Reset FCM unauthorized flag for fresh session
+          FcmService.resetUnauthorizedError();
           // Save FCM Token after successful login
           FcmService.saveToken();
 
@@ -117,7 +123,6 @@ class AuthController extends GetxController {
           Get.back();
           Get.snackbar("Success", "Login berhasil");
         } else {
-          print(response.data);
           Get.snackbar("Error", "Gagal sinkronasi ke server");
         }
       }
@@ -245,7 +250,7 @@ class AuthController extends GetxController {
         isLogin.value = false;
 
         Get.back(); // Close Loading Dialog
-        Get.back(); // Back to Home or login screen
+        Get.offAllNamed('/');
         Get.snackbar("Success", message ?? "Berhasil keluar");
       } else {
         Get.back(); // Close Loading Dialog

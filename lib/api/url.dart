@@ -1,6 +1,6 @@
 class Url {
-  static const String baseUrl = 'https://quran.titiktolak.com';
-  // static const String baseUrl = 'http://192.168.100.4:8000';
+  // static const String baseUrl = 'https://quran.titiktolak.com';
+  static const String baseUrl = 'http://10.0.2.2:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -36,4 +36,12 @@ class Url {
   static const String myReferral = '/api/my-referral';
 
   static const String appShareLeaderboard = '/api/app-share/leaderboard';
+  static const String blogs = '/api/blogs';
+  static const String blogCategories = '/api/blog-categories';
+  static String blogDetail(String slug) => '/api/blogs/$slug';
+  static String recordView(String slug) => '/api/blogs/$slug/view';
+  static String toggleLike(int id) => '/api/blogs/$id/like';
+  static const String prayers = '/api/prayers';
+  static String prayerDetail(int id) => '/api/prayers/$id';
+  static String amenPrayer(int id) => '/api/prayers/$id/amen';
 }

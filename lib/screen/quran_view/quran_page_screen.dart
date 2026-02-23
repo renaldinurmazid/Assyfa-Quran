@@ -253,6 +253,25 @@ class QuranPageScreen extends StatelessWidget {
                           ),
                         ),
                         PopupMenuItem(
+                          value: 'download_all',
+                          child: Row(
+                            children: [
+                              Icon(
+                                IconlyLight.document,
+                                color: AppColor.primaryColor,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Download Semua',
+                                style: pMedium14.copyWith(
+                                  color: AppColor.primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
                           value: 'info',
                           child: Row(
                             children: [
@@ -481,22 +500,56 @@ class QuranPageScreen extends StatelessWidget {
                                                 )
                                               : const SizedBox.shrink(),
                                         ),
-                                        // Render Saved Bookmark
+                                        // Render Saved Bookmark / Preview
                                         Obx(() {
-                                          final bookmark = controller.bookmarks
+                                          // Filtered bookmarks for this specific mushaf type
+                                          final savedBookmark = controller
+                                              .bookmarks
                                               .firstWhereOrNull(
                                                 (b) =>
                                                     b['page_number'] ==
-                                                    page.pageNumber,
+                                                        page.pageNumber &&
+                                                    b['quran_type_slug'] ==
+                                                        controller
+                                                            .currentSlug
+                                                            .value,
                                               );
-                                          if (bookmark == null) {
+
+                                          // If we are currently marking this specific page, show a preview of the selected design
+                                          final isMarking = controller
+                                              .isBookmarkVisible
+                                              .value;
+                                          final isCurrentPage =
+                                              controller
+                                                  .currentPageIndex
+                                                  .value ==
+                                              index;
+
+                                          String? markerPath;
+                                          if (isMarking && isCurrentPage) {
+                                            if (controller
+                                                .apiMarkers
+                                                .isNotEmpty) {
+                                              markerPath =
+                                                  controller
+                                                      .apiMarkers[controller
+                                                      .selectedBookmarkDesign
+                                                      .value]['marker_path'];
+                                            }
+                                          } else {
+                                            markerPath =
+                                                savedBookmark?['marker_path'];
+                                          }
+
+                                          if (markerPath == null) {
                                             return const SizedBox.shrink();
                                           }
+
                                           return Positioned(
                                             top: 0,
                                             right: 20 * scale,
                                             child: Image.network(
-                                              bookmark['marker_path'],
+                                              markerPath,
                                               width: 40 * scale,
                                               height: 120 * scale,
                                               fit: BoxFit.contain,
@@ -644,6 +697,7 @@ class QuranPageScreen extends StatelessWidget {
                                     !controller.isOfflineMode.value) ...[
                                   InkWell(
                                     onTap: () {
+                                      controller.initMarkerSelection();
                                       controller.isFocus.value = true;
                                       controller.isBookmarkVisible.value = true;
                                     },

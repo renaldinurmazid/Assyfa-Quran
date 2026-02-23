@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
+import 'package:quran_app/screen/blog/show_blog_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
@@ -12,6 +13,8 @@ import 'package:quran_app/screen/mosque/mosque_charity_payment_detail_screen.dar
 import 'package:quran_app/screen/mosque/mosque_charity_payment_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_donatur_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_map_screen.dart';
+import 'package:quran_app/screen/prayer/create_prayer_screen.dart';
+import 'package:quran_app/screen/prayer/show_prayer_screen.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
@@ -241,6 +244,24 @@ class AppPages {
     GetPage(
       name: Routes.quranPageInfo,
       page: () => const QuranPageInfoScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.showBlog,
+      page: () => const ShowBlogScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.createPrayer,
+      page: () => const CreatePrayerScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.showPrayer,
+      page: () => const ShowPrayerScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

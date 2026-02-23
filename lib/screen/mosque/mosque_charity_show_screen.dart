@@ -477,7 +477,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
             ),
             child: Text(
               'Infaq Sekarang',
-              style: pBold16.copyWith(color: Colors.white),
+              style: pSemiBold16.copyWith(color: Colors.white),
             ),
           ),
         ),

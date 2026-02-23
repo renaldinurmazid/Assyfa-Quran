@@ -268,7 +268,10 @@ class TilawahkuScreen extends StatelessWidget {
         titlePadding: const EdgeInsets.only(bottom: 16),
         title: Text(
           'Aktivitas Tilawah',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(
+            color: AppColor.primaryColor,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         background: Container(
           decoration: BoxDecoration(
@@ -340,6 +343,7 @@ class TilawahkuScreen extends StatelessWidget {
                     quranTypeSlug ??
                     quranType.toLowerCase().replaceAll(' ', '-'),
                 'page_number': pageNumber,
+                'marker_id': bookmark['marker_id'],
               },
             );
           },

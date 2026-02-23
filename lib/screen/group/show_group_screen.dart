@@ -156,7 +156,7 @@ class ShowGroupScreen extends StatelessWidget {
                 controller.nameController.text = controller.group.value!.name;
                 Get.dialog(Dialog(child: _buildEditGroup(controller)));
               } else if (value == 'change_cover') {
-                controller.pickAndUploadCoverImage();
+                _showChangeCoverBottomSheet(controller);
               } else if (value == 'delete') {
                 Get.dialog(_buildDeleteGroup(controller));
               }
@@ -669,6 +669,117 @@ class ShowGroupScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showChangeCoverBottomSheet(ShowGroupController controller) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text('Ganti Cover Grup', style: pBold18),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColor.primaryColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColor.primaryColor.withOpacity(0.1),
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                IconlyBold.image,
+                size: 64,
+                color: AppColor.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.orange.withOpacity(0.2)),
+              ),
+              child: Column(
+                children: [
+                  _buildInfoRow(
+                    IconlyLight.info_square,
+                    'Ukuran file maksimum 2MB',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    IconlyLight.work,
+                    'Rekomendasi resolusi 1200 x 600 pixel',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    IconlyLight.document,
+                    'Format yang didukung: JPG, PNG, JPEG',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                  controller.pickAndUploadCoverImage();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Pilih Foto',
+                  style: pBold14.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.orange),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: pMedium12.copyWith(color: Colors.orange.shade900),
+          ),
+        ),
+      ],
     );
   }
 }

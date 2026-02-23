@@ -34,7 +34,10 @@ class ChatScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Notifikasi Terbaru', style: pBold18),
+                    Text(
+                      'Notifikasi Terbaru',
+                      style: pSemiBold16.copyWith(fontWeight: FontWeight.w800),
+                    ),
                     Obx(() {
                       if (controller.notifications.isEmpty)
                         return const SizedBox();
@@ -114,7 +117,7 @@ class ChatScreen extends StatelessWidget {
       backgroundColor: AppColor.primaryColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      title: Text('Pesan Sistem', style: pBold18.copyWith(color: Colors.white)),
+      title: Text('Pesan', style: pSemiBold16.copyWith(color: Colors.white)),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,

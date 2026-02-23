@@ -17,6 +17,7 @@ class MosqueCharityPaymentController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   var selectedNominal = ''.obs;
+  var isAnonymous = false.obs;
 
   @override
   void onInit() {
@@ -27,7 +28,7 @@ class MosqueCharityPaymentController extends GetxController {
     // Pre-fill user data if logged in
     if (AuthController.to.isLogin.value) {
       nameController.text = AuthController.to.userData['name'] ?? '';
-      phoneController.text = AuthController.to.userData['phone'] ?? '';
+      phoneController.text = AuthController.to.userData['phone_number'] ?? '';
     }
     fetchPaymentMethods();
   }
@@ -66,10 +67,11 @@ class MosqueCharityPaymentController extends GetxController {
       final data = {
         'mosque_charity_id': mosqueCharityId,
         'payment_methode_id': selectedPaymentMethod.value!.id,
-        'amount': int.parse(nominalController.text),
+        'amount': int.parse(nominalController.text.replaceAll('.', '')),
         'guest_name': nameController.text,
         'guest_phone': phoneController.text,
         'referral_code': AuthController.to.referralCode.value,
+        'is_anonymous': isAnonymous.value,
       };
 
       final response = await Request().post(

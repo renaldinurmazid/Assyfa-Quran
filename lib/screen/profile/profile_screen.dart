@@ -17,7 +17,10 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: AppBar(
-        title: Text('Profil Saya', style: pBold18),
+        title: Text(
+          'Profil Saya',
+          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+        ),
         centerTitle: true,
         backgroundColor: AppColor.backgroundColor,
         elevation: 0,

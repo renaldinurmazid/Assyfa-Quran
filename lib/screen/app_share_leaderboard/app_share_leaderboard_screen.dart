@@ -26,7 +26,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
         ),
         title: Text(
           'Penyebar Al-Quran',
-          style: pBold18.copyWith(color: Colors.white),
+          style: pSemiBold16.copyWith(color: Colors.white),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),

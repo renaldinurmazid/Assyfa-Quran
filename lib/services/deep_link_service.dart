@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app_links/app_links.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DeepLinkService {
   static final DeepLinkService _instance = DeepLinkService._internal();
@@ -35,10 +36,8 @@ class DeepLinkService {
 
   void _handleIncomingLinks() {
     _linkSubscription = _appLinks.uriLinkStream.listen(
-      (Uri? uri) {
-        if (uri != null) {
-          _parseAndSaveReferralCode(uri);
-        }
+      (Uri uri) {
+        _parseAndSaveReferralCode(uri);
       },
       onError: (err) {
         print('Deep link stream error: $err');
@@ -49,40 +48,61 @@ class DeepLinkService {
   void _parseAndSaveReferralCode(Uri uri) {
     print('Processing deep link: $uri');
 
-    // example: quranuna://group/CODE
+    // Handle Group Invite
+    // Custom scheme: quranuna://group/CODE
     if (uri.scheme == 'quranuna' && uri.host == 'group') {
       if (uri.pathSegments.isNotEmpty) {
-        final groupCode = uri.pathSegments.first;
-        _handleGroupInvite(groupCode);
+        _handleGroupInvite(uri.pathSegments.first);
         return;
       }
     }
 
-    // example: https://domain.com/api/g/CODE
-    if (uri.pathSegments.contains('g')) {
-      int index = uri.pathSegments.indexOf('g');
-      if (index + 1 < uri.pathSegments.length) {
-        final groupCode = uri.pathSegments[index + 1];
-        _handleGroupInvite(groupCode);
+    // Web URL patterns
+    final path = uri.path;
+
+    // 1. Group Invite: /api/g/CODE or /g/CODE or /group/CODE
+    if (path.contains('/api/g/') || path.contains('/g/')) {
+      final segments = uri.pathSegments;
+      int gIndex = segments.indexOf('g');
+      if (gIndex != -1 && gIndex + 1 < segments.length) {
+        _handleGroupInvite(segments[gIndex + 1]);
         return;
       }
     }
 
-    // Example: https://quran.titiktolak.com/referral/ABCDE
-    // Example: https://quran.titiktolak.com/?ref=ABCDE
+    // 2. Campaign / Charity: /campaign/ID or /charity/ID or /c/ID
+    if (path.contains('/campaign/') ||
+        path.contains('/charity/') ||
+        path.contains('/c/')) {
+      final segments = uri.pathSegments;
+      for (var segment in ['campaign', 'charity', 'c']) {
+        int index = segments.indexOf(segment);
+        if (index != -1 && index + 1 < segments.length) {
+          _handleNavigation(Routes.charityShow, segments[index + 1]);
+          return;
+        }
+      }
+    }
 
+    // 3. Mosque Charity: /mosque-charity/ID or /mc/ID
+    if (path.contains('/mosque-charity/') || path.contains('/m/')) {
+      final segments = uri.pathSegments;
+      for (var segment in ['mosque-charity', 'm']) {
+        int index = segments.indexOf(segment);
+        if (index != -1 && index + 1 < segments.length) {
+          _handleNavigation(Routes.mosqueCharityShow, segments[index + 1]);
+          return;
+        }
+      }
+    }
+
+    // 4. Referral Code
     String code = '';
-
-    // Check query parameter 'ref'
     if (uri.queryParameters.containsKey('ref')) {
       code = uri.queryParameters['ref']!;
-    }
-    // Check query parameter 'referral'
-    else if (uri.queryParameters.containsKey('referral')) {
+    } else if (uri.queryParameters.containsKey('referral')) {
       code = uri.queryParameters['referral']!;
-    }
-    // Check path segments (assuming /referral/CODE)
-    else if (uri.pathSegments.contains('referral')) {
+    } else if (uri.pathSegments.contains('referral')) {
       int index = uri.pathSegments.indexOf('referral');
       if (index + 1 < uri.pathSegments.length) {
         code = uri.pathSegments[index + 1];
@@ -91,22 +111,30 @@ class DeepLinkService {
 
     if (code.isNotEmpty) {
       print('Referral code extracted: $code');
-      // Save it in AuthController
-      AuthController.to.referralCode.value = code;
+      if (Get.isRegistered<AuthController>()) {
+        AuthController.to.referralCode.value = code;
+      } else {
+        // AuthController not ready yet, save to SharedPreferences for later pickup
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('referral_code_temp', code);
+        });
+      }
+      // Optional: Show notification to user that referral is applied
+      Get.snackbar(
+        'Referral Berhasil',
+        'Kode referral $code berhasil diterapkan.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
+  }
+
+  void _handleNavigation(String route, dynamic arguments) {
+    print('Navigating to $route with args: $arguments');
+    Get.toNamed(route, arguments: arguments);
   }
 
   void _handleGroupInvite(String code) {
     print('Processing group invite link: $code');
-    // For now, show info and potentially navigate to join screen
-    // This part can be expanded to navigate to a specific JoinGroupScreen
-    Get.snackbar(
-      'Undangan Grup',
-      'Kode Grup: $code. Segera hadir fitur join otomatis!',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.white.withOpacity(0.9),
-      colorText: Colors.black,
-      duration: const Duration(seconds: 5),
-    );
+    Get.toNamed(Routes.showGroup, arguments: code);
   }
 }

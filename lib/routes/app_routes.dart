@@ -33,4 +33,7 @@ abstract class Routes {
   static const charityDonatur = '/charity_donatur';
   static const mosqueCharityDonatur = '/mosque_charity_donatur';
   static const quranPageInfo = '/quran_page_info';
+  static const showBlog = '/show_blog';
+  static const createPrayer = '/create_prayer';
+  static const showPrayer = '/show_prayer';
 }

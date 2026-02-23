@@ -25,7 +25,7 @@ class LeaderboardScreen extends StatelessWidget {
         ),
         title: Text(
           'Peringkat Tilawah',
-          style: pBold18.copyWith(color: Colors.white),
+          style: pSemiBold16.copyWith(color: Colors.white),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
@@ -42,7 +42,9 @@ class LeaderboardScreen extends StatelessWidget {
                   child: Obx(() {
                     if (controller.isLoading.value) {
                       return const Center(
-                        child: CircularProgressIndicator(color: AppColor.primaryColor),
+                        child: CircularProgressIndicator(
+                          color: AppColor.primaryColor,
+                        ),
                       );
                     }
                     if (controller.errorMessage.value.isNotEmpty) {
@@ -372,11 +374,6 @@ class LeaderboardScreen extends StatelessWidget {
                   style: pBold14,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'ID: ${user['id']}',
-                  style: pRegular12.copyWith(color: Colors.grey),
                 ),
               ],
             ),

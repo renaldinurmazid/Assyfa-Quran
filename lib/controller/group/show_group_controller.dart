@@ -78,8 +78,7 @@ class ShowGroupController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        group.value = Data.fromJson(data['data']);
+        await fetchGroupDetail(group.value!.id);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
         Get.back();
         Get.snackbar('Success', 'Grup berhasil diperbarui');
@@ -122,6 +121,8 @@ class ShowGroupController extends GetxController {
 
   Future<void> pickAndUploadCoverImage() async {
     try {
+      if (group.value == null) return;
+
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
@@ -146,15 +147,14 @@ class ShowGroupController extends GetxController {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        group.value = Data.fromJson(data['data']);
+        await fetchGroupDetail(group.value!.id);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
         Get.snackbar('Success', 'Cover grup berhasil diperbarui');
       } else {
         Get.snackbar('Error', 'Gagal memperbarui cover grup');
       }
     } catch (e) {
-      print(e);
+      print("Error upload: $e");
       Get.snackbar('Error', 'Gagal memperbarui cover grup');
     } finally {
       isLoading.value = false;

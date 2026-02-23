@@ -20,8 +20,10 @@ class DzikirScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       appBar: AppBar(
-        title: Text('Panduan Dzikir', style: pMedium16),
-        centerTitle: true,
+        title: Text(
+          'Panduan Dzikir',
+          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+        ),
         backgroundColor: AppColor.backgroundColor,
         elevation: 1,
         surfaceTintColor: AppColor.backgroundColor,

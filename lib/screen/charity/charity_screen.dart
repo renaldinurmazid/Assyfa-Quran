@@ -131,7 +131,15 @@ class CharityScreen extends StatelessWidget {
   Widget _buildSectionHeader(String title, VoidCallback onTap) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(title, style: pBold18.copyWith(color: Colors.black87))],
+      children: [
+        Text(
+          title,
+          style: pSemiBold18.copyWith(
+            color: Colors.black87,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 
@@ -174,6 +182,7 @@ class CharityScreen extends StatelessWidget {
                       child: Stack(
                         children: [
                           Container(
+                            height: 160,
                             width: double.infinity,
                             decoration: const BoxDecoration(
                               borderRadius: BorderRadius.vertical(

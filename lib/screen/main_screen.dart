@@ -22,6 +22,7 @@ class MainController extends GetxController {
   }
 
   void _showLoginDialog() {
+    if (!Get.isRegistered<HomeScreenController>()) return;
     final homeController = Get.find<HomeScreenController>();
     Get.dialog(const HomeScreen().buildLoginDialog(homeController));
   }
@@ -32,7 +33,6 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AuthController());
     final MainController controller = Get.put(MainController());
 
     return Scaffold(

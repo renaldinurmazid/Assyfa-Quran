@@ -86,10 +86,9 @@ class MosqueCharityScreen extends StatelessWidget {
         ),
       ],
 
-      centerTitle: true,
       title: Text(
         'Infaq Masjid',
-        style: pBold16.copyWith(color: Colors.black87),
+        style: pSemiBold16.copyWith(color: AppColor.primaryColor),
       ),
     );
   }
