@@ -5,21 +5,21 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/theme/app_color.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:quran_app/models/banner_model.dart';
 import 'package:quran_app/models/prayer_model.dart';
 
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
-  final defaultIdCity = '58a2fc6ed39fd083f55d4182bf88826d';
+  final dayName = '-'.obs;
   final isLoading = false.obs;
-  final kabKota = 'KOTA JAKARTA'.obs;
-  final provinsi = 'DKI JAKARTA'.obs;
+  final isLoadingPrayerTime = false.obs;
+  final kabKota = 'Jakarta'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
   final isOfflineMode = false.obs;
 
@@ -55,7 +55,6 @@ class HomeScreenController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getCalendarToday();
     getPrayerTime();
     _startTimer();
     fetchBanners();
@@ -74,7 +73,7 @@ class HomeScreenController extends GetxController {
           fetchPrayers();
         } else {
           weeklyStats.clear();
-          fetchPrayers(); // Re-fetch to clear isMyPrayer/isAmened status
+          fetchPrayers();
         }
       });
 
@@ -160,7 +159,6 @@ class HomeScreenController extends GetxController {
 
   void _calculatePrayers(HomeScreenController controller) {
     final now = DateTime.now();
-    // Simple formatter helper
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     final todayStr =
         "${now.year}-${twoDigits(now.month)}-${twoDigits(now.day)}";
@@ -168,19 +166,24 @@ class HomeScreenController extends GetxController {
     final tomorrowStr =
         "${tomorrow.year}-${twoDigits(tomorrow.month)}-${twoDigits(tomorrow.day)}";
 
-    // Access RxMap properly
     final todaySchedule = Map<String, dynamic>.from(controller.jadwalToday);
     if (todaySchedule.isEmpty) return;
 
-    // For tomorrow, we'll just use today's data as fallback
     final tomorrowSchedule = todaySchedule;
 
-    final orderedNames = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
+    // Use new API keys
+    final orderedNames = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+    final displayNames = {
+      'fajr': 'Subuh',
+      'dhuhr': 'Dhuhur',
+      'asr': 'Asar',
+      'maghrib': 'Maghrib',
+      'isha': 'Isya',
+    };
 
     List<Map<String, String>> upcomingPrayers = [];
     int currentMinutes = now.hour * 60 + now.minute;
 
-    // Check today's remaining prayers
     for (var name in orderedNames) {
       if (todaySchedule.containsKey(name)) {
         final timeStr = todaySchedule[name] as String;
@@ -188,7 +191,7 @@ class HomeScreenController extends GetxController {
         final pMinutes = int.parse(parts[0]) * 60 + int.parse(parts[1]);
         if (pMinutes >= currentMinutes) {
           upcomingPrayers.add({
-            'name': name,
+            'name': displayNames[name]!,
             'time': timeStr,
             'date': todayStr,
           });
@@ -196,12 +199,11 @@ class HomeScreenController extends GetxController {
       }
     }
 
-    // Add tomorrow's prayers if needed
     if (upcomingPrayers.length < 3) {
       for (var name in orderedNames) {
         if (tomorrowSchedule.containsKey(name)) {
           upcomingPrayers.add({
-            'name': name,
+            'name': displayNames[name]!,
             'time': tomorrowSchedule[name] as String,
             'date': tomorrowStr,
           });
@@ -288,90 +290,111 @@ class HomeScreenController extends GetxController {
   }
 
   Future<void> getPrayerTime() async {
-    isLoading.value = true;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final idCity = prefs.getString('idCity') ?? defaultIdCity;
+    isLoadingPrayerTime.value = true;
 
-      final now = DateTime.now();
-      final response = await http.get(
-        Uri.parse(
-          'https://api.myquran.com/v3/sholat/jadwal/$idCity/${now.year}-${now.month}',
-        ),
+    // Load cached data immediately so we don't show shimmer if we have data
+    await _loadPrayerTimeFromPrefs();
+
+    try {
+      // Try to get GPS coordinates
+      double? latitude;
+      double? longitude;
+
+      final prefs = await SharedPreferences.getInstance();
+
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse ||
+              permission == LocationPermission.always) {
+            final position = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.low,
+                timeLimit: Duration(seconds: 5),
+              ),
+            );
+            latitude = position.latitude;
+            longitude = position.longitude;
+
+            // Save GPS coordinates to local storage
+            await prefs.setDouble('latitude', latitude);
+            await prefs.setDouble('longitude', longitude);
+          }
+        }
+      } catch (e) {
+        print('Error getting GPS location: $e');
+      }
+
+      // If GPS failed, try loading saved coordinates
+      if (latitude == null || longitude == null) {
+        final savedLat = prefs.getDouble('latitude');
+        final savedLng = prefs.getDouble('longitude');
+        if (savedLat != null && savedLng != null) {
+          latitude = savedLat;
+          longitude = savedLng;
+        }
+      }
+
+      // Build query params
+      final queryParams = <String, String>{};
+      if (latitude != null && longitude != null) {
+        queryParams['latitude'] = latitude.toString();
+        queryParams['longitude'] = longitude.toString();
+      }
+
+      final response = await Request().get(
+        Url.prayerTimes,
+        queryParameters: queryParams,
+        useToken: false,
       );
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('idCity', data['data']['id']);
-        await prefs.setString('kabKota', data['data']['kabko']);
-        await prefs.setString('provinsi', data['data']['prov']);
-        await prefs.setString('jadwal', jsonEncode(data['data']['jadwal']));
+        final data = response.data['data'];
+        final prayerTimes = data['prayer_times'] as Map<String, dynamic>;
+        final location = data['location'] as Map<String, dynamic>;
+        final dateData = data['date'] as Map<String, dynamic>;
+
+        // Save to prefs
+        await prefs.setString('prayerTimes', jsonEncode(prayerTimes));
+        await prefs.setString('kabKota', location['city'] ?? 'Jakarta');
+        await prefs.setString('calendarToday', '${dateData['hijri']}');
+        await prefs.setString('dayName', '${dateData['day']}');
+        await prefs.setString(
+          'calendarMasehi',
+          '${dateData['day']}, ${dateData['gregorian']}',
+        );
 
         // Load to observables
-        await getPrayerTimeFromPrefs();
+        kabKota.value = location['city'] ?? 'Jakarta';
+        calendarToday.value = '${dateData['hijri']}';
+        dayName.value = '${dateData['day']}';
+        jadwalToday.assignAll(prayerTimes);
       }
     } catch (e) {
       print('Error getting prayer time: $e');
-      // Load from prefs if API fails
-      await getPrayerTimeFromPrefs();
     } finally {
-      isLoading.value = false;
+      isLoadingPrayerTime.value = false;
     }
   }
 
-  Future<void> getPrayerTimeFromPrefs() async {
+  Future<void> _loadPrayerTimeFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final kabKotaData = prefs.getString('kabKota');
-    final provinsiData = prefs.getString('provinsi');
-    final jadwalData = prefs.getString('jadwal');
+    final prayerTimesData = prefs.getString('prayerTimes');
+    final calendarData = prefs.getString('calendarToday');
+    final dayNameData = prefs.getString('dayName');
 
-    if (kabKotaData != null) {
-      kabKota.value = kabKotaData;
-    }
-    if (provinsiData != null) {
-      provinsi.value = provinsiData;
-    }
-    if (jadwalData != null) {
-      final jadwalMap = jsonDecode(jadwalData) as Map<String, dynamic>;
-      final now = DateTime.now();
-      String twoDigits(int n) => n.toString().padLeft(2, "0");
-      final todayStr =
-          "${now.year}-${twoDigits(now.month)}-${twoDigits(now.day)}";
-
-      if (jadwalMap.containsKey(todayStr)) {
-        jadwalToday.assignAll(jadwalMap[todayStr] as Map<String, dynamic>);
-        _calculatePrayers(this);
-      }
-    }
-  }
-
-  Future<void> getCalendarToday() async {
-    isLoading.value = true;
-    try {
-      final today = DateTime.now();
-      final response = await http.get(
-        Uri.parse(
-          'https://api.myquran.com/v3/cal/hijr/${today.year}-${today.month}-${today.day}?method=islamic-umalqura',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('calendarToday', data['data']['hijr']['today']);
-      }
-    } catch (e) {
-      print('Error getting calendar: $e');
-    } finally {
-      await getCalendarTodayFromPrefs();
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> getCalendarTodayFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final calendarToday = prefs.getString('calendarToday');
-    if (calendarToday != null) {
-      this.calendarToday.value = calendarToday;
+    if (kabKotaData != null) kabKota.value = kabKotaData;
+    if (calendarData != null) calendarToday.value = calendarData;
+    if (dayNameData != null) dayName.value = dayNameData;
+    if (prayerTimesData != null) {
+      final prayerMap = jsonDecode(prayerTimesData) as Map<String, dynamic>;
+      jadwalToday.assignAll(prayerMap);
+      _calculatePrayers(this);
     }
   }
 

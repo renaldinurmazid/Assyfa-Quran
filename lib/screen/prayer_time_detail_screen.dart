@@ -5,7 +5,6 @@ import 'package:quran_app/controller/pick_location_controller.dart';
 import 'package:quran_app/controller/prayer_time_detail_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:quran_app/widgets/text_input.dart';
 
 class PrayerTimeDetailScreen extends StatelessWidget {
   const PrayerTimeDetailScreen({super.key});
@@ -68,7 +67,12 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => Get.dialog(_selectOptionLocation()),
+                              onTap: () {
+                                final pickController = Get.put(
+                                  PickLocationController(),
+                                );
+                                pickController.useCurrentLocation();
+                              },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -100,7 +104,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 4),
                                     const Icon(
-                                      IconlyLight.arrow_down_2,
+                                      IconlyLight.swap,
                                       color: Colors.white,
                                       size: 12,
                                     ),
@@ -279,22 +283,22 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   {
                     'name': 'Subuh',
                     'icon': Icons.wb_twilight_rounded,
-                    'time': jadwal['subuh'] ?? '-',
+                    'time': jadwal['fajr'] ?? '-',
                   },
                   {
                     'name': 'Terbit',
                     'icon': Icons.wb_sunny_outlined,
-                    'time': jadwal['terbit'] ?? '-',
+                    'time': jadwal['sunrise'] ?? '-',
                   },
                   {
                     'name': 'Dhuhur',
                     'icon': Icons.wb_sunny_rounded,
-                    'time': jadwal['dzuhur'] ?? '-',
+                    'time': jadwal['dhuhr'] ?? '-',
                   },
                   {
                     'name': 'Asar',
                     'icon': Icons.wb_cloudy_rounded,
-                    'time': jadwal['ashar'] ?? '-',
+                    'time': jadwal['asr'] ?? '-',
                   },
                   {
                     'name': 'Maghrib',
@@ -304,7 +308,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   {
                     'name': 'Isya',
                     'icon': IconlyLight.discovery,
-                    'time': jadwal['isya'] ?? '-',
+                    'time': jadwal['isha'] ?? '-',
                   },
                 ];
 
@@ -385,7 +389,6 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                           const SizedBox(width: 18),
                           Obx(() {
                             final prayerName = prayerTime['name'] as String;
-                            // Default value logic: Imsak/Terbit -> silent, Others -> adzan
                             final defaultValue =
                                 controller.isImsakOrTerbit(prayerName)
                                 ? 'silent'
@@ -593,206 +596,6 @@ class PrayerTimeDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _selectOptionLocation() {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColor.backgroundColor,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColor.primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                IconlyBold.location,
-                color: AppColor.primaryColor,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text('Pilih Lokasi', style: pBold18),
-            const SizedBox(height: 8),
-            Text(
-              'Tentukan lokasi untuk mendapatkan\njadwal sholat yang akurat',
-              textAlign: TextAlign.center,
-              style: pRegular12.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-                final pickController = Get.put(PickLocationController());
-                pickController.useCurrentLocation();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.primaryColor,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Gunakan Lokasi Saat Ini',
-                style: pSemiBold14.copyWith(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () {
-                Get.back();
-                Get.bottomSheet(_searchLocation(), isScrollControlled: true);
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColor.primaryColor,
-                side: const BorderSide(
-                  color: AppColor.primaryColor,
-                  width: 1.5,
-                ),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              child: Text('Cari Kota Manual', style: pSemiBold14),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _searchLocation() {
-    final controller = Get.put(PickLocationController());
-    return DraggableScrollableSheet(
-      initialChildSize: 0.8,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: AppColor.backgroundColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Text('Cari Lokasi Kota', style: pBold18),
-              const SizedBox(height: 20),
-              TextInput(
-                controller: controller.searchController,
-                hintText: 'Masukkan nama kota...',
-                onChanged: controller.onSearch,
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColor.primaryColor,
-                      ),
-                    );
-                  } else if (controller.listCity.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            IconlyLight.info_circle,
-                            size: 48,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Kota tidak ditemukan',
-                            style: pRegular14.copyWith(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return ListView.builder(
-                      controller: scrollController,
-                      itemCount: controller.listCity.length,
-                      itemBuilder: (context, index) {
-                        final city = controller.listCity[index];
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColor.primaryColor.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              IconlyLight.location,
-                              color: AppColor.primaryColor,
-                              size: 20,
-                            ),
-                          ),
-                          title: Text(
-                            city.lokasi,
-                            style: pMedium14.copyWith(
-                              color: AppColor.primaryColor,
-                            ),
-                          ),
-                          trailing: const Icon(
-                            IconlyLight.arrow_right_2,
-                            size: 16,
-                            color: Colors.grey,
-                          ),
-                          onTap: () {
-                            Get.back();
-                            controller.saveIdCity(city.id);
-                          },
-                        );
-                      },
-                    );
-                  }
-                }),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

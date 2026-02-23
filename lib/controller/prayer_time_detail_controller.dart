@@ -5,6 +5,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/services/notification_service.dart';
+import 'package:quran_app/api/request.dart';
+import 'package:quran_app/api/url.dart';
+import 'package:geolocator/geolocator.dart';
 
 class PrayerTimeDetailController extends GetxController {
   final player = AudioPlayer();
@@ -28,8 +31,7 @@ class PrayerTimeDetailController extends GetxController {
 
   final calendarToday = '-'.obs;
   final calendarMasehi = '-'.obs;
-  final kabKota = 'KOTA JAKARTA'.obs;
-  final provinsi = 'DKI JAKARTA'.obs;
+  final kabKota = 'Jakarta'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
   final notificationSettings =
       <String, String>{}.obs; // stores 'silent', 'beep', 'adzan'
@@ -69,41 +71,102 @@ class PrayerTimeDetailController extends GetxController {
         calendarToday.value = calendarData;
       }
 
+      // Load masehi calendar
+      final masehiData = prefs.getString('calendarMasehi');
+      if (masehiData != null) {
+        calendarMasehi.value = masehiData;
+      }
+
       // Load location
       final kabKotaData = prefs.getString('kabKota');
-      final provinsiData = prefs.getString('provinsi');
       if (kabKotaData != null) {
         kabKota.value = kabKotaData;
       }
-      if (provinsiData != null) {
-        provinsi.value = provinsiData;
-      }
 
-      // Load prayer schedule
-      final jadwalData = prefs.getString('jadwal');
-      if (jadwalData != null) {
-        final jadwalMap = jsonDecode(jadwalData) as Map<String, dynamic>;
-        final now = DateTime.now();
-        String twoDigits(int n) => n.toString().padLeft(2, "0");
-        final todayStr =
-            "${now.year}-${twoDigits(now.month)}-${twoDigits(now.day)}";
-
-        if (jadwalMap.containsKey(todayStr)) {
-          jadwalToday.value = jadwalMap[todayStr] as Map<String, dynamic>;
-
-          // Get masehi date from jadwal
-          final tanggal = jadwalToday['tanggal'] as String?;
-          if (tanggal != null) {
-            calendarMasehi.value = tanggal;
-          }
-
-          // Calculate next prayer
-          _calculateNextPrayer();
-          _schedulePrayerNotifications(); // Add this
-        }
+      // Load prayer schedule (new format: flat map)
+      final prayerTimesData = prefs.getString('prayerTimes');
+      if (prayerTimesData != null) {
+        final prayerMap = jsonDecode(prayerTimesData) as Map<String, dynamic>;
+        jadwalToday.assignAll(prayerMap);
+        _calculateNextPrayer();
+        _schedulePrayerNotifications();
       }
     } catch (e) {
       print('Error loading prayer time data: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> refreshPrayerTimes() async {
+    isLoading.value = true;
+    try {
+      // Try to get GPS coordinates
+      double? latitude;
+      double? longitude;
+
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse ||
+              permission == LocationPermission.always) {
+            final position = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.low,
+                timeLimit: Duration(seconds: 5),
+              ),
+            );
+            latitude = position.latitude;
+            longitude = position.longitude;
+          }
+        }
+      } catch (e) {
+        print('Error getting GPS: $e');
+      }
+
+      // Build query params
+      final queryParams = <String, String>{};
+      if (latitude != null && longitude != null) {
+        queryParams['latitude'] = latitude.toString();
+        queryParams['longitude'] = longitude.toString();
+      }
+
+      final response = await Request().get(
+        Url.prayerTimes,
+        queryParameters: queryParams,
+        useToken: false,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        final prayerTimes = data['prayer_times'] as Map<String, dynamic>;
+        final location = data['location'] as Map<String, dynamic>;
+        final dateData = data['date'] as Map<String, dynamic>;
+
+        // Save to prefs
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('prayerTimes', jsonEncode(prayerTimes));
+        await prefs.setString('kabKota', location['city'] ?? 'Jakarta');
+        await prefs.setString('calendarToday', '${dateData['hijri']}');
+        await prefs.setString(
+          'calendarMasehi',
+          '${dateData['day']}, ${dateData['gregorian']}',
+        );
+
+        // Update observables
+        kabKota.value = location['city'] ?? 'Jakarta';
+        calendarToday.value = '${dateData['hijri']}';
+        calendarMasehi.value = '${dateData['day']}, ${dateData['gregorian']}';
+        jadwalToday.assignAll(prayerTimes);
+        _calculateNextPrayer();
+        _schedulePrayerNotifications();
+      }
+    } catch (e) {
+      print('Error refreshing prayer times: $e');
     } finally {
       isLoading.value = false;
     }
@@ -122,41 +185,32 @@ class PrayerTimeDetailController extends GetxController {
     ];
     for (var key in keys) {
       notificationSettings[key] = prefs.getString('notif_$key') ?? 'adzan';
-      // Default Imsak & Terbit to silent if not set, else beep or silent. Adzan not avail.
+      // Default Imsak & Terbit to silent if not set
       if (isImsakOrTerbit(key) && notificationSettings[key] == 'adzan') {
         notificationSettings[key] = 'silent';
       }
     }
   }
 
-  // ...
-
   Future<void> saveNotificationSetting(String prayerName, String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('notif_$prayerName', value);
     notificationSettings[prayerName] = value;
-    _schedulePrayerNotifications(); // Reschedule when settings change
+    _schedulePrayerNotifications();
   }
 
-  // ...
-
   Future<void> _schedulePrayerNotifications() async {
-    // Basic implementation: schedule for today's remaining prayers
     final now = DateTime.now();
-    // Mapping from jadwal keys to notificationSettings keys
+    // Mapping from new API keys to notification setting keys
     final keyMap = {
-      'subuh': 'Subuh',
-      'dzuhur': 'Dhuhur',
-      'ashar': 'Asar',
+      'fajr': 'Subuh',
+      'dhuhr': 'Dhuhur',
+      'asr': 'Asar',
       'maghrib': 'Maghrib',
-      'isya': 'Isya',
+      'isha': 'Isya',
     };
 
     if (jadwalToday.isEmpty) return;
-
-    // Cancel all previous schedules first?
-    // Ideally yes, but let's just overwrite by ID.
-    // ID scheme: 1=Subuh, 2=Dzuhur, etc. or unique hash.
 
     int idCounter = 1;
     for (var entry in keyMap.entries) {
@@ -178,8 +232,6 @@ class PrayerTimeDetailController extends GetxController {
         minute,
       );
 
-      // If time passed, schedule for tomorrow?
-      // Logic: if passed, it's irrelevant for today.
       if (scheduledTime.isBefore(now)) {
         scheduledTime = scheduledTime.add(const Duration(days: 1));
       }
@@ -196,22 +248,23 @@ class PrayerTimeDetailController extends GetxController {
       }
 
       if (soundName != 'silent') {
-        await NotificationService.schedulePrayerNotification(
-          id: idCounter,
-          title: 'Waktu $notifKey Telah Tiba',
-          body: 'Mari tunaikan sholat $notifKey',
-          scheduledTime: scheduledTime,
-          soundName: soundName,
-        );
+        try {
+          await NotificationService.schedulePrayerNotification(
+            id: idCounter,
+            title: 'Waktu $notifKey Telah Tiba',
+            body: 'Mari tunaikan sholat $notifKey',
+            scheduledTime: scheduledTime,
+            soundName: soundName,
+          );
+        } catch (e) {
+          print('Error scheduling notification for $notifKey: $e');
+        }
       } else {
-        // Cancel if silent
         await NotificationService.cancel(idCounter);
       }
       idCounter++;
     }
   }
-
-  // ...
 
   void _updateCountdown() {
     if (nextPrayerTime.value == '00:00' || jadwalToday.isEmpty) {
@@ -225,12 +278,10 @@ class PrayerTimeDetailController extends GetxController {
       final minutesSinceArrival = now.difference(_prayerArrivalTime!).inMinutes;
 
       if (minutesSinceArrival < 5) {
-        // Still in hold period, show "Telah tiba"
         isPrayerArrived.value = true;
         countdown.value = 'Telah tiba';
         return;
       } else {
-        // 5 minutes passed, move to next prayer
         _prayerArrivalTime = null;
         isPrayerArrived.value = false;
         showHeartbeat.value = true;
@@ -243,13 +294,11 @@ class PrayerTimeDetailController extends GetxController {
     final prayerHour = int.parse(parts[0]);
     final prayerMinute = int.parse(parts[1]);
 
-    // Determine if prayer is today or tomorrow
     final currentMinutes = now.hour * 60 + now.minute;
     final prayerMinutes = prayerHour * 60 + prayerMinute;
 
     DateTime prayerTime;
     if (prayerMinutes > currentMinutes) {
-      // Prayer is today
       prayerTime = DateTime(
         now.year,
         now.month,
@@ -258,7 +307,6 @@ class PrayerTimeDetailController extends GetxController {
         prayerMinute,
       );
     } else {
-      // Prayer is tomorrow (Subuh after Isya)
       final tomorrow = now.add(const Duration(days: 1));
       prayerTime = DateTime(
         tomorrow.year,
@@ -271,9 +319,7 @@ class PrayerTimeDetailController extends GetxController {
 
     final difference = prayerTime.difference(now);
 
-    // Check if prayer time has arrived (within 1 minute tolerance)
     if (difference.inSeconds <= 0 && difference.inSeconds > -60) {
-      // Prayer time just arrived!
       _prayerArrivalTime = now;
       isPrayerArrived.value = true;
       countdown.value = 'Telah tiba';
@@ -281,13 +327,11 @@ class PrayerTimeDetailController extends GetxController {
       return;
     }
 
-    // If countdown is way past (more than 1 minute), recalculate next prayer
     if (difference.inSeconds <= -60) {
       _calculateNextPrayer();
       return;
     }
 
-    // Normal countdown
     isPrayerArrived.value = false;
     final hours = difference.inHours.toString().padLeft(2, '0');
     final minutes = (difference.inMinutes % 60).toString().padLeft(2, '0');
@@ -321,13 +365,14 @@ class PrayerTimeDetailController extends GetxController {
     final now = DateTime.now();
     final currentMinutes = now.hour * 60 + now.minute;
 
-    final prayerNames = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
+    // Use new API keys
+    final prayerNames = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
     final displayNames = {
-      'subuh': 'Subuh',
-      'dzuhur': 'Dhuhur',
-      'ashar': 'Asar',
+      'fajr': 'Subuh',
+      'dhuhr': 'Dhuhur',
+      'asr': 'Asar',
       'maghrib': 'Maghrib',
-      'isya': 'Isya',
+      'isha': 'Isya',
     };
 
     // Check today's remaining prayers
@@ -341,7 +386,6 @@ class PrayerTimeDetailController extends GetxController {
           nextPrayerName.value = displayNames[prayerName]!;
           nextPrayerTime.value = timeStr;
 
-          // Calculate countdown
           final prayerTime = DateTime(
             now.year,
             now.month,
@@ -366,12 +410,11 @@ class PrayerTimeDetailController extends GetxController {
     }
 
     // If all prayers today have passed, show tomorrow's Subuh
-    final subuhTimeStr = jadwalToday['subuh'] as String?;
+    final subuhTimeStr = jadwalToday['fajr'] as String?;
     if (subuhTimeStr != null) {
       nextPrayerName.value = 'Subuh';
       nextPrayerTime.value = subuhTimeStr;
 
-      // Calculate countdown for tomorrow's Subuh
       final parts = subuhTimeStr.split(':');
       final tomorrow = now.add(const Duration(days: 1));
       final subuhTime = DateTime(

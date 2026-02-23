@@ -30,7 +30,6 @@ class HomeScreen extends StatelessWidget {
         child: RefreshIndicator(
           onRefresh: () async {
             await controller.getPrayerTime();
-            await controller.getCalendarToday();
             await controller.fetchWeeklyStats();
             await controller.fetchPrayers();
             await blogController.refreshBlogs();
@@ -231,114 +230,196 @@ class HomeScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Obx(
-                          () => Text(
-                            controller.calendarToday.value,
-                            style: pMedium12.copyWith(color: Colors.white70),
+            child: Obx(() {
+              // Show shimmer when loading and no cached data
+              if (controller.isLoadingPrayerTime.value &&
+                  controller.displayPrayers.isEmpty) {
+                return _buildPrayerCardShimmer();
+              }
+
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Obx(
+                            () => Text(
+                              '${controller.dayName.value}, ${controller.calendarToday.value}',
+                              style: pMedium12.copyWith(color: Colors.white70),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Obx(
-                          () => Row(
-                            children: [
-                              const Icon(
-                                IconlyBold.location,
-                                color: Colors.orangeAccent,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${controller.kabKota.value}',
-                                style: pBold14.copyWith(color: Colors.white),
-                              ),
-                            ],
+                          const SizedBox(height: 4),
+                          Obx(
+                            () => Row(
+                              children: [
+                                const Icon(
+                                  IconlyBold.location,
+                                  color: Colors.orangeAccent,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${controller.kabKota.value}',
+                                  style: pBold14.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Obx(
-                      () => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          controller.countdownText.value.split(' ').first,
-                          style: pBold14.copyWith(color: Colors.white),
+                        ],
+                      ),
+                      Obx(
+                        () => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            controller.countdownText.value.split(' ').first,
+                            style: pBold14.copyWith(color: Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Obx(
-                  () => SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: controller.displayPrayers.asMap().entries.map((
-                        entry,
-                      ) {
-                        int idx = entry.key;
-                        var prayer = entry.value;
-                        bool isCurrent = idx == 0;
-                        return Container(
-                          margin: const EdgeInsets.only(right: 28),
-                          child: Column(
-                            children: [
-                              Text(
-                                prayer['name']!.capitalizeFirst!,
-                                style: pRegular12.copyWith(
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : Colors.white60,
-                                  fontWeight: isCurrent
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                prayer['time']!,
-                                style: pBold18.copyWith(
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : Colors.white70,
-                                ),
-                              ),
-                              if (isCurrent)
-                                Container(
-                                  margin: EdgeInsets.only(top: 4),
-                                  height: 4,
-                                  width: 4,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.orangeAccent,
-                                    shape: BoxShape.circle,
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Obx(
+                    () => SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: controller.displayPrayers.asMap().entries.map(
+                          (entry) {
+                            int idx = entry.key;
+                            var prayer = entry.value;
+                            bool isCurrent = idx == 0;
+                            return Container(
+                              margin: const EdgeInsets.only(right: 28),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    prayer['name']!.capitalizeFirst!,
+                                    style: pRegular12.copyWith(
+                                      color: isCurrent
+                                          ? Colors.white
+                                          : Colors.white60,
+                                      fontWeight: isCurrent
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    prayer['time']!,
+                                    style: pBold18.copyWith(
+                                      color: isCurrent
+                                          ? Colors.white
+                                          : Colors.white70,
+                                    ),
+                                  ),
+                                  if (isCurrent)
+                                    Container(
+                                      margin: EdgeInsets.only(top: 4),
+                                      height: 4,
+                                      width: 4,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.orangeAccent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          },
+                        ).toList(),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            }),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPrayerCardShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.white.withOpacity(0.1),
+      highlightColor: Colors.white.withOpacity(0.3),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 90,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 70,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(
+              3,
+              (index) => Column(
+                children: [
+                  Container(
+                    width: 45,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 55,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

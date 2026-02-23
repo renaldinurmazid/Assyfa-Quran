@@ -44,4 +44,5 @@ class Url {
   static const String prayers = '/api/prayers';
   static String prayerDetail(int id) => '/api/prayers/$id';
   static String amenPrayer(int id) => '/api/prayers/$id/amen';
+  static const String prayerTimes = '/api/prayer-times';
 }

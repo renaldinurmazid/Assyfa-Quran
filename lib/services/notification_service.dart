@@ -34,6 +34,15 @@ class NotificationService {
         );
 
     await _notificationsPlugin.initialize(initializationSettings);
+
+    // Request exact alarm permission for Android 12+ (API 31+)
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin != null) {
+      await androidPlugin.requestExactAlarmsPermission();
+    }
   }
 
   static Future<void> schedulePrayerNotification({
