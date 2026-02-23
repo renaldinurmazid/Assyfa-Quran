@@ -26,7 +26,45 @@ class ShowGroupController extends GetxController {
   void onInit() {
     super.onInit();
     if (Get.arguments != null) {
-      fetchGroupDetail(Get.arguments);
+      final arg = Get.arguments;
+      if (arg is int) {
+        // From normal navigation (group list → show)
+        fetchGroupDetail(arg);
+      } else if (arg is String) {
+        // From deep link: /g/{code} → code is a String
+        final asInt = int.tryParse(arg);
+        if (asInt != null) {
+          fetchGroupDetail(asInt);
+        } else {
+          fetchGroupByCode(arg);
+        }
+      }
+    }
+  }
+
+  Future<void> fetchGroupByCode(String code) async {
+    try {
+      isLoading.value = true;
+      final response = await http.get(
+        Uri.parse("${Url.baseUrl}${Url.groups}/by-code/$code"),
+        headers: {
+          'Authorization': 'Bearer ${AuthController.to.token.value}',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        group.value = Data.fromJson(data['data']);
+        nameController.text = group.value?.name ?? '';
+        isPrivate.value = group.value?.isPrivate == 1;
+      } else {
+        Get.snackbar('Error', 'Grup tidak ditemukan');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal memuat detail grup');
+    } finally {
+      isLoading.value = false;
     }
   }
 

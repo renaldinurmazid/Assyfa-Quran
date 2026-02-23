@@ -20,20 +20,60 @@ class ReferrerService {
       String? referrer = details.installReferrer;
 
       if (referrer != null && referrer.isNotEmpty) {
-        debugPrint('Install Referrer: $referrer');
-        // Expected format: https://play.google.com/store/apps/details?id=com.quranuna.app&referrer=NHNNK5KK
-        // The installReferrer usually contains just the query parameters if it's from the Play Store link
+        debugPrint('ReferrerService: Raw install referrer → $referrer');
 
-        Uri uri = Uri.parse('?$referrer');
-        String? code = uri.queryParameters['referrer'];
+        // The Play Store Install Referrer API returns the value of the
+        // `referrer` query parameter from the Play Store URL.
+        //
+        // Case 1: Simple referral code
+        //   Play Store URL: ...&referrer=NHNNK5KK
+        //   installReferrer returns: "NHNNK5KK"
+        //
+        // Case 2: Encoded query string (from campaign share)
+        //   Play Store URL: ...&referrer=campaign_id%3D2%26referral_code%3DNHNNK5KK
+        //   installReferrer returns: "campaign_id=2&referral_code=NHNNK5KK"
 
-        if (code != null && code.isNotEmpty) {
-          controller.referralCode.value = code;
-          debugPrint('Extracted Referral Code: $code');
+        String code = '';
+
+        // Try parsing as query parameters first (Case 2)
+        if (referrer.contains('=')) {
+          Uri uri = Uri.parse('?$referrer');
+
+          // Check for referral_code parameter
+          code =
+              uri.queryParameters['referral_code'] ??
+              uri.queryParameters['referrer'] ??
+              uri.queryParameters['ref'] ??
+              '';
+
+          debugPrint('ReferrerService: Parsed as query params → code: $code');
         }
+
+        // If no code found from query parsing, use the raw string (Case 1)
+        // The raw referrer IS the code itself
+        if (code.isEmpty) {
+          // Make sure it looks like a valid code (not a URL or garbage)
+          final trimmed = referrer.trim();
+          if (trimmed.isNotEmpty &&
+              !trimmed.contains('http') &&
+              !trimmed.contains(' ') &&
+              trimmed.length <= 30) {
+            code = trimmed;
+            debugPrint('ReferrerService: Using raw referrer as code → $code');
+          }
+        }
+
+        if (code.isNotEmpty) {
+          controller.referralCode.value = code;
+          debugPrint('ReferrerService: ✅ Referral code set → $code');
+        } else {
+          debugPrint('ReferrerService: ⚠️ No valid referral code found');
+        }
+      } else {
+        debugPrint('ReferrerService: No install referrer available');
       }
     } catch (e) {
-      debugPrint('Error getting install referrer: $e');
+      debugPrint('ReferrerService: Error getting install referrer → $e');
     }
   }
 }

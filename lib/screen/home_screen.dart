@@ -290,55 +290,49 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Obx(
-                    () => SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: controller.displayPrayers.asMap().entries.map(
-                          (entry) {
-                            int idx = entry.key;
-                            var prayer = entry.value;
-                            bool isCurrent = idx == 0;
-                            return Container(
-                              margin: const EdgeInsets.only(right: 28),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    prayer['name']!.capitalizeFirst!,
-                                    style: pRegular12.copyWith(
-                                      color: isCurrent
-                                          ? Colors.white
-                                          : Colors.white60,
-                                      fontWeight: isCurrent
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    prayer['time']!,
-                                    style: pBold18.copyWith(
-                                      color: isCurrent
-                                          ? Colors.white
-                                          : Colors.white70,
-                                    ),
-                                  ),
-                                  if (isCurrent)
-                                    Container(
-                                      margin: EdgeInsets.only(top: 4),
-                                      height: 4,
-                                      width: 4,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.orangeAccent,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                ],
+                    () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: controller.displayPrayers.asMap().entries.map((
+                        entry,
+                      ) {
+                        int idx = entry.key;
+                        var prayer = entry.value;
+                        bool isCurrent = idx == 0;
+                        return Column(
+                          children: [
+                            Text(
+                              prayer['name']!.capitalizeFirst!,
+                              style: pRegular12.copyWith(
+                                color: isCurrent
+                                    ? Colors.white
+                                    : Colors.white60,
+                                fontWeight: isCurrent
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
-                            );
-                          },
-                        ).toList(),
-                      ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              prayer['time']!,
+                              style: pBold18.copyWith(
+                                color: isCurrent
+                                    ? Colors.white
+                                    : Colors.white70,
+                              ),
+                            ),
+                            if (isCurrent)
+                              Container(
+                                margin: const EdgeInsets.only(top: 4),
+                                height: 4,
+                                width: 4,
+                                decoration: const BoxDecoration(
+                                  color: Colors.orangeAccent,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -673,7 +667,38 @@ class HomeScreen extends StatelessWidget {
             final banner = controller.dataBanner[index];
             return GestureDetector(
               onTap: () async {
-                final url = Uri.parse(banner.redirectTo);
+                final link = banner.redirectTo;
+                final uri = Uri.tryParse(link);
+
+                if (uri != null) {
+                  final segments = uri.pathSegments;
+
+                  // Check for charity: /c/{id} or /api/c/{id}
+                  final cIndex = segments.indexOf('c');
+                  if (cIndex != -1 && cIndex + 1 < segments.length) {
+                    final id = int.tryParse(segments[cIndex + 1]);
+                    if (id != null) {
+                      Get.toNamed(Routes.charityShow, arguments: {'id': id});
+                      return;
+                    }
+                  }
+
+                  // Check for mosque charity: /m/{id} or /api/m/{id}
+                  final mIndex = segments.indexOf('m');
+                  if (mIndex != -1 && mIndex + 1 < segments.length) {
+                    final id = int.tryParse(segments[mIndex + 1]);
+                    if (id != null) {
+                      Get.toNamed(
+                        Routes.mosqueCharityShow,
+                        arguments: {'id': id},
+                      );
+                      return;
+                    }
+                  }
+                }
+
+                // Fallback: open external URL
+                final url = Uri.parse(link);
                 if (await canLaunchUrl(url)) {
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 }
@@ -1542,7 +1567,9 @@ Widget _buildListDoa(HomeScreenController controller) {
                               Text(
                                 prayer.isAnonymous == true
                                     ? 'Hamba Allah'
-                                    : (prayer.userName ?? 'User'),
+                                    : prayer.isMyPrayer == true
+                                    ? 'Kamu'
+                                    : prayer.userName ?? 'User',
                                 style: pSemiBold12.copyWith(
                                   color: Colors.black87,
                                 ),

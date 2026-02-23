@@ -90,7 +90,9 @@ class ShowPrayerScreen extends StatelessWidget {
                                 Text(
                                   prayer.isAnonymous == true
                                       ? 'Hamba Allah'
-                                      : (prayer.userName ?? 'User'),
+                                      : (prayer.isMyPrayer == true
+                                            ? 'Kamu'
+                                            : prayer.userName ?? 'User'),
                                   style: pSemiBold14.copyWith(
                                     color: Colors.black87,
                                   ),

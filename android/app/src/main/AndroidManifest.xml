@@ -39,12 +39,28 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Deep linking -->
+            <!-- Deep linking: Group (quranuna://group/CODE) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="quranuna" android:host="group" />
+            </intent-filter>
+
+            <!-- Deep linking: Campaign (quranuna://campaign/ID) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="quranuna" android:host="campaign" />
+            </intent-filter>
+
+            <!-- Deep linking: Mosque Charity (quranuna://mosque-charity/ID) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="quranuna" android:host="mosque-charity" />
             </intent-filter>
 
             <!-- App Links (Web HTTP/HTTPS) -->
