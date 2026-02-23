@@ -585,7 +585,8 @@ class QuranPageScreen extends StatelessWidget {
                 );
               }),
               Obx(() {
-                if (controller.isDownloading.value) {
+                if (controller.isDownloading.value ||
+                    controller.isPaused.value) {
                   return Container(
                     color: Colors.black.withOpacity(0.6),
                     child: Center(
@@ -654,8 +655,63 @@ class QuranPageScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
+                            Obx(
+                              () => Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (controller.isDownloading.value)
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          controller.pauseDownload(),
+                                      icon: const Icon(
+                                        Icons.pause,
+                                        color: Colors.white,
+                                      ),
+                                      label: const Text(
+                                        'Pause',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    ),
+                                  if (controller.isPaused.value)
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          controller.resumeDownload(),
+                                      icon: const Icon(
+                                        Icons.play_arrow,
+                                        color: Colors.white,
+                                      ),
+                                      label: const Text(
+                                        'Lanjutkan',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColor.primaryColor,
+                                      ),
+                                    ),
+                                  const SizedBox(width: 12),
+                                  TextButton(
+                                    onPressed: () {
+                                      controller.isDownloading.value = false;
+                                      controller.isPaused.value = false;
+                                    },
+                                    child: Text(
+                                      'Tutup',
+                                      style: pMedium14.copyWith(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                             Text(
-                              'Mohon tunggu sebentar dan jangan tutup aplikasi.',
+                              controller.isPaused.value
+                                  ? 'Download dihentikan sementara.'
+                                  : 'Mohon tunggu sebentar dan jangan tutup aplikasi.',
                               style: pRegular12.copyWith(color: Colors.grey),
                               textAlign: TextAlign.center,
                             ),

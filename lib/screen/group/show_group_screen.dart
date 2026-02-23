@@ -455,7 +455,7 @@ class ShowGroupScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Lihat Semua',
-                    style: pBold14.copyWith(color: AppColor.primaryColor),
+                    style: pSemiBold14.copyWith(color: AppColor.primaryColor),
                   ),
                   const SizedBox(width: 4),
                   const Icon(
@@ -530,7 +530,7 @@ class ShowGroupScreen extends StatelessWidget {
       icon: const Icon(IconlyBold.add_user, color: Colors.white),
       label: Text(
         'Tambah Anggota',
-        style: pBold14.copyWith(color: Colors.white),
+        style: pSemiBold14.copyWith(color: Colors.white),
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     );

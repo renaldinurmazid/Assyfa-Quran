@@ -49,6 +49,12 @@ class QuranOfflineService {
     return null;
   }
 
+  Future<bool> isPageDownloaded(String type, int pageNumber) async {
+    final quranDir = await _getQuranDir(type);
+    final pageFile = File(p.join(quranDir.path, 'page_$pageNumber.json'));
+    return await pageFile.exists();
+  }
+
   Future<int> getDownloadedPagesCount(String type) async {
     final dir = await _getQuranDir(type);
     final files = dir.listSync();
@@ -63,55 +69,67 @@ class QuranOfflineService {
     return count;
   }
 
+  Future<int> downloadIndex(String type) async {
+    final quranDir = await _getQuranDir(type);
+    final indexUrl = '${Url.baseUrl}${Url.quranOfflineIndex}?qurantype=$type';
+    final indexResponse = await dio.get(indexUrl);
+    if (indexResponse.statusCode == 200) {
+      final indexFile = File(p.join(quranDir.path, 'index.json'));
+      await indexFile.writeAsString(json.encode(indexResponse.data));
+      return indexResponse.data['total_pages'] ?? 604;
+    } else {
+      throw Exception('Failed to download index');
+    }
+  }
+
+  Future<void> downloadPage(String type, int i) async {
+    final quranDir = await _getQuranDir(type);
+    final imagesDir = await _getImagesDir(type);
+
+    final pageUrl = '${Url.baseUrl}${Url.quranOfflinePage}/$i?qurantype=$type';
+    final pageResponse = await dio.get(pageUrl);
+
+    if (pageResponse.statusCode == 200) {
+      final pageData = pageResponse.data;
+
+      // Save Page JSON
+      final pageFile = File(p.join(quranDir.path, 'page_$i.json'));
+      await pageFile.writeAsString(json.encode(pageData));
+
+      // Download Image
+      final imageUrl = pageData['image_path'];
+      final extension = p.extension(imageUrl).split('?').first;
+      final imageFile = File(p.join(imagesDir.path, 'page_$i$extension'));
+
+      await dio.download(imageUrl, imageFile.path);
+    } else {
+      throw Exception('Failed to download page $i');
+    }
+  }
+
   Future<void> downloadAll(
     String type,
     Function(int progress, int total) onProgress,
   ) async {
     try {
-      final quranDir = await _getQuranDir(type);
-      final imagesDir = await _getImagesDir(type);
-
-      // 1. Download Index
-      final indexUrl = '${Url.baseUrl}${Url.quranOfflineIndex}?qurantype=$type';
-      final indexResponse = await dio.get(indexUrl);
-      if (indexResponse.statusCode == 200) {
-        final indexFile = File(p.join(quranDir.path, 'index.json'));
-        await indexFile.writeAsString(json.encode(indexResponse.data));
-      } else {
-        throw Exception('Failed to download index');
-      }
-
-      final indexData = indexResponse.data;
-      final totalPages = indexData['total_pages'] ?? 604;
+      final totalPages = await downloadIndex(type);
 
       // 2. Download Pages
       for (int i = 1; i <= totalPages; i++) {
-        final pageUrl =
-            '${Url.baseUrl}${Url.quranOfflinePage}/$i?qurantype=$type';
-        final pageResponse = await dio.get(pageUrl);
-
-        if (pageResponse.statusCode == 200) {
-          final pageData = pageResponse.data;
-
-          // Save Page JSON
-          final pageFile = File(p.join(quranDir.path, 'page_$i.json'));
-          await pageFile.writeAsString(json.encode(pageData));
-
-          // Download Image
-          final imageUrl = pageData['image_path'];
-          final extension = p.extension(imageUrl).split('?').first;
-          final imageFile = File(p.join(imagesDir.path, 'page_$i$extension'));
-
-          await dio.download(imageUrl, imageFile.path);
-
-          // Update progress
+        if (await isPageDownloaded(type, i)) {
           onProgress(i, totalPages);
-          await NotificationService.showProgressNotification(
-            i,
-            totalPages,
-            'Downloading Quran $type',
-          );
+          continue;
         }
+
+        await downloadPage(type, i);
+
+        // Update progress
+        onProgress(i, totalPages);
+        await NotificationService.showProgressNotification(
+          i,
+          totalPages,
+          'Downloading Quran $type',
+        );
       }
 
       await NotificationService.showCompleteNotification(

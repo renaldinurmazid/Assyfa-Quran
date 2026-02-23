@@ -34,7 +34,10 @@ class AddMemberGroupScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     'Tambah dari Daftar',
-                    style: pBold16.copyWith(color: Colors.grey.shade800),
+                    style: pSemiBold16.copyWith(
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextInput(
@@ -102,7 +105,7 @@ class AddMemberGroupScreen extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
-      title: Text('Undang Teman', style: pBold18),
+      title: Text('Undang Teman', style: pSemiBold16),
       leading: IconButton(
         icon: const Icon(
           IconlyLight.arrow_left_2,

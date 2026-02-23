@@ -14,6 +14,7 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/services/quran_offline_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/services/notification_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 enum QuranPaginationMode { browse, page }
@@ -50,6 +51,7 @@ class QuranPageScreenController extends GetxController {
   final offlineService = QuranOfflineService();
   final isOfflineMode = false.obs;
   final isDownloading = false.obs;
+  final isPaused = false.obs;
   final downloadProgress = 0.obs;
   final totalPagesToDownload = 0.obs;
 
@@ -327,6 +329,17 @@ class QuranPageScreenController extends GetxController {
         _showDownloadConfirmation(slug);
       }
 
+      // Check for partial availability
+      if (targetPage != null) {
+        final isPageDownloaded = await offlineService.isPageDownloaded(
+          slug,
+          targetPage,
+        );
+        if (!isPageDownloaded && !isDownloading.value) {
+          _showDownloadConfirmation(slug, pageNumber: targetPage);
+        }
+      }
+
       try {
         final response = await Request().get(
           Url.quranPage,
@@ -434,6 +447,15 @@ class QuranPageScreenController extends GetxController {
 
     if (isOnline) {
       try {
+        // Check for offline availability
+        final isPageDownloaded = await offlineService.isPageDownloaded(
+          slug,
+          pageNumber,
+        );
+        if (!isPageDownloaded && !isDownloading.value) {
+          _showDownloadConfirmation(slug, pageNumber: pageNumber);
+        }
+
         final response = await Request().get(
           Url.quranPage,
           queryParameters: {'qurantype': slug, 'page_number': pageNumber},
@@ -542,7 +564,7 @@ class QuranPageScreenController extends GetxController {
   /* =======================
    * OFFLINE HELPERS
    * ======================= */
-  void _showDownloadConfirmation(String type) {
+  void _showDownloadConfirmation(String type, {int? pageNumber}) {
     Get.dialog(
       Dialog(
         child: Container(
@@ -560,7 +582,9 @@ class QuranPageScreenController extends GetxController {
               ),
               const SizedBox(height: 12),
               Text(
-                'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduhnya sekarang?',
+                pageNumber != null
+                    ? 'Halaman $pageNumber belum tersedia offline. Lanjutkan mengunduh untuk pengalaman offline penuh?'
+                    : 'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduhnya sekarang?',
                 style: pRegular14,
                 textAlign: TextAlign.center,
               ),
@@ -600,16 +624,58 @@ class QuranPageScreenController extends GetxController {
 
   Future<void> _startDownload(String type) async {
     isDownloading.value = true;
+    isPaused.value = false;
     try {
-      await offlineService.downloadAll(type, (progress, total) {
-        downloadProgress.value = progress;
-        totalPagesToDownload.value = total;
-      });
+      final total = await offlineService.downloadIndex(type);
+      totalPagesToDownload.value = total;
+
+      for (int i = 1; i <= total; i++) {
+        // Check pause state at each page
+        if (isPaused.value) {
+          return;
+        }
+
+        if (await offlineService.isPageDownloaded(type, i)) {
+          downloadProgress.value = i;
+          continue;
+        }
+
+        await offlineService.downloadPage(type, i);
+        downloadProgress.value = i;
+
+        await NotificationService.showProgressNotification(
+          i,
+          total,
+          'Downloading Quran $type',
+        );
+      }
+
+      await NotificationService.showCompleteNotification(
+        'Download Selesai',
+        'Seluruh halaman Quran $type telah diunduh.',
+      );
       isOfflineMode.value = true;
       fetchInitial();
+    } catch (e) {
+      print("Download error: $e");
     } finally {
       isDownloading.value = false;
     }
+  }
+
+  void pauseDownload() {
+    isPaused.value = true;
+    isDownloading.value = false;
+  }
+
+  void resumeDownload() {
+    final slug = Get.arguments['slug'] ?? 'mushaf_standard';
+    _startDownload(slug);
+  }
+
+  void downloadAllContent() {
+    final slug = Get.arguments['slug'] ?? 'mushaf_standard';
+    _startDownload(slug);
   }
 
   Future<void> _fetchOfflineInitial({int? targetPage}) async {

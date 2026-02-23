@@ -158,7 +158,10 @@ class GroupNgajiScreen extends StatelessWidget {
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Grup Saya', style: pBold18),
+          child: Text(
+            'Grup Saya',
+            style: pSemiBold16.copyWith(fontWeight: FontWeight.w800),
+          ),
         ),
         const SizedBox(height: 16),
         _listViewMyGroup(controller),
