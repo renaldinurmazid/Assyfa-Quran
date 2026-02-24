@@ -623,6 +623,8 @@ class QuranPageScreenController extends GetxController {
   }
 
   Future<void> _startDownload(String type) async {
+    if (isDownloading.value) return;
+
     isDownloading.value = true;
     isPaused.value = false;
     try {
@@ -630,8 +632,9 @@ class QuranPageScreenController extends GetxController {
       totalPagesToDownload.value = total;
 
       for (int i = 1; i <= total; i++) {
-        // Check pause state at each page
-        if (isPaused.value) {
+        // Stop the loop if paused OR if isDownloading becomes false (e.g. user force closed it)
+        if (isPaused.value || !isDownloading.value) {
+          debugPrint("Download stopped or paused at page $i");
           return;
         }
 

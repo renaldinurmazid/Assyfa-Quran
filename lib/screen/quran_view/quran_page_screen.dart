@@ -216,6 +216,9 @@ class QuranPageScreen extends StatelessWidget {
                             arguments: {'slug': controller.currentSlug.value},
                           );
                         }
+                        if (value == 'download_all') {
+                          controller.downloadAllContent();
+                        }
                       },
                       icon: Icon(
                         IconlyLight.more_square,
@@ -694,8 +697,7 @@ class QuranPageScreen extends StatelessWidget {
                                   const SizedBox(width: 12),
                                   TextButton(
                                     onPressed: () {
-                                      controller.isDownloading.value = false;
-                                      controller.isPaused.value = false;
+                                      controller.pauseDownload();
                                     },
                                     child: Text(
                                       'Tutup',

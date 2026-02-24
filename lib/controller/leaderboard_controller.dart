@@ -22,7 +22,7 @@ class LeaderboardController extends GetxController {
     errorMessage.value = '';
     try {
       final type = filterIndex.value == 0 ? 'weekly' : 'monthly';
-      final response = await Request().get('${Url.leaderboard}?type=$type');
+      final response = await Request().get('${Url.leaderboard}?filter=$type');
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
