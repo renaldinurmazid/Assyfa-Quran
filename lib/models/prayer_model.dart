@@ -2,7 +2,7 @@ import 'dart:convert';
 
 class PrayerResponse {
   final String? status;
-  final List<PrayerItem>? data;
+  final PrayerData? data;
 
   PrayerResponse({this.status, this.data});
 
@@ -13,18 +13,75 @@ class PrayerResponse {
 
   factory PrayerResponse.fromJson(Map<String, dynamic> json) => PrayerResponse(
     status: json["status"],
+    data: json["data"] == null ? null : PrayerData.fromJson(json["data"]),
+  );
+
+  Map<String, dynamic> toJson() => {"status": status, "data": data?.toJson()};
+}
+
+class PrayerData {
+  final int? currentPage;
+  final List<PrayerItem>? data;
+  final String? firstPageUrl;
+  final int? from;
+  final int? lastPage;
+  final String? lastPageUrl;
+  final String? nextPageUrl;
+  final String? path;
+  final int? perPage;
+  final String? prevPageUrl;
+  final int? to;
+  final int? total;
+
+  PrayerData({
+    this.currentPage,
+    this.data,
+    this.firstPageUrl,
+    this.from,
+    this.lastPage,
+    this.lastPageUrl,
+    this.nextPageUrl,
+    this.path,
+    this.perPage,
+    this.prevPageUrl,
+    this.to,
+    this.total,
+  });
+
+  factory PrayerData.fromJson(Map<String, dynamic> json) => PrayerData(
+    currentPage: json["current_page"],
     data: json["data"] == null
         ? []
         : List<PrayerItem>.from(
             json["data"].map((x) => PrayerItem.fromJson(x)),
           ),
+    firstPageUrl: json["first_page_url"],
+    from: json["from"],
+    lastPage: json["last_page"],
+    lastPageUrl: json["last_page_url"],
+    nextPageUrl: json["next_page_url"],
+    path: json["path"],
+    perPage: json["per_page"],
+    prevPageUrl: json["prev_page_url"],
+    to: json["to"],
+    total: json["total"],
   );
 
   Map<String, dynamic> toJson() => {
-    "status": status,
+    "current_page": currentPage,
     "data": data == null
         ? []
         : List<dynamic>.from(data!.map((x) => x.toJson())),
+    "first_page_url": firstPageUrl,
+    "from": from,
+    "last_page": lastPage,
+    "last_page_url": lastPageUrl,
+    "next_page_url": nextPageUrl,
+    "path": path,
+    "per_page": perPage,
+    "prev_page_url": prevPageUrl,
+    "to": to,
+    "total": total,
   };
 }
 

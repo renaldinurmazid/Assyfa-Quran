@@ -4,6 +4,7 @@ import 'package:app_links/app_links.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DeepLinkService {
   static final DeepLinkService _instance = DeepLinkService._internal();
@@ -250,5 +251,24 @@ class DeepLinkService {
       'Kode referral $code berhasil diterapkan.',
       snackPosition: SnackPosition.BOTTOM,
     );
+  }
+
+  static Future<void> handlePayload(String payload) async {
+    print('Notification Payload: Processing → $payload');
+    final uri = Uri.tryParse(payload);
+    if (uri == null) return;
+
+    // Handle deep links (custom scheme or web url)
+    final service = DeepLinkService();
+    if (uri.scheme == 'quranuna' ||
+        uri.host == 'quran.titiktolak.com' ||
+        uri.pathSegments.contains('api')) {
+      service._processDeepLink(uri);
+    } else if (uri.scheme == 'http' || uri.scheme == 'https') {
+      // Handle normal web URLs
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    }
   }
 }

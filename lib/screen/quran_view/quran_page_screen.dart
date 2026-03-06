@@ -9,6 +9,7 @@ import 'package:quran_app/controller/quran/quran_page_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class QuranPageScreen extends StatelessWidget {
   const QuranPageScreen({super.key});
@@ -345,47 +346,37 @@ class QuranPageScreen extends StatelessWidget {
                         Widget buildPageContent() {
                           return Obx(() {
                             if (controller.viewportWidth.value == 0) {
-                              return controller.isOfflineMode.value
+                              final isLocal = !page.imagePath.startsWith(
+                                'http',
+                              );
+                              return isLocal
                                   ? Image.file(
                                       File(page.imagePath),
                                       fit: isLandscape
                                           ? BoxFit.fitWidth
                                           : BoxFit.contain,
+                                      gaplessPlayback: true,
+                                      filterQuality: FilterQuality.medium,
                                     )
-                                  : Image.network(
-                                      page.imagePath,
+                                  : CachedNetworkImage(
+                                      imageUrl: page.imagePath,
                                       fit: isLandscape
                                           ? BoxFit.fitWidth
                                           : BoxFit.contain,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return Center(
-                                              child: CircularProgressIndicator(
-                                                value:
-                                                    loadingProgress
-                                                            .expectedTotalBytes !=
-                                                        null
-                                                    ? loadingProgress
-                                                              .cumulativeBytesLoaded /
-                                                          loadingProgress
-                                                              .expectedTotalBytes!
-                                                    : null,
-                                                color: AppColor.primaryColor,
-                                              ),
-                                            );
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const Center(
-                                              child: Icon(
-                                                Icons.error,
-                                                color: Colors.red,
-                                                size: 40,
-                                              ),
-                                            );
-                                          },
+                                      filterQuality: FilterQuality.medium,
+                                      placeholder: (context, url) => Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColor.primaryColor,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          const Center(
+                                            child: Icon(
+                                              Icons.error,
+                                              color: Colors.red,
+                                              size: 40,
+                                            ),
+                                          ),
                                     );
                             }
                             return LayoutBuilder(
@@ -412,53 +403,40 @@ class QuranPageScreen extends StatelessWidget {
                                     height: displayHeight,
                                     child: Stack(
                                       children: [
-                                        controller.isOfflineMode.value
-                                            ? Image.file(
-                                                File(page.imagePath),
-                                                width: displayWidth,
-                                                height: displayHeight,
-                                                fit: BoxFit.fill,
-                                              )
-                                            : Image.network(
-                                                page.imagePath,
-                                                width: displayWidth,
-                                                height: displayHeight,
-                                                fit: BoxFit.fill,
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  if (loadingProgress == null) {
-                                                    return child;
-                                                  }
-                                                  return Center(
-                                                    child: CircularProgressIndicator(
-                                                      value:
-                                                          loadingProgress
-                                                                  .expectedTotalBytes !=
-                                                              null
-                                                          ? loadingProgress
-                                                                    .cumulativeBytesLoaded /
-                                                                loadingProgress
-                                                                    .expectedTotalBytes!
-                                                          : null,
-                                                      color:
-                                                          AppColor.primaryColor,
+                                        if (!page.imagePath.startsWith('http'))
+                                          Image.file(
+                                            File(page.imagePath),
+                                            width: displayWidth,
+                                            height: displayHeight,
+                                            fit: BoxFit.fill,
+                                            gaplessPlayback: true,
+                                            filterQuality: FilterQuality.medium,
+                                          )
+                                        else
+                                          CachedNetworkImage(
+                                            imageUrl: page.imagePath,
+                                            width: displayWidth,
+                                            height: displayHeight,
+                                            fit: BoxFit.fill,
+                                            filterQuality: FilterQuality.medium,
+                                            placeholder: (context, url) =>
+                                                Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: AppColor
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Center(
+                                                      child: Icon(
+                                                        Icons.error,
+                                                        color: Colors.red,
+                                                        size: 40,
+                                                      ),
                                                     ),
-                                                  );
-                                                },
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) {
-                                                      return const Center(
-                                                        child: Icon(
-                                                          Icons.error,
-                                                          color: Colors.red,
-                                                          size: 40,
-                                                        ),
-                                                      );
-                                                    },
-                                              ),
+                                          ),
                                         Obx(
                                           () => controller.isPlaying.value
                                               ? Stack(
@@ -551,11 +529,13 @@ class QuranPageScreen extends StatelessWidget {
                                           return Positioned(
                                             top: 0,
                                             right: 20 * scale,
-                                            child: Image.network(
-                                              markerPath,
+                                            child: CachedNetworkImage(
+                                              imageUrl: markerPath,
                                               width: 40 * scale,
                                               height: 120 * scale,
                                               fit: BoxFit.contain,
+                                              filterQuality:
+                                                  FilterQuality.medium,
                                             ),
                                           );
                                         }),
@@ -698,6 +678,7 @@ class QuranPageScreen extends StatelessWidget {
                                   TextButton(
                                     onPressed: () {
                                       controller.pauseDownload();
+                                      controller.isPaused.value = false;
                                     },
                                     child: Text(
                                       'Tutup',
@@ -998,9 +979,13 @@ class QuranPageScreen extends StatelessWidget {
                                                     child: Stack(
                                                       children: [
                                                         Positioned.fill(
-                                                          child: Image.network(
-                                                            marker['marker_path'],
+                                                          child: CachedNetworkImage(
+                                                            imageUrl:
+                                                                marker['marker_path'],
                                                             fit: BoxFit.cover,
+                                                            filterQuality:
+                                                                FilterQuality
+                                                                    .medium,
                                                           ),
                                                         ),
                                                         if (isUse)
@@ -1131,12 +1116,15 @@ class QuranPageScreen extends StatelessWidget {
                                                       child:
                                                           CircularProgressIndicator(),
                                                     )
-                                                  : Image.network(
-                                                      controller
-                                                          .apiMarkers[controller
-                                                          .selectedBookmarkDesign
-                                                          .value]['marker_path'],
+                                                  : CachedNetworkImage(
+                                                      imageUrl:
+                                                          controller
+                                                              .apiMarkers[controller
+                                                              .selectedBookmarkDesign
+                                                              .value]['marker_path'],
                                                       fit: BoxFit.cover,
+                                                      filterQuality:
+                                                          FilterQuality.medium,
                                                     ),
                                             ),
                                             // Shadow/gradient for depth

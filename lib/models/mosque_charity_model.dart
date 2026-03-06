@@ -76,7 +76,7 @@ class MosqueCharityData {
         percentage: json["percentage"] ?? 0,
         latitude: json["latitude"]?.toString(),
         longitude: json["longitude"]?.toString(),
-        currentAmount: json["current_amount"] ?? 'Rp0',
+        currentAmount: json["formatted_current_amount"] ?? 'Rp0',
         donaturCount: json["donatur_count"] ?? 0,
         fundraiserCount: json["fundraiser_count"] ?? 0,
         updates: json["updates"] != null
@@ -106,7 +106,7 @@ class MosqueCharityData {
     "percentage": percentage,
     "latitude": latitude,
     "longitude": longitude,
-    "current_amount": currentAmount,
+    "formatted_current_amount": currentAmount,
     "donatur_count": donaturCount,
     "fundraiser_count": fundraiserCount,
     "updates": List<dynamic>.from(updates.map((x) => x.toJson())),

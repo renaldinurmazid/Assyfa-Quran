@@ -13,7 +13,9 @@ import 'package:quran_app/screen/mosque/mosque_charity_payment_detail_screen.dar
 import 'package:quran_app/screen/mosque/mosque_charity_payment_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_donatur_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_map_screen.dart';
+import 'package:quran_app/screen/notification/notification_screen.dart';
 import 'package:quran_app/screen/prayer/create_prayer_screen.dart';
+import 'package:quran_app/screen/prayer/list_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/show_prayer_screen.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
@@ -262,6 +264,18 @@ class AppPages {
     GetPage(
       name: Routes.showPrayer,
       page: () => const ShowPrayerScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.listPrayer,
+      page: () => const ListPrayerScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.notification,
+      page: () => const NotificationScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

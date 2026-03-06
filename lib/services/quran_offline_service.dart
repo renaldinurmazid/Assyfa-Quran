@@ -216,4 +216,22 @@ class QuranOfflineService {
     }
     return null;
   }
+
+  Future<String?> getLocalImagePath(String type, int pageNumber) async {
+    final imagesDir = await _getImagesDir(type);
+    try {
+      if (await imagesDir.exists()) {
+        final files = imagesDir.listSync();
+        for (var file in files) {
+          if (file is File &&
+              p.basenameWithoutExtension(file.path) == 'page_$pageNumber') {
+            return file.path;
+          }
+        }
+      }
+    } catch (e) {
+      print("Error listing images dir: $e");
+    }
+    return null;
+  }
 }

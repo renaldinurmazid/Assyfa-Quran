@@ -18,8 +18,8 @@ class ProfileScreenController extends GetxController {
         final String? referralLink = response.data['data']['referral_link'];
         if (referralLink != null) {
           await Share.share(
-            'Yuk download aplikasi Assyfa Quran dan mulai tilawah bersama! Gunakan link berikut untuk mendaftar: $referralLink',
-            subject: 'Berbagi Kebaikan dengan Assyfa Quran',
+            'Yuk download aplikasi Quranuna dan mulai tilawah bersama! Gunakan link berikut untuk mendaftar: $referralLink',
+            subject: 'Berbagi Kebaikan dengan Quranuna',
           );
         } else {
           Get.snackbar(

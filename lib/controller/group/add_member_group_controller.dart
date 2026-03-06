@@ -1,12 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/controller/group/show_group_controller.dart';
 import 'package:quran_app/models/group/user_for_group_list.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AddMemberGroupController extends GetxController {
@@ -28,16 +27,12 @@ class AddMemberGroupController extends GetxController {
 
   Future<void> fetchGroupShareUrl() async {
     try {
-      final response = await http.get(
-        Uri.parse("${Url.baseUrl}${Url.groups}/$groupId"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-        },
+      final response = await Request().get(
+        '${Url.baseUrl}${Url.groups}/$groupId',
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         shareUrl.value = data['data']['share_url'] ?? '';
       }
     } catch (e) {
@@ -80,30 +75,35 @@ class AddMemberGroupController extends GetxController {
   }
 
   Future<void> addUserToGroup(int userId) async {
+    // Show Loading Dialog
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(color: AppColor.primaryColor),
+      ),
+      barrierDismissible: false,
+    );
+
     try {
       isLoading.value = true;
-      final response = await http.post(
-        Uri.parse("${Url.baseUrl}${Url.groups}/add-user"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'user_id': userId, 'group_id': groupId}),
+      final response = await Request().post(
+        '${Url.baseUrl}${Url.groups}/add-user',
+        data: {'user_id': userId, 'group_id': groupId},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await fetchUsers();
         await Get.find<ShowGroupController>().fetchGroupDetail(groupId!);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
-        Get.back();
+
+        Get.back(); // Close loading dialog
+        Get.back(); // Close confirmation dialog
         Get.snackbar('Success', 'Anggota berhasil ditambahkan');
       } else {
+        Get.back(); // Close loading dialog
         Get.snackbar('Error', 'Gagal menambahkan anggota');
       }
-
-      isLoading.value = false;
     } catch (e) {
+      Get.back(); // Close loading dialog
       Get.snackbar('Error', 'Terjadi kesalahan saat menambahkan anggota');
     } finally {
       isLoading.value = false;
@@ -113,23 +113,18 @@ class AddMemberGroupController extends GetxController {
   Future<void> fetchUsers() async {
     try {
       isLoading.value = true;
-      final response = await http.get(
-        Uri.parse("${Url.baseUrl}${Url.groups}/$groupId/list-user"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-        },
+      final response = await Request().get(
+        '${Url.baseUrl}${Url.groups}/$groupId/list-user',
       );
 
       if (response.statusCode == 200) {
-        final data = userForMemberGroupFromJson(response.body);
+        final data = UserForMemberGroup.fromJson(response.data);
         users.assignAll(data.data);
         filteredUsers.assignAll(data.data);
       } else {
         Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
       }
     } catch (e) {
-      print(e);
       Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
     } finally {
       isLoading.value = false;

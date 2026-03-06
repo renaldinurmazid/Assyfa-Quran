@@ -8,6 +8,8 @@ import 'package:quran_app/theme/font.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert';
 
+import 'package:url_launcher/url_launcher.dart';
+
 class MosqueCharityPaymentDetailScreen extends StatelessWidget {
   const MosqueCharityPaymentDetailScreen({super.key});
 
@@ -318,7 +320,25 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () => Get.back(),
+        onPressed: () async {
+          const String phoneNumber = "6285797890027";
+          const String message =
+              "Halo Admin, saya ingin konfirmasi pembayaran.";
+          final Uri whatsappUrl = Uri.parse(
+            "https://wa.me/$phoneNumber?text=${Uri.encodeFull(message)}",
+          );
+          if (await canLaunchUrl(whatsappUrl)) {
+            await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+          } else {
+            Get.snackbar(
+              'Gagal',
+              'Tidak dapat membuka WhatsApp',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColor.primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -327,7 +347,10 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: Text('Selesai', style: pBold16.copyWith(color: Colors.white)),
+        child: Text(
+          'Konfirmasi Pembayaran',
+          style: pBold16.copyWith(color: Colors.white),
+        ),
       ),
     );
   }

@@ -79,6 +79,8 @@ class ShowGroupController extends GetxController {
         },
       );
 
+      print(response.body);
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         group.value = Data.fromJson(data['data']);
@@ -88,6 +90,7 @@ class ShowGroupController extends GetxController {
         Get.snackbar('Error', 'Failed to fetch group detail');
       }
     } catch (e) {
+      print(e);
       Get.snackbar('Error', 'Failed to fetch group detail');
     } finally {
       isLoading.value = false;

@@ -36,4 +36,6 @@ abstract class Routes {
   static const showBlog = '/show_blog';
   static const createPrayer = '/create_prayer';
   static const showPrayer = '/show_prayer';
+  static const listPrayer = '/list_prayer';
+  static const notification = '/notification';
 }

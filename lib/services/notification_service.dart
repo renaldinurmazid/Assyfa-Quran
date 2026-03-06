@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:quran_app/services/deep_link_service.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -33,7 +35,28 @@ class NotificationService {
           iOS: initializationSettingsDarwin,
         );
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        final String? payload = response.payload;
+        if (payload != null) {
+          await DeepLinkService.handlePayload(payload);
+        }
+      },
+    );
+
+    // Handle the case where the app was launched from a notification (terminated state)
+    final NotificationAppLaunchDetails? notificationAppLaunchDetails =
+        await _notificationsPlugin.getNotificationAppLaunchDetails();
+    if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
+      final String? payload =
+          notificationAppLaunchDetails?.notificationResponse?.payload;
+      if (payload != null) {
+        Future.delayed(const Duration(seconds: 1), () {
+          DeepLinkService.handlePayload(payload);
+        });
+      }
+    }
 
     // Request exact alarm permission for Android 12+ (API 31+)
     final androidPlugin = _notificationsPlugin
@@ -84,11 +107,6 @@ class NotificationService {
     // Ensure scheduled time is in the future
     var tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
     if (tzScheduledTime.isBefore(tz.TZDateTime.now(tz.local))) {
-      // If time passed, schedule for tomorrow?
-      // For now, let's just add a day if it's strictly in the past,
-      // but prayer times are usually loaded for 'today'.
-      // If it's passed, maybe we don't schedule or it's for tomorrow's list.
-      // Let's assume the controller passes a valid future time.
       if (tzScheduledTime.isBefore(tz.TZDateTime.now(tz.local))) {
         tzScheduledTime = tzScheduledTime.add(const Duration(days: 1));
       }
@@ -137,6 +155,35 @@ class NotificationService {
     );
   }
 
+  static Future<void> showGeneralNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? url,
+  }) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'general_notification_channel',
+          'General Notifications',
+          channelDescription: 'Generic notifications for the app',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: DarwinNotificationDetails(),
+    );
+
+    await _notificationsPlugin.show(
+      id,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: url,
+    );
+  }
+
   static Future<void> showCompleteNotification(
     String title,
     String body,
@@ -155,6 +202,48 @@ class NotificationService {
     );
 
     await _notificationsPlugin.show(100, title, body, platformChannelSpecifics);
+  }
+
+  static Future<void> showBigPictureNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String assetPath,
+    String? url,
+  }) async {
+    final ByteData byteData = await rootBundle.load(assetPath);
+    final Uint8List uint8list = byteData.buffer.asUint8List();
+
+    final BigPictureStyleInformation bigPictureStyleInformation =
+        BigPictureStyleInformation(
+          ByteArrayAndroidBitmap(uint8list),
+          largeIcon: ByteArrayAndroidBitmap(uint8list),
+          contentTitle: title,
+          summaryText: body,
+        );
+
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'big_picture_notification_channel',
+          'Big Picture Notifications',
+          channelDescription: 'Notifications with images',
+          importance: Importance.max,
+          priority: Priority.high,
+          styleInformation: bigPictureStyleInformation,
+        );
+
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: const DarwinNotificationDetails(),
+    );
+
+    await _notificationsPlugin.show(
+      id,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: url,
+    );
   }
 
   static Future<void> cancel(int id) async {

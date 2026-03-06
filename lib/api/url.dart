@@ -42,6 +42,7 @@ class Url {
   static String recordView(String slug) => '/api/blogs/$slug/view';
   static String toggleLike(int id) => '/api/blogs/$id/like';
   static const String prayers = '/api/prayers';
+  static const String myPrayers = '/api/my-prayers';
   static String prayerDetail(int id) => '/api/prayers/$id';
   static String amenPrayer(int id) => '/api/prayers/$id/amen';
   static const String prayerTimes = '/api/prayer-times';

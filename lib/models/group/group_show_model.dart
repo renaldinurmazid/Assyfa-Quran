@@ -50,19 +50,27 @@ class Data {
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-    id: json["id"],
-    name: json["name"],
-    code: json["code"],
+    id: json["id"] ?? 0,
+    name: json["name"] ?? "",
+    code: json["code"] ?? "",
     coverImage: json["cover_image"],
-    isPrivate: json["is_private"],
-    userId: json["user_id"],
-    createdAt: DateTime.parse(json["created_at"]),
-    isMyGroup: json["is_my_group"],
-    weeklyHistory: WeeklyHistory.fromJson(json["weekly_history"]),
-    createdBy: CreatedBy.fromJson(json["created_by"]),
-    groupUser: List<GroupUser>.from(
-      json["group_user"].map((x) => GroupUser.fromJson(x)),
-    ),
+    isPrivate: json["is_private"] ?? 0,
+    userId: json["user_id"] ?? 0,
+    createdAt: json["created_at"] != null
+        ? DateTime.parse(json["created_at"])
+        : DateTime.now(),
+    isMyGroup: json["is_my_group"] ?? false,
+    weeklyHistory: json["weekly_history"] != null
+        ? WeeklyHistory.fromJson(json["weekly_history"])
+        : WeeklyHistory(summary: [], totalPages: 0),
+    createdBy: json["created_by"] != null
+        ? CreatedBy.fromJson(json["created_by"])
+        : CreatedBy(id: 0, name: "", profilePicture: ""),
+    groupUser: json["group_user"] != null
+        ? List<GroupUser>.from(
+            json["group_user"].map((x) => GroupUser.fromJson(x)),
+          )
+        : [],
     shareUrl: json["share_url"],
   );
 
@@ -89,10 +97,10 @@ class WeeklyHistory {
   WeeklyHistory({required this.summary, required this.totalPages});
 
   factory WeeklyHistory.fromJson(Map<String, dynamic> json) => WeeklyHistory(
-    summary: List<Summary>.from(
-      json["summary"].map((x) => Summary.fromJson(x)),
-    ),
-    totalPages: json["total_pages"],
+    summary: json["summary"] != null
+        ? List<Summary>.from(json["summary"].map((x) => Summary.fromJson(x)))
+        : [],
+    totalPages: json["total_pages"] ?? 0,
   );
 
   Map<String, dynamic> toJson() => {
@@ -108,7 +116,7 @@ class Summary {
   Summary({required this.day, required this.totalPages});
 
   factory Summary.fromJson(Map<String, dynamic> json) =>
-      Summary(day: json["day"], totalPages: json["total_pages"]);
+      Summary(day: json["day"] ?? "", totalPages: json["total_pages"] ?? 0);
 
   Map<String, dynamic> toJson() => {"day": day, "total_pages": totalPages};
 }
@@ -125,9 +133,9 @@ class CreatedBy {
   });
 
   factory CreatedBy.fromJson(Map<String, dynamic> json) => CreatedBy(
-    id: json["id"],
-    name: json["name"],
-    profilePicture: json["profile_picture"],
+    id: json["id"] ?? 0,
+    name: json["name"] ?? "",
+    profilePicture: json["profile_picture"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {
@@ -151,10 +159,12 @@ class GroupUser {
   });
 
   factory GroupUser.fromJson(Map<String, dynamic> json) => GroupUser(
-    id: json["id"],
-    groupId: json["group_id"],
-    userId: json["user_id"],
-    user: CreatedBy.fromJson(json["user"]),
+    id: json["id"] ?? 0,
+    groupId: json["group_id"] ?? 0,
+    userId: json["user_id"] ?? 0,
+    user: json["user"] != null
+        ? CreatedBy.fromJson(json["user"])
+        : CreatedBy(id: 0, name: "", profilePicture: ""),
   );
 
   Map<String, dynamic> toJson() => {

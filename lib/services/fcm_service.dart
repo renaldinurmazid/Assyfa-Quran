@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,7 +49,16 @@ class FcmService {
           android: initializationSettingsAndroid,
           iOS: initializationSettingsDarwin,
         );
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        final String? payload = response.payload;
+        if (payload != null) {
+          await DeepLinkService.handlePayload(payload);
+        }
+      },
+    );
 
     // Create the channel on Android
     await flutterLocalNotificationsPlugin
@@ -72,13 +82,22 @@ class FcmService {
       print('Message data: ${message.data}');
 
       RemoteNotification? notification = message.notification;
-      String? title = notification?.title ?? message.data['title'];
-      String? body = notification?.body ?? message.data['body'];
+
+      // Extract details, prioritizing data payload to match user's PHP logic
+      String? title = message.data['title'] ?? notification?.title;
+      String? body = message.data['body'] ?? notification?.body;
       String? imageUrl =
-          notification?.android?.imageUrl ??
-          notification?.apple?.imageUrl ??
           message.data['image'] ??
-          message.data['image_url'];
+          notification?.android?.imageUrl ??
+          notification?.apple?.imageUrl;
+
+      // Extract URL from custom data or click_action
+      String? urlPayload =
+          message.data['url'] ??
+          message.data['link'] ??
+          (message.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
+              ? message.data['click_action']
+              : null);
 
       if (title != null || body != null) {
         print('Displaying foreground notification: $title');
@@ -131,6 +150,7 @@ class FcmService {
                     : null,
               ),
             ),
+            payload: urlPayload,
           );
         } catch (e) {
           print('Error showing local notification: $e');
@@ -139,14 +159,35 @@ class FcmService {
     });
 
     // Handle app opened from notification
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       print('A new onMessageOpenedApp event was published!');
-      print('Notification data: ${message.data}');
+      String? urlPayload =
+          message.data['url'] ??
+          message.data['link'] ??
+          (message.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
+              ? message.data['click_action']
+              : null);
+      if (urlPayload != null) {
+        await DeepLinkService.handlePayload(urlPayload);
+      }
     });
 
-    // Get initial token if user is already logged in
-    // Note: This needs to be called after AuthController is initialized and has checked login status
-    // For now, we call it in a way that respects AuthController status
+    // Handle the case where the app was launched from a notification (terminated state)
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
+    if (initialMessage != null) {
+      String? urlPayload =
+          initialMessage.data['url'] ??
+          initialMessage.data['link'] ??
+          (initialMessage.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
+              ? initialMessage.data['click_action']
+              : null);
+      if (urlPayload != null) {
+        Future.delayed(const Duration(seconds: 1), () {
+          DeepLinkService.handlePayload(urlPayload);
+        });
+      }
+    }
   }
 
   static String? _lastToken;
@@ -162,19 +203,16 @@ class FcmService {
     try {
       String? token = await _firebaseMessaging.getToken();
       if (token != null) {
-        // Double check login status after async call
         if (!AuthController.to.isLogin.value) {
           _isSaving = false;
           return;
         }
 
-        // Check if token already saved in this session
         if (token == _lastToken) {
           _isSaving = false;
           return;
         }
 
-        // Check if token already saved in SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         final savedToken = prefs.getString('saved_fcm_token');
         if (token == savedToken) {
@@ -237,7 +275,6 @@ class FcmService {
   }
 }
 
-// Global background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");

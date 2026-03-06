@@ -17,6 +17,8 @@ class MosqueCharityPaymentController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   var selectedNominal = ''.obs;
+  var selectedName = ''.obs;
+  var selectedPhone = ''.obs;
   var isAnonymous = false.obs;
 
   @override
@@ -25,13 +27,27 @@ class MosqueCharityPaymentController extends GetxController {
     nominalController.addListener(() {
       selectedNominal.value = nominalController.text;
     });
+    nameController.addListener(() {
+      selectedName.value = nameController.text;
+    });
+    phoneController.addListener(() {
+      selectedPhone.value = phoneController.text;
+    });
     // Pre-fill user data if logged in
     if (AuthController.to.isLogin.value) {
       nameController.text = AuthController.to.userData['name'] ?? '';
+      selectedName.value = nameController.text;
       phoneController.text = AuthController.to.userData['phone_number'] ?? '';
+      selectedPhone.value = phoneController.text;
     }
     fetchPaymentMethods();
   }
+
+  bool get isFormValid =>
+      selectedNominal.value.isNotEmpty &&
+      selectedName.value.isNotEmpty &&
+      selectedPhone.value.isNotEmpty &&
+      selectedPaymentMethod.value != null;
 
   Future<void> fetchPaymentMethods() async {
     try {

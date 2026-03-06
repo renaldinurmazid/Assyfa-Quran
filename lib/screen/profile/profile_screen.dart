@@ -136,6 +136,11 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _menuItem(
+            title: 'Notifikasi',
+            icon: IconlyLight.notification,
+            onTap: () => Get.toNamed(Routes.notification),
+          ),
+          _menuItem(
             title: 'Ubah Profil',
             icon: IconlyLight.edit,
             onTap: () => Get.toNamed(Routes.changeProfile),
@@ -144,6 +149,11 @@ class ProfileScreen extends StatelessWidget {
             title: 'Aktivitas Infaq',
             icon: IconlyLight.chart,
             onTap: () => Get.toNamed(Routes.infaqActivity),
+          ),
+          _menuItem(
+            title: 'Aktivitas Doa',
+            icon: Icons.handshake_outlined,
+            onTap: () => Get.toNamed(Routes.listPrayer),
           ),
           const SizedBox(height: 24),
           Text(

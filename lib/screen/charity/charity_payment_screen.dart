@@ -307,7 +307,7 @@ class CharityPaymentScreen extends StatelessWidget {
         ),
         child: Obx(
           () => ElevatedButton(
-            onPressed: controller.isLoading.value
+            onPressed: (controller.isLoading.value || !controller.isFormValid)
                 ? null
                 : controller.submitDonation,
             style: ElevatedButton.styleFrom(
@@ -350,7 +350,8 @@ class CharityPaymentScreen extends StatelessWidget {
     String value,
   ) {
     return Obx(() {
-      final isSelected = controller.selectedNominal.value == value;
+      final isSelected =
+          controller.selectedNominal.value.replaceAll('.', '') == value;
       return GestureDetector(
         onTap: () {
           final formatter = NumberFormat.decimalPattern('id');

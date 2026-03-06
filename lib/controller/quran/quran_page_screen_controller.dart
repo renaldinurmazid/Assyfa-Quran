@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,8 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/services/quran_offline_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:quran_app/services/notification_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 enum QuranPaginationMode { browse, page }
 
@@ -54,6 +55,7 @@ class QuranPageScreenController extends GetxController {
   final isPaused = false.obs;
   final downloadProgress = 0.obs;
   final totalPagesToDownload = 0.obs;
+  final hasShownDownloadPrompt = false.obs;
 
   /* =======================
    * SEARCH / FILTER STATE
@@ -199,6 +201,20 @@ class QuranPageScreenController extends GetxController {
     }
   }
 
+  Future<void> _resolveLocalImages(List<Datum> items) async {
+    final slug = currentSlug.value;
+    for (var item in items) {
+      if (item.id < 0) continue; // Skip dummy pages
+      final localPath = await offlineService.getLocalImagePath(
+        slug,
+        item.pageNumber,
+      );
+      if (localPath != null && await File(localPath).exists()) {
+        item.imagePath = localPath;
+      }
+    }
+  }
+
   /* =======================
    * FETCH INITIAL (ENTRY)
    * ======================= */
@@ -325,19 +341,9 @@ class QuranPageScreenController extends GetxController {
     if (isOnline) {
       if (!isOfflineAvailable &&
           !isDownloading.value &&
-          mode.value == QuranPaginationMode.browse) {
+          !hasShownDownloadPrompt.value) {
         _showDownloadConfirmation(slug);
-      }
-
-      // Check for partial availability
-      if (targetPage != null) {
-        final isPageDownloaded = await offlineService.isPageDownloaded(
-          slug,
-          targetPage,
-        );
-        if (!isPageDownloaded && !isDownloading.value) {
-          _showDownloadConfirmation(slug, pageNumber: targetPage);
-        }
+        hasShownDownloadPrompt.value = true;
       }
 
       try {
@@ -364,6 +370,9 @@ class QuranPageScreenController extends GetxController {
           _applyMeta(data);
           isOfflineMode.value = false;
 
+          // Resolve local images even in online mode if they exist
+          await _resolveLocalImages(data.data);
+
           if (mode.value == QuranPaginationMode.page) {
             _updateDataPageWithWindow(data.data);
             _jumpToTargetPage();
@@ -373,6 +382,7 @@ class QuranPageScreenController extends GetxController {
               startReadingPage.value = dataPage.first.pageNumber;
             }
           }
+          _precacheNearbyPages(currentPageIndex.value);
           isLoading.value = false;
           return;
         }
@@ -424,6 +434,8 @@ class QuranPageScreenController extends GetxController {
         if (data.data.isEmpty) {
           isLastPage.value = true;
         } else {
+          // Resolve local images even in online mode if they exist
+          await _resolveLocalImages(data.data);
           dataPage.addAll(data.data);
         }
         _applyMeta(data);
@@ -447,15 +459,6 @@ class QuranPageScreenController extends GetxController {
 
     if (isOnline) {
       try {
-        // Check for offline availability
-        final isPageDownloaded = await offlineService.isPageDownloaded(
-          slug,
-          pageNumber,
-        );
-        if (!isPageDownloaded && !isDownloading.value) {
-          _showDownloadConfirmation(slug, pageNumber: pageNumber);
-        }
-
         final response = await Request().get(
           Url.quranPage,
           queryParameters: {'qurantype': slug, 'page_number': pageNumber},
@@ -463,6 +466,10 @@ class QuranPageScreenController extends GetxController {
         if (response.statusCode == 200) {
           final data = QuranPage.fromJson(response.data);
           _applyMeta(data);
+
+          // Resolve local images even in online mode if they exist
+          await _resolveLocalImages(data.data);
+
           _updateDataPageWithWindow(data.data);
           _jumpToTargetPage();
           isOfflineMode.value = false;
@@ -545,6 +552,28 @@ class QuranPageScreenController extends GetxController {
         fetchBrowseNext();
       }
     }
+
+    _precacheNearbyPages(index);
+  }
+
+  void _precacheNearbyPages(int index) {
+    if (dataPage.isEmpty || index < 0 || index >= dataPage.length) return;
+
+    // Precache current, next 2, and previous 1 pages
+    final indicesToCache = [index, index + 1, index + 2, index - 1];
+
+    for (var idx in indicesToCache) {
+      if (idx >= 0 && idx < dataPage.length) {
+        final item = dataPage[idx];
+        if (item.imagePath.isEmpty || item.id < 0) continue;
+
+        final ImageProvider provider = item.imagePath.startsWith('http')
+            ? CachedNetworkImageProvider(item.imagePath)
+            : FileImage(File(item.imagePath));
+
+        precacheImage(provider, Get.context!);
+      }
+    }
   }
 
   /* =======================
@@ -564,7 +593,7 @@ class QuranPageScreenController extends GetxController {
   /* =======================
    * OFFLINE HELPERS
    * ======================= */
-  void _showDownloadConfirmation(String type, {int? pageNumber}) {
+  void _showDownloadConfirmation(String type) {
     Get.dialog(
       Dialog(
         child: Container(
@@ -582,9 +611,7 @@ class QuranPageScreenController extends GetxController {
               ),
               const SizedBox(height: 12),
               Text(
-                pageNumber != null
-                    ? 'Halaman $pageNumber belum tersedia offline. Lanjutkan mengunduh untuk pengalaman offline penuh?'
-                    : 'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduhnya sekarang?',
+                'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduh semua halaman sekarang agar bisa dibaca tanpa internet?',
                 style: pRegular14,
                 textAlign: TextAlign.center,
               ),
@@ -645,18 +672,8 @@ class QuranPageScreenController extends GetxController {
 
         await offlineService.downloadPage(type, i);
         downloadProgress.value = i;
-
-        await NotificationService.showProgressNotification(
-          i,
-          total,
-          'Downloading Quran $type',
-        );
       }
 
-      await NotificationService.showCompleteNotification(
-        'Download Selesai',
-        'Seluruh halaman Quran $type telah diunduh.',
-      );
       isOfflineMode.value = true;
       fetchInitial();
     } catch (e) {

@@ -447,7 +447,7 @@ class HomeScreenController extends GetxController {
       final response = await Request().get(Url.prayers);
       if (response.statusCode == 200) {
         final prayerResponse = PrayerResponse.fromJson(response.data);
-        prayers.assignAll(prayerResponse.data ?? []);
+        prayers.assignAll(prayerResponse.data?.data ?? []);
       }
     } catch (e) {
       print("Error fetching prayers: $e");
