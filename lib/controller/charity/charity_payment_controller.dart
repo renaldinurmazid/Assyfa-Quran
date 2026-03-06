@@ -6,6 +6,7 @@ import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/payment_method_model.dart';
 import 'package:quran_app/models/donation_response_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CharityPaymentController extends GetxController {
   final int campaignId = Get.arguments['id'];
@@ -58,7 +59,7 @@ class CharityPaymentController extends GetxController {
         paymentMethods.assignAll(model.data);
       }
     } catch (e) {
-      print("Error fetching payment methods: $e");
+      AppToast.error(message: 'Gagal memuat metode pembayaran');
     } finally {
       isLoading.value = false;
     }
@@ -70,11 +71,11 @@ class CharityPaymentController extends GetxController {
 
   Future<void> submitDonation() async {
     if (nominalController.text.isEmpty) {
-      Get.snackbar('Input Error', 'Nominal infaq tidak boleh kosong');
+      AppToast.warning(message: 'Nominal infaq tidak boleh kosong');
       return;
     }
     if (selectedPaymentMethod.value == null) {
-      Get.snackbar('Input Error', 'Pilih metode pembayaran terlebih dahulu');
+      AppToast.warning(message: 'Pilih metode pembayaran terlebih dahulu');
       return;
     }
 
@@ -95,14 +96,12 @@ class CharityPaymentController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = DonationResponseModel.fromJson(response.data);
         Get.offNamed(Routes.charityPaymentDetail, arguments: result.data);
+        AppToast.success(message: response.data['message']);
       } else {
-        Get.snackbar(
-          'Error',
-          'Gagal memproses infaq: ${response.data['message'] ?? 'Unknown error'}',
-        );
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memproses infaq: $e');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

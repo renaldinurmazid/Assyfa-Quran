@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
+import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/charity_model.dart';
-import 'package:http/http.dart' as http;
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CharityScreenController extends GetxController {
   var charityList = <Datum>[].obs;
@@ -16,17 +17,16 @@ class CharityScreenController extends GetxController {
   Future<void> fetchCharityList() async {
     try {
       isLoading.value = true;
-      final response = await http.get(
-        Uri.parse('${Url.baseUrl}${Url.campaigns}'),
-      );
+      final response = await Request().get(Url.campaigns);
       if (response.statusCode == 200) {
-        final data = charityFromJson(response.body);
+        final data = Charity.fromJson(response.data);
         charityList.value = data.data;
       } else {
-        Get.snackbar('Error', 'Failed to load charity list');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print(e);
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

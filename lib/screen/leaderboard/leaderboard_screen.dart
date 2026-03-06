@@ -47,34 +47,6 @@ class LeaderboardScreen extends StatelessWidget {
                         ),
                       );
                     }
-                    if (controller.errorMessage.value.isNotEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              IconlyLight.danger,
-                              size: 60,
-                              color: AppColor.primaryColor,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              controller.errorMessage.value,
-                              style: pBold14.copyWith(
-                                color: AppColor.primaryColor,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => controller.fetchLeaderboard(),
-                              child: const Text(
-                                'Coba Lagi',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
                     if (controller.topUsers.isEmpty &&
                         controller.otherUsers.isEmpty) {
                       return Center(

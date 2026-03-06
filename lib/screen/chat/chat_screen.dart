@@ -20,8 +20,7 @@ class ChatScreen extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () => controller.fetchNotifications(),
         color: AppColor.primaryColor,
-        edgeOffset:
-            100, // Offset to show below the initial app bar state if needed
+        edgeOffset: 100,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),

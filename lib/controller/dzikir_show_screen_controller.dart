@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/models/dzikir_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class DzikirShowScreenController extends GetxController {
   final title = ''.obs;
@@ -27,12 +28,7 @@ class DzikirShowScreenController extends GetxController {
       final List<dynamic> jsonData = json.decode(jsonString);
       data.value = jsonData.map((item) => DzikirModel.fromJson(item)).toList();
     } catch (e) {
-      print('Error loading dzikir data: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat data dzikir',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error(message: 'Terjadi kesalahan saat memuat data dzikir');
     } finally {
       isLoading.value = false;
     }

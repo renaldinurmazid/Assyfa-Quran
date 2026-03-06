@@ -161,7 +161,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
                 final shareUrl =
                     mosque.shareUrl ?? '${Url.baseUrl}/api/m/${mosque.id}';
                 Share.share(
-                  'Yuk bantu pembangunan "${mosque.name}" di Assyfa Quran! Klik link berikut: $shareUrl',
+                  'Yuk bantu pembangunan "${mosque.name}" di Quranuna! Klik link berikut: $shareUrl',
                 );
               },
             ),

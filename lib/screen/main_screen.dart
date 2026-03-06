@@ -14,7 +14,8 @@ class MainController extends GetxController {
   var tabIndex = 0.obs;
 
   void changeTabIndex(int index) {
-    if ((index == 1 || index == 3) && !AuthController.to.isLogin.value) {
+    if ((index == 1 || index == 2 || index == 3) &&
+        !AuthController.to.isLogin.value) {
       _showLoginDialog();
       return;
     }

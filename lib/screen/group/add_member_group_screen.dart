@@ -6,6 +6,7 @@ import 'package:quran_app/controller/group/add_member_group_controller.dart';
 import 'package:quran_app/models/group/user_for_group_list.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
 class AddMemberGroupScreen extends StatelessWidget {
@@ -191,12 +192,8 @@ class AddMemberGroupScreen extends StatelessWidget {
                   onTap: () {
                     if (link.isEmpty) return;
                     Clipboard.setData(ClipboardData(text: link));
-                    Get.snackbar(
-                      'Tersalin',
-                      'Tautan undangan telah disalin',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.white,
-                      colorText: AppColor.primaryColor,
+                    AppToast.success(
+                      message: 'Tautan undangan berhasil disalin',
                     );
                   },
                   child: Container(

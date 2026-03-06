@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/campaign_donatur_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CharityDonaturController extends GetxController {
   final int campaignId = Get.arguments;
@@ -44,10 +45,12 @@ class CharityDonaturController extends GetxController {
         total.value = model.data.total;
         hasMore.value = currentPage.value < lastPage.value;
       } else {
-        Get.snackbar('Error', 'Gagal memuat data donatur');
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat data donatur',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan: $e');
+      AppToast.error(message: 'Terjadi kesalahan: $e');
     } finally {
       isLoading.value = false;
       isLoadingMore.value = false;

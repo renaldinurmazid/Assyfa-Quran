@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/blog_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class BlogController extends GetxController {
   static BlogController get to => Get.find();
@@ -49,9 +50,11 @@ class BlogController extends GetxController {
       if (response.statusCode == 200) {
         final categoryResponse = BlogCategoryResponse.fromJson(response.data);
         categories.assignAll(categoryResponse.data ?? []);
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      debugPrint("Error fetching blog categories: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoadingCategories.value = false;
     }
@@ -84,9 +87,11 @@ class BlogController extends GetxController {
           blogs.assignAll(blogResponse.data!.data ?? []);
           hasNextPage.value = blogResponse.data!.nextPageUrl != null;
         }
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      debugPrint("Error fetching blogs: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoading.value = false;
     }
@@ -114,9 +119,11 @@ class BlogController extends GetxController {
           blogs.addAll(blogResponse.data!.data ?? []);
           hasNextPage.value = blogResponse.data!.nextPageUrl != null;
         }
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      debugPrint("Error fetching more blogs: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
       currentPage.value--;
     } finally {
       isLoadingMore.value = false;

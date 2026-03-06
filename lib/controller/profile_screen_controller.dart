@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProfileScreenController extends GetxController {
@@ -22,32 +22,15 @@ class ProfileScreenController extends GetxController {
             subject: 'Berbagi Kebaikan dengan Quranuna',
           );
         } else {
-          Get.snackbar(
-            'Gagal',
-            'Link referral tidak ditemukan',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
+          AppToast.error(message: 'Link referral tidak ditemukan');
         }
       } else {
-        Get.snackbar(
-          'Gagal',
-          'Gagal mengambil link referral',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal mengambil link referral',
         );
       }
     } catch (e) {
-      print("Error sharing: $e");
-      Get.snackbar(
-        'Gagal',
-        'Terjadi kesalahan saat mencoba berbagi',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppToast.error(message: 'Terjadi kesalahan saat mencoba berbagi');
     } finally {
       isLoadingShare.value = false;
     }

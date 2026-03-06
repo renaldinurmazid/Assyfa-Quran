@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/leaderboard/app_share_leaderboard_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class AppShareLeaderboardController extends GetxController {
   final isLoading = false.obs;
@@ -9,7 +10,7 @@ class AppShareLeaderboardController extends GetxController {
   final myStats = Rxn<LeaderboardEntry>();
   final errorMessage = ''.obs;
 
-  @override
+  @override 
   void onInit() {
     super.onInit();
     fetchLeaderboard();
@@ -27,11 +28,10 @@ class AppShareLeaderboardController extends GetxController {
         leaderboard.assignAll(data.leaderboard);
         myStats.value = data.myStats;
       } else {
-        errorMessage.value = 'Gagal memuat data peringkat';
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error fetching app share leaderboard: $e");
-      errorMessage.value = 'Terjadi kesalahan koneksi';
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoading.value = false;
     }

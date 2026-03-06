@@ -44,9 +44,6 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                         child: CircularProgressIndicator(color: Colors.white),
                       );
                     }
-                    if (controller.errorMessage.value.isNotEmpty) {
-                      return _buildErrorState(controller);
-                    }
                     if (controller.leaderboard.isEmpty) {
                       return _buildEmptyState();
                     }
@@ -92,29 +89,6 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           ], // Green theme matching primaryColor
         ),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(AppShareLeaderboardController controller) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(IconlyLight.danger, size: 60, color: Colors.white),
-          const SizedBox(height: 16),
-          Text(
-            controller.errorMessage.value,
-            style: pBold14.copyWith(color: Colors.white),
-          ),
-          TextButton(
-            onPressed: () => controller.fetchLeaderboard(),
-            child: const Text(
-              'Coba Lagi',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
   }

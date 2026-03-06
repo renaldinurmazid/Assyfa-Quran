@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
+import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/mosque_charity_model.dart';
-import 'package:http/http.dart' as http;
+import 'package:quran_app/widgets/app_toast.dart';
 
 class MosqueCharityController extends GetxController {
   var mosqueCharityList = <MosqueCharityData>[].obs;
@@ -33,18 +34,18 @@ class MosqueCharityController extends GetxController {
   Future<void> fetchMosqueCharityList() async {
     try {
       isLoading.value = true;
-      final response = await http.get(
-        Uri.parse('${Url.baseUrl}${Url.mosqueCharity}'),
+      final response = await Request().get(
+        '${Url.baseUrl}${Url.mosqueCharity}',
       );
       if (response.statusCode == 200) {
-        final data = mosqueCharityFromJson(response.body);
+        final data = MosqueCharity.fromJson(response.data);
         mosqueCharityList.value = data.data;
         filteredMosqueList.assignAll(data.data);
       } else {
-        Get.snackbar('Error', 'Failed to load mosque charity list');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      AppToast.error(message: 'Terjadi kesalahan koneksi');
     } finally {
       isLoading.value = false;
     }

@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 
@@ -36,54 +38,42 @@ class ChangeProfileController extends GetxController {
   Future<void> updateProfile() async {
     try {
       if (nameController.text.isEmpty) {
-        Get.snackbar("Error", "Nama tidak boleh kosong");
+        AppToast.error(message: 'Nama tidak boleh kosong');
         return;
       }
 
-      isLoading.value = true;
-
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(Url.baseUrl + Url.changeProfile),
-      );
-
-      request.headers.addAll({
-        'Authorization': 'Bearer ${AuthController.to.token.value}',
-        'Accept': 'application/json',
-      });
-
-      request.fields['name'] = nameController.text;
-      request.fields['phone_number'] = phoneController.text;
+      final Map<String, dynamic> data = {
+        'name': nameController.text,
+        'phone_number': phoneController.text,
+      };
 
       if (selectedImage.value != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath('image', selectedImage.value!.path),
+        data['image'] = await dio.MultipartFile.fromFile(
+          selectedImage.value!.path,
         );
       }
 
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
+      final response = await Request().postMultipart(Url.changeProfile, data);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final userData = response.data['user'];
 
         // Update data user di AuthController dan Local Storage
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_data', jsonEncode(data['user']));
-        AuthController.to.userData.value = data['user'];
+        await prefs.setString('user_data', jsonEncode(userData));
+        AuthController.to.userData.value = Map<String, dynamic>.from(userData);
 
         Get.back(); // Kembali ke halaman profil
-        Get.snackbar("Success", "Profil berhasil diperbarui");
+        AppToast.success(
+          message: response.data['message'] ?? "Profil berhasil diperbarui",
+        );
       } else {
-        print(response.body);
-        Get.snackbar(
-          "Error",
-          "Gagal memperbarui profil: ${response.statusCode}",
+        AppToast.error(
+          message: response.data['message'] ?? "Gagal memperbarui profil",
         );
       }
     } catch (e) {
-      print(e);
-      Get.snackbar("Error", e.toString());
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

@@ -11,7 +11,7 @@ String memberGroupTilawahToJson(MemberGroupTilawah data) =>
     json.encode(data.toJson());
 
 class MemberGroupTilawah {
-  bool status;
+  String status;
   Data data;
 
   MemberGroupTilawah({required this.status, required this.data});

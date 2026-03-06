@@ -107,7 +107,7 @@ class CharityShowScreen extends StatelessWidget {
                 final shareUrl =
                     campaign.shareUrl ?? '${Url.baseUrl}/api/c/${campaign.id}';
                 Share.share(
-                  'Yuk bantu kampanye "${campaign.title}" di Assyfa Quran! Klik link berikut: $shareUrl',
+                  'Yuk bantu kampanye "${campaign.title}" di Quranuna! Klik link berikut: $shareUrl',
                 );
               },
             ),

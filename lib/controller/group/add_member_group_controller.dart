@@ -6,6 +6,7 @@ import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/controller/group/show_group_controller.dart';
 import 'package:quran_app/models/group/user_for_group_list.dart';
 import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AddMemberGroupController extends GetxController {
@@ -34,20 +35,22 @@ class AddMemberGroupController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data;
         shareUrl.value = data['data']['share_url'] ?? '';
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error fetching share url: $e");
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     }
   }
 
   void shareGroup() {
     if (shareUrl.value.isNotEmpty) {
       Share.share(
-        'Yuk bergabung ke grup ngaji saya di Assyfa Quran! Klik link berikut: ${shareUrl.value}',
+        'Yuk bergabung ke grup ngaji saya di Quranuna! Klik link berikut: ${shareUrl.value}',
         subject: 'Undangan Grup Ngaji',
       );
     } else {
-      Get.snackbar('Gagal', 'Tautan berbagi belum tersedia');
+      AppToast.error(message: 'Tautan berbagi belum tersedia');
     }
   }
 
@@ -97,14 +100,14 @@ class AddMemberGroupController extends GetxController {
 
         Get.back(); // Close loading dialog
         Get.back(); // Close confirmation dialog
-        Get.snackbar('Success', 'Anggota berhasil ditambahkan');
+        AppToast.success(message: response.data['message']);
       } else {
         Get.back(); // Close loading dialog
-        Get.snackbar('Error', 'Gagal menambahkan anggota');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
       Get.back(); // Close loading dialog
-      Get.snackbar('Error', 'Terjadi kesalahan saat menambahkan anggota');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -122,10 +125,10 @@ class AddMemberGroupController extends GetxController {
         users.assignAll(data.data);
         filteredUsers.assignAll(data.data);
       } else {
-        Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mengambil daftar pengguna');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

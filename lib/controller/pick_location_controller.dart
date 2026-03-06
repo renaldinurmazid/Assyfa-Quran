@@ -7,6 +7,7 @@ import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/controller/prayer_time_detail_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -40,16 +41,16 @@ class PickLocationController extends GetxController {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           Get.back();
-          Get.snackbar('Error', 'Location permissions are denied');
+          AppToast.error(message: 'Akses lokasi ditolak');
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
         Get.back();
-        Get.snackbar(
-          'Error',
-          'Location permissions are permanently denied, we cannot request permissions.',
+        AppToast.error(
+          message:
+              'Akses lokasi ditolak permanen, silakan aktifkan di pengaturan.',
         );
         return;
       }
@@ -90,21 +91,36 @@ class PickLocationController extends GetxController {
         final homeController = Get.find<HomeScreenController>();
         homeController.kabKota.value = location['city'] ?? 'Jakarta';
         homeController.calendarToday.value = '${dateData['hijri']}';
+        homeController.dayName.value = '${dateData['day']}';
         homeController.jadwalToday.assignAll(prayerTimes);
+
+        // Force recalculate prayer times on home screen
+        await homeController.getPrayerTime();
 
         // Refresh PrayerTimeDetailController if it exists
         if (Get.isRegistered<PrayerTimeDetailController>()) {
-          await Get.find<PrayerTimeDetailController>().loadDataFromPrefs();
+          final prayerDetailController = Get.find<PrayerTimeDetailController>();
+          prayerDetailController.kabKota.value = location['city'] ?? 'Jakarta';
+          prayerDetailController.calendarToday.value = '${dateData['hijri']}';
+          prayerDetailController.calendarMasehi.value =
+              '${dateData['day']}, ${dateData['gregorian']}';
+          prayerDetailController.jadwalToday.assignAll(prayerTimes);
+          await prayerDetailController.loadDataFromPrefs();
         }
 
         Get.back(); // close loading dialog
+        AppToast.success(
+          message: 'Lokasi dan jadwal sholat berhasil diperbarui',
+        );
       } else {
         Get.back();
-        Get.snackbar('Error', 'Gagal memuat jadwal sholat');
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat jadwal sholat',
+        );
       }
     } catch (e) {
       Get.back();
-      Get.snackbar('Error', e.toString());
+      AppToast.error(message: 'Terjadi kesalahan: $e');
     }
   }
 }

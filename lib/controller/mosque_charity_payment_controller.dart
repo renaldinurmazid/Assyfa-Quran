@@ -6,6 +6,7 @@ import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/payment_method_model.dart';
 import 'package:quran_app/models/mosque_donation_response_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class MosqueCharityPaymentController extends GetxController {
   final int mosqueCharityId = Get.arguments['id'];
@@ -56,9 +57,13 @@ class MosqueCharityPaymentController extends GetxController {
       if (response.statusCode == 200) {
         final model = PaymentMethodModel.fromJson(response.data);
         paymentMethods.assignAll(model.data);
+      } else {
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat metode pembayaran',
+        );
       }
     } catch (e) {
-      print("Error fetching payment methods: $e");
+      AppToast.error(message: 'Gagal memuat metode pembayaran');
     } finally {
       isLoading.value = false;
     }
@@ -70,11 +75,11 @@ class MosqueCharityPaymentController extends GetxController {
 
   Future<void> submitDonation() async {
     if (nominalController.text.isEmpty) {
-      Get.snackbar('Input Error', 'Nominal infaq tidak boleh kosong');
+      AppToast.warning(message: 'Nominal infaq tidak boleh kosong');
       return;
     }
     if (selectedPaymentMethod.value == null) {
-      Get.snackbar('Input Error', 'Pilih metode pembayaran terlebih dahulu');
+      AppToast.warning(message: 'Pilih metode pembayaran terlebih dahulu');
       return;
     }
 
@@ -99,13 +104,12 @@ class MosqueCharityPaymentController extends GetxController {
         final result = MosqueDonationResponseModel.fromJson(response.data);
         Get.offNamed(Routes.mosqueCharityPaymentDetail, arguments: result.data);
       } else {
-        Get.snackbar(
-          'Error',
-          'Gagal memproses infaq: ${response.data['message'] ?? 'Unknown error'}',
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memproses infaq',
         );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memproses infaq: $e');
+      AppToast.error(message: 'Gagal memproses infaq: $e');
     } finally {
       isLoading.value = false;
     }

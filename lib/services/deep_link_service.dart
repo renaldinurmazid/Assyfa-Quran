@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:app_links/app_links.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
@@ -19,6 +20,9 @@ class DeepLinkService {
   bool _isReady = false;
   Uri? _pendingUri;
 
+  /// Prevents navigating to the same deep link twice (e.g. from initial + stream).
+  Uri? _lastProcessedUri;
+
   void init() {
     _appLinks = AppLinks();
     _handleIncomingLinks();
@@ -28,11 +32,27 @@ class DeepLinkService {
   /// Call this once the main screen (or splash) has finished loading,
   /// so that deferred deep links can be processed.
   void markReady() {
+    if (_isReady) return; // Prevent double-calling
     _isReady = true;
-    if (_pendingUri != null) {
-      _processDeepLink(_pendingUri!);
-      _pendingUri = null;
-    }
+    _flushPendingUri();
+  }
+
+  /// Attempts to navigate to the pending deep-link URI.
+  /// Uses [WidgetsBinding.addPostFrameCallback] + a short delay to guarantee
+  /// the navigation stack has settled after the splash → main transition.
+  void _flushPendingUri() {
+    if (_pendingUri == null) return;
+
+    final uri = _pendingUri!;
+    _pendingUri = null;
+
+    // Wait for the current frame to finish, then add a small delay
+    // to ensure the route transition (splash → main) has fully completed.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 600), () {
+        _safeNavigate(uri);
+      });
+    });
   }
 
   void dispose() {
@@ -42,6 +62,7 @@ class DeepLinkService {
   Future<void> _handleInitialLink() async {
     try {
       final Uri? initialUri = await _appLinks.getInitialLink();
+
       if (initialUri != null) {
         _processDeepLink(initialUri);
       }
@@ -64,32 +85,54 @@ class DeepLinkService {
   void _processDeepLink(Uri uri) {
     print('DeepLink: Processing → $uri');
 
+    // Deduplicate: avoid processing the exact same URI twice
+    // (initial link + stream can fire the same URI)
+    if (_lastProcessedUri != null &&
+        _lastProcessedUri.toString() == uri.toString()) {
+      print('DeepLink: Already processed – skipping');
+      return;
+    }
+
+    // Always save referral code immediately so it's not lost
+    _extractAndSaveReferralCode(uri);
+
     // If the app hasn't finished initializing, queue the link
     if (!_isReady) {
       print('DeepLink: App not ready – queuing');
       _pendingUri = uri;
-      // Still save referral code immediately so it's not lost
-      _extractAndSaveReferralCode(uri);
       return;
     }
 
-    // ════════════════════════════════════════════════
-    // 1. Custom Scheme: quranuna://
-    // ════════════════════════════════════════════════
-    if (uri.scheme == 'quranuna') {
-      _handleCustomScheme(uri);
-      return;
-    }
+    _safeNavigate(uri);
+  }
 
-    // ════════════════════════════════════════════════
-    // 2. Web URL: https://quran.titiktolak.com/...
-    //    Routes:
-    //    - /g/{code}        → Group
-    //    - /c/{id}?ref=XXX  → Campaign
-    //    - /m/{id}?ref=XXX  → Mosque Charity
-    //    (Also with /api/ prefix)
-    // ════════════════════════════════════════════════
-    _handleWebUrl(uri);
+  /// Actually resolve the URI to a route and navigate.
+  /// Wrapped in a try-catch so navigation errors don't crash the app silently.
+  void _safeNavigate(Uri uri) {
+    try {
+      // Mark as last processed to prevent duplicates
+      _lastProcessedUri = uri;
+
+      // ════════════════════════════════════════════════
+      // 1. Custom Scheme: quranuna://
+      // ════════════════════════════════════════════════
+      if (uri.scheme == 'quranuna') {
+        _handleCustomScheme(uri);
+        return;
+      }
+
+      // ════════════════════════════════════════════════
+      // 2. Web URL: https://quran.titiktolak.com/...
+      //    Routes:
+      //    - /g/{code}        → Group
+      //    - /c/{id}?ref=XXX  → Campaign
+      //    - /m/{id}?ref=XXX  → Mosque Charity
+      //    (Also with /api/ prefix)
+      // ════════════════════════════════════════════════
+      _handleWebUrl(uri);
+    } catch (e) {
+      print('DeepLink: Navigation error: $e');
+    }
   }
 
   // ──────────────────────────────────────────────────
@@ -135,8 +178,7 @@ class DeepLinkService {
         break;
 
       default:
-        print('DeepLink: Unknown custom scheme host: $host');
-        _extractAndSaveReferralCode(uri);
+        break;
     }
   }
 
@@ -164,7 +206,6 @@ class DeepLinkService {
     if (cIndex != -1 && cIndex + 1 < segments.length) {
       final campaignId = int.tryParse(segments[cIndex + 1]);
       if (campaignId != null) {
-        _extractAndSaveReferralCode(uri);
         _navigateToCampaign(campaignId);
         return;
       }
@@ -175,14 +216,10 @@ class DeepLinkService {
     if (mIndex != -1 && mIndex + 1 < segments.length) {
       final mosqueId = int.tryParse(segments[mIndex + 1]);
       if (mosqueId != null) {
-        _extractAndSaveReferralCode(uri);
         _navigateToMosqueCharity(mosqueId);
         return;
       }
     }
-
-    // ── Fallback: just save referral code if any ──
-    _extractAndSaveReferralCode(uri);
   }
 
   // ════════════════════════════════════════════════════
@@ -192,26 +229,84 @@ class DeepLinkService {
   /// Navigate to campaign (charity) show screen.
   /// CharityShowController expects: Get.arguments = {'id': int}
   void _navigateToCampaign(int campaignId) {
-    print('DeepLink: → Campaign #$campaignId');
-    Get.toNamed(Routes.charityShow, arguments: {'id': campaignId});
+    print(
+      'DeepLink: Navigating to campaign $campaignId (current route: ${Get.currentRoute})',
+    );
+    _ensureMainAndNavigate(() {
+      Get.toNamed(Routes.charityShow, arguments: {'id': campaignId});
+    });
   }
 
   /// Navigate to mosque charity show screen.
   /// MosqueCharityShowController expects: Get.arguments = {'id': int}
   void _navigateToMosqueCharity(int mosqueId) {
-    print('DeepLink: → Mosque Charity #$mosqueId');
-    Get.toNamed(Routes.mosqueCharityShow, arguments: {'id': mosqueId});
+    print(
+      'DeepLink: Navigating to mosque charity $mosqueId (current route: ${Get.currentRoute})',
+    );
+    _ensureMainAndNavigate(() {
+      Get.toNamed(Routes.mosqueCharityShow, arguments: {'id': mosqueId});
+    });
   }
 
   /// Navigate to group show screen by invite code.
   /// ShowGroupController expects: Get.arguments = int (group ID) or String (code).
-  /// When receiving a code from deep link, we pass it as a String;
-  /// the controller needs to handle resolving code → group detail.
   void _navigateToGroupByCode(String code) {
-    print('DeepLink: → Group invite code: $code');
-    // Try parsing as int first (in case it's an ID)
+    print(
+      'DeepLink: Navigating to group by code "$code" (current route: ${Get.currentRoute})',
+    );
     final asInt = int.tryParse(code);
-    Get.toNamed(Routes.showGroup, arguments: asInt ?? code);
+    _ensureMainAndNavigate(() {
+      Get.toNamed(Routes.showGroup, arguments: asInt ?? code);
+    });
+  }
+
+  /// Ensures the main screen is in the navigation stack before navigating
+  /// to the target route. If the current route is splash or empty (app just
+  /// started), waits until the main route is active.
+  void _ensureMainAndNavigate(VoidCallback navigate) {
+    final currentRoute = Get.currentRoute;
+
+    // If we're on the main screen, navigate directly
+    if (currentRoute == Routes.main) {
+      navigate();
+      return;
+    }
+
+    // If we're on splash or the route is empty/unknown, the splash → main
+    // transition might still be in progress. Wait and retry.
+    if (currentRoute == Routes.splash ||
+        currentRoute == '/' ||
+        currentRoute.isEmpty) {
+      print('DeepLink: Waiting for main screen (current: "$currentRoute")');
+      _waitForMainAndNavigate(navigate, retries: 10);
+      return;
+    }
+
+    // We're on some other screen (maybe already navigated somewhere).
+    // Just push the target route.
+    navigate();
+  }
+
+  /// Polls until [Get.currentRoute] is [Routes.main], then calls [navigate].
+  /// Gives up after [retries] attempts (each 300ms apart).
+  void _waitForMainAndNavigate(VoidCallback navigate, {required int retries}) {
+    if (retries <= 0) {
+      print('DeepLink: Gave up waiting for main screen – navigating anyway');
+      navigate();
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final currentRoute = Get.currentRoute;
+      if (currentRoute == Routes.main) {
+        // Extra safety: wait one more frame so the widget tree is fully built
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          navigate();
+        });
+      } else {
+        _waitForMainAndNavigate(navigate, retries: retries - 1);
+      }
+    });
   }
 
   // ════════════════════════════════════════════════════
@@ -238,7 +333,6 @@ class DeepLinkService {
   }
 
   void _saveReferralCode(String code) {
-    print('DeepLink: Referral code → $code');
     if (Get.isRegistered<AuthController>()) {
       AuthController.to.referralCode.value = code;
     } else {
@@ -246,15 +340,9 @@ class DeepLinkService {
         prefs.setString('referral_code_temp', code);
       });
     }
-    Get.snackbar(
-      'Referral Berhasil',
-      'Kode referral $code berhasil diterapkan.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 
   static Future<void> handlePayload(String payload) async {
-    print('Notification Payload: Processing → $payload');
     final uri = Uri.tryParse(payload);
     if (uri == null) return;
 

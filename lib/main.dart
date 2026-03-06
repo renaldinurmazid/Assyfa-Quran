@@ -12,6 +12,8 @@ import 'package:quran_app/services/notification_service.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:timezone/data/latest_all.dart' as tz; // Add this
 
+import 'package:toastification/toastification.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones(); // Add this
@@ -31,12 +33,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
-      initialBinding: GlobalBinding(),
-      initialRoute: AppPages.initial,
-      getPages: AppPages.routes,
+    return ToastificationWrapper(
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(),
+        initialBinding: GlobalBinding(),
+        initialRoute: AppPages.initial,
+        getPages: AppPages.routes,
+      ),
     );
   }
 }

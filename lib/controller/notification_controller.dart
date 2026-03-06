@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/notification_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 
 class NotificationController extends GetxController {
   static NotificationController get to => Get.find();
@@ -12,10 +14,26 @@ class NotificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchNotifications();
+    if (Get.isRegistered<AuthController>()) {
+      if (AuthController.to.isLogin.value) {
+        fetchNotifications();
+      }
+
+      ever(AuthController.to.isLogin, (bool loggedIn) {
+        if (loggedIn) {
+          fetchNotifications();
+        } else {
+          notifications.clear();
+        }
+      });
+    }
   }
 
   Future<void> fetchNotifications() async {
+    if (!Get.isRegistered<AuthController>() ||
+        !AuthController.to.isLogin.value) {
+      return;
+    }
     try {
       isLoading.value = true;
       final response = await Request().get(Url.notifications);
@@ -25,9 +43,14 @@ class NotificationController extends GetxController {
         notifications.value = data
             .map((e) => NotificationModel.fromJson(e))
             .toList();
+      } else {
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal mengambil notifikasi',
+        );
       }
     } catch (e) {
-      print("Error fetching notifications: $e");
+      print(e);
+      AppToast.error(message: 'Terjadi kesalahan koneksi');
     } finally {
       isLoading.value = false;
     }
@@ -43,9 +66,11 @@ class NotificationController extends GetxController {
           notifications[index].isRead = true;
           notifications.refresh();
         }
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error marking notification as read: $e");
+      AppToast.error(message: 'Gagal menandai notifikasi');
     }
   }
 
@@ -58,9 +83,11 @@ class NotificationController extends GetxController {
           notification.isRead = true;
         }
         notifications.refresh();
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error marking all notifications as read: $e");
+      AppToast.error(message: 'Gagal menandai semua notifikasi');
     }
   }
 }

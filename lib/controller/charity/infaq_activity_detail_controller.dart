@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/donation_detail_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class InfaqActivityDetailController extends GetxController {
   final int donationId;
@@ -24,9 +25,11 @@ class InfaqActivityDetailController extends GetxController {
       if (response.statusCode == 200) {
         final model = DonationDetailModel.fromJson(response.data);
         donationDetail.value = model.data;
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat detail infaq: $e');
+      AppToast.error(message: 'Gagal memuat detail infaq: $e');
     } finally {
       isLoading.value = false;
     }

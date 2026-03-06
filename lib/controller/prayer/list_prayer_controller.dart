@@ -4,7 +4,7 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/prayer_model.dart';
-import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class ListPrayerController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -65,9 +65,11 @@ class ListPrayerController extends GetxController
           allPrayers.addAll(prayerResponse.data?.data ?? []);
         }
         allLastPage.value = prayerResponse.data?.lastPage ?? 1;
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error fetching all prayers: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil doa.');
     } finally {
       isLoadingAll.value = false;
       isLoadingMoreAll.value = false;
@@ -101,9 +103,11 @@ class ListPrayerController extends GetxController
           myPrayers.addAll(prayerResponse.data?.data ?? []);
         }
         myLastPage.value = prayerResponse.data?.lastPage ?? 1;
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error fetching my prayers: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil doa.');
     } finally {
       isLoadingMy.value = false;
       isLoadingMoreMy.value = false;
@@ -122,26 +126,18 @@ class ListPrayerController extends GetxController
         final data = response.data['data'];
         _updatePrayerInLists(prayerId, data['amens_count'], true);
 
-        Get.snackbar(
-          'Aamiin',
-          response.data['message'] ?? 'Doa telah diaminkan',
-          backgroundColor: AppColor.primaryColor,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
+        AppToast.success(
+          message: response.data['message'] ?? 'Doa telah diaminkan',
+          title: 'Aamiin',
         );
       } else if (response.data['status'] == 'error') {
-        Get.snackbar(
-          'Informasi',
-          response.data['message'] ?? 'Anda sudah mengaminkan doa ini',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
+        AppToast.info(
+          message: response.data['message'] ?? 'Anda sudah mengaminkan doa ini',
+          title: 'Informasi',
         );
       }
     } catch (e) {
-      print("Error toggling amen: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengaminkan doa.');
     }
   }
 

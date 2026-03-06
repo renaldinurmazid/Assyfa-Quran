@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/mosque_charity_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class MosqueCharityShowController extends GetxController {
   final dynamic argument = Get.arguments;
@@ -41,10 +42,12 @@ class MosqueCharityShowController extends GetxController {
         // Assuming the structure is { "status": "success", "data": { ... } }
         mosque.value = MosqueCharityData.fromJson(response.data['data']);
       } else {
-        Get.snackbar('Error', 'Gagal memuat detail masjid');
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat detail masjid',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan: $e');
+      AppToast.error(message: 'Terjadi kesalahan: $e');
     } finally {
       isLoading.value = false;
     }

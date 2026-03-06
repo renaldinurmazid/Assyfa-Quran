@@ -1,13 +1,14 @@
-import 'dart:convert';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/models/group/group_show_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class ShowGroupController extends GetxController {
   final isLoading = false.obs;
@@ -18,7 +19,7 @@ class ShowGroupController extends GetxController {
   void copyToClipboard() {
     if (group.value != null) {
       Clipboard.setData(ClipboardData(text: group.value!.code));
-      Get.snackbar('Success', 'Kode grup berhasil disalin');
+      AppToast.success(message: 'Kode grup berhasil disalin');
     }
   }
 
@@ -45,24 +46,21 @@ class ShowGroupController extends GetxController {
   Future<void> fetchGroupByCode(String code) async {
     try {
       isLoading.value = true;
-      final response = await http.get(
-        Uri.parse("${Url.baseUrl}${Url.groups}/by-code/$code"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-        },
+      final response = await Request().get(
+        "${Url.groups}/by-code/$code",
+        useToken: true,
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         group.value = Data.fromJson(data['data']);
         nameController.text = group.value?.name ?? '';
         isPrivate.value = group.value?.isPrivate == 1;
       } else {
-        Get.snackbar('Error', 'Grup tidak ditemukan');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat detail grup');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -71,27 +69,18 @@ class ShowGroupController extends GetxController {
   Future<void> fetchGroupDetail(int id) async {
     try {
       isLoading.value = true;
-      final response = await http.get(
-        Uri.parse("${Url.baseUrl}${Url.groups}/$id"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-        },
-      );
-
-      print(response.body);
+      final response = await Request().get("${Url.groups}/$id", useToken: true);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         group.value = Data.fromJson(data['data']);
         nameController.text = group.value?.name ?? '';
         isPrivate.value = group.value?.isPrivate == 1;
       } else {
-        Get.snackbar('Error', 'Failed to fetch group detail');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print(e);
-      Get.snackbar('Error', 'Failed to fetch group detail');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -100,35 +89,29 @@ class ShowGroupController extends GetxController {
   Future<void> updateGroup() async {
     try {
       if (nameController.text.isEmpty) {
-        Get.snackbar('Error', 'Nama grup tidak boleh kosong');
+        AppToast.error(message: 'Nama grup tidak boleh kosong');
         return;
       }
 
       isLoading.value = true;
-      final response = await http.put(
-        Uri.parse("${Url.baseUrl}${Url.groups}/${group.value!.id}"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
+      final response = await Request().put(
+        "${Url.groups}/${group.value!.id}",
+        data: {
           'name': nameController.text,
           'is_private': isPrivate.value ? 1 : 0,
-        }),
+        },
       );
 
       if (response.statusCode == 200) {
         await fetchGroupDetail(group.value!.id);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
         Get.back();
-        Get.snackbar('Success', 'Grup berhasil diperbarui');
+        AppToast.success(message: response.data['message']);
       } else {
-        Get.snackbar('Error', 'Gagal memperbarui grup');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print(e);
-      Get.snackbar('Error', 'Gagal memperbarui grup');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -137,24 +120,20 @@ class ShowGroupController extends GetxController {
   Future<void> deleteGroup() async {
     try {
       isLoading.value = true;
-      final response = await http.delete(
-        Uri.parse("${Url.baseUrl}${Url.groups}/${group.value!.id}"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-        },
+      final response = await Request().delete(
+        "${Url.groups}/${group.value!.id}",
       );
 
       if (response.statusCode == 200) {
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
         Get.back();
         Get.back();
-        Get.snackbar('Success', 'Grup berhasil dihapus');
+        AppToast.success(message: response.data['message']);
       } else {
-        Get.snackbar('Error', 'Gagal menghapus grup');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal menghapus grup');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -170,33 +149,21 @@ class ShowGroupController extends GetxController {
       if (image == null) return;
 
       isLoading.value = true;
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(
-          "${Url.baseUrl}${Url.groups}/${group.value!.id}/change-cover-image",
-        ),
+
+      final response = await Request().postMultipart(
+        "${Url.groups}/${group.value!.id}/change-cover-image",
+        {'image': await dio.MultipartFile.fromFile(image.path)},
       );
-
-      request.headers.addAll({
-        'Authorization': 'Bearer ${AuthController.to.token.value}',
-        'Accept': 'application/json',
-      });
-
-      request.files.add(await http.MultipartFile.fromPath('image', image.path));
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         await fetchGroupDetail(group.value!.id);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
-        Get.snackbar('Success', 'Cover grup berhasil diperbarui');
+        AppToast.success(message: response.data['message']);
       } else {
-        Get.snackbar('Error', 'Gagal memperbarui cover grup');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print("Error upload: $e");
-      Get.snackbar('Error', 'Gagal memperbarui cover grup');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -212,35 +179,28 @@ class ShowGroupController extends GetxController {
   Future<void> joinGroup() async {
     try {
       if (!AuthController.to.isLogin.value) {
-        Get.snackbar('Peringatan', 'Silakan login terlebih dahulu');
+        AppToast.error(message: 'Silakan login terlebih dahulu');
         return;
       }
 
       isLoading.value = true;
       final currentUserId = AuthController.to.userData['id'];
-      final response = await http.post(
-        Uri.parse("${Url.baseUrl}${Url.groups}/add-user"),
-        headers: {
-          'Authorization': 'Bearer ${AuthController.to.token.value}',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'user_id': currentUserId,
-          'group_id': group.value!.id,
-        }),
+      final response = await Request().post(
+        "${Url.groups}/add-user",
+        data: {'user_id': currentUserId, 'group_id': group.value!.id},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await fetchGroupDetail(group.value!.id);
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
-        Get.snackbar('Success', 'Berhasil bergabung ke grup');
+        AppToast.success(message: 'Berhasil bergabung ke grup');
       } else {
-        final data = jsonDecode(response.body);
-        Get.snackbar('Error', data['message'] ?? 'Gagal bergabung ke grup');
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal bergabung ke grup',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan saat bergabung');
+      AppToast.error(message: 'Terjadi kesalahan saat bergabung');
     } finally {
       isLoading.value = false;
     }

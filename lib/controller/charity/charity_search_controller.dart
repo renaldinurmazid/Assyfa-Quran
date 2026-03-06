@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/charity_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CharitySearchController extends GetxController {
   var searchResults = <Datum>[].obs;
@@ -27,7 +28,7 @@ class CharitySearchController extends GetxController {
         searchResults.clear();
       }
     } catch (e) {
-      print("Search Error: $e");
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
       searchResults.clear();
     } finally {
       isLoading.value = false;

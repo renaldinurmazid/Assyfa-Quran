@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/public_group_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class GroupSearchController extends GetxController {
   var publicGroups = <PublicGroupItem>[].obs;
@@ -22,10 +23,11 @@ class GroupSearchController extends GetxController {
         final model = PublicGroupModel.fromJson(response.data);
         publicGroups.value = model.data.data;
       } else {
+        AppToast.error(message: response.data['message']);
         publicGroups.clear();
       }
     } catch (e) {
-      print("Search Group Error: $e");
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
       publicGroups.clear();
     } finally {
       isLoading.value = false;

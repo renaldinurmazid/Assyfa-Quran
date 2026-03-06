@@ -9,7 +9,7 @@ Groups groupsFromJson(String str) => Groups.fromJson(json.decode(str));
 String groupsToJson(Groups data) => json.encode(data.toJson());
 
 class Groups {
-  bool status;
+  String status;
   List<Datum> data;
 
   Groups({required this.status, required this.data});

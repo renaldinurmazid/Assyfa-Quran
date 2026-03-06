@@ -71,6 +71,7 @@ dependencies:
   play_install_referrer: ^0.5.0
   wakelock_plus: ^1.4.0
   cached_network_image: ^3.4.1
+  toastification: ^3.0.3
 
 dev_dependencies:
   flutter_test:

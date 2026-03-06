@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class LeaderboardController extends GetxController {
   final isLoading = false.obs;
-  final errorMessage = ''.obs;
   final filterIndex = 0.obs; // 0: Weekly, 1: Monthly
 
   final topUsers = <Map<String, dynamic>>[].obs;
@@ -19,7 +19,6 @@ class LeaderboardController extends GetxController {
 
   Future<void> fetchLeaderboard() async {
     isLoading.value = true;
-    errorMessage.value = '';
     try {
       final type = filterIndex.value == 0 ? 'weekly' : 'monthly';
       final response = await Request().get('${Url.leaderboard}?filter=$type');
@@ -27,7 +26,6 @@ class LeaderboardController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data['data'];
         if (data == null) {
-          errorMessage.value = 'Data tidak ditemukan';
           return;
         }
 
@@ -71,11 +69,12 @@ class LeaderboardController extends GetxController {
           myStats.clear();
         }
       } else {
-        errorMessage.value = 'Gagal memuat data (${response.statusCode})';
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat data',
+        );
       }
     } catch (e) {
-      print("Error fetching leaderboard: $e");
-      errorMessage.value = 'Terjadi kesalahan koneksi';
+      AppToast.error(message: 'Terjadi kesalahan koneksi');
     } finally {
       isLoading.value = false;
     }

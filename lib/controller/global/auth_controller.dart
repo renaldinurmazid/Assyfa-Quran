@@ -7,6 +7,7 @@ import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app/services/fcm_service.dart';
@@ -121,16 +122,15 @@ class AuthController extends GetxController {
           await prefsClear.remove('referral_code_temp');
 
           Get.back();
-          Get.snackbar("Success", "Login berhasil");
+          AppToast.success(message: response.data['message']);
         } else {
-          Get.snackbar("Error", "Gagal sinkronasi ke server");
+          AppToast.error(message: response.data['message']);
         }
       }
 
       return user;
     } catch (e) {
-      print(e);
-      Get.snackbar("Error", e.toString());
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
       return null;
     } finally {
       isLoading.value = false;
@@ -251,15 +251,14 @@ class AuthController extends GetxController {
 
         Get.back(); // Close Loading Dialog
         Get.offAllNamed('/');
-        Get.snackbar("Success", message ?? "Berhasil keluar");
+        AppToast.success(message: message ?? "Berhasil keluar");
       } else {
         Get.back(); // Close Loading Dialog
-        Get.snackbar("Error", message ?? "Terjadi kesalahan");
+        AppToast.error(message: message ?? "Terjadi kesalahan");
       }
     } catch (error) {
       Get.back(); // Close Loading Dialog
-      Get.snackbar("Error", "Logout gagal, silahkan coba lagi nanti");
-      print("SignOut Error: $error");
+      AppToast.error(message: "Logout gagal, silahkan coba lagi nanti");
     }
   }
 

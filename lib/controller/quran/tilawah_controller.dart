@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 
 class TilawahController extends GetxController {
   final bookmarks = <Map<String, dynamic>>[].obs;
@@ -32,11 +33,29 @@ class TilawahController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadAllBookmarks();
-    fetchWeeklyStats();
+    if (Get.isRegistered<AuthController>()) {
+      if (AuthController.to.isLogin.value) {
+        loadAllBookmarks();
+        fetchWeeklyStats();
+      }
+
+      ever(AuthController.to.isLogin, (bool loggedIn) {
+        if (loggedIn) {
+          loadAllBookmarks();
+          fetchWeeklyStats();
+        } else {
+          bookmarks.clear();
+          weeklyStats.clear();
+        }
+      });
+    }
   }
 
   Future<void> fetchWeeklyStats() async {
+    if (!Get.isRegistered<AuthController>() ||
+        !AuthController.to.isLogin.value) {
+      return;
+    }
     isLoadingWeekly.value = true;
     try {
       final response = await Request().get(Url.readingHistoryWeekly);
@@ -51,6 +70,10 @@ class TilawahController extends GetxController {
   }
 
   Future<void> loadAllBookmarks() async {
+    if (!Get.isRegistered<AuthController>() ||
+        !AuthController.to.isLogin.value) {
+      return;
+    }
     isLoading.value = true;
     try {
       final response = await Request().get(Url.listUserMarkers);

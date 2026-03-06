@@ -135,11 +135,11 @@ class ProfileScreen extends StatelessWidget {
             style: pSemiBold14.copyWith(color: Colors.grey.shade400),
           ),
           const SizedBox(height: 16),
-          _menuItem(
-            title: 'Notifikasi',
-            icon: IconlyLight.notification,
-            onTap: () => Get.toNamed(Routes.notification),
-          ),
+          // _menuItem(
+          //   title: 'Notifikasi',
+          //   icon: IconlyLight.notification,
+          //   onTap: () => Get.toNamed(Routes.notification),
+          // ),
           _menuItem(
             title: 'Ubah Profil',
             icon: IconlyLight.edit,

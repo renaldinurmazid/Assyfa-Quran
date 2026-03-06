@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/blog_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class BlogDetailController extends GetxController {
   final slug = Get.arguments as String;
@@ -25,9 +25,11 @@ class BlogDetailController extends GetxController {
         blog.value = blogDetailResponse.data;
         // Record view automatically when detail is fetched
         recordView();
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      debugPrint("Error fetching blog detail: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoading.value = false;
     }
@@ -37,7 +39,7 @@ class BlogDetailController extends GetxController {
     try {
       await Request().post(Url.recordView(slug), data: {});
     } catch (e) {
-      debugPrint("Error recording view: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat merekam view');
     }
   }
 
@@ -53,7 +55,6 @@ class BlogDetailController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data['data'];
         if (data != null) {
-          // Update the reactive blog object with new likes and liked status
           blog.value = BlogItem(
             id: blog.value!.id,
             slug: blog.value!.slug,
@@ -71,9 +72,11 @@ class BlogDetailController extends GetxController {
             isLiked: data['liked'] ?? data['is_liked'],
           );
         }
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      debugPrint("Error toggling like: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat menyukai');
     } finally {
       isLiking.value = false;
     }

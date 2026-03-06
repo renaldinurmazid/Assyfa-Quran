@@ -6,6 +6,7 @@ import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/group/show_group_controller.dart';
 import 'package:quran_app/models/group/member_group_tilawah.dart';
 import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class ShowMemberController extends GetxController {
   final isLoading = false.obs;
@@ -42,10 +43,10 @@ class ShowMemberController extends GetxController {
         final result = MemberGroupTilawah.fromJson(response.data);
         group.value = result.data;
       } else {
-        Get.snackbar('Error', 'Gagal mengambil data anggota');
+        AppToast.error(message: 'Gagal mengambil data anggota');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan saat mengambil data');
+      AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoading.value = false;
     }
@@ -70,19 +71,18 @@ class ShowMemberController extends GetxController {
       if (response.statusCode == 200) {
         Get.back(); // Close loading dialog
         Get.back(); // Close confirmation dialog
-        Get.snackbar('Success', 'Anggota berhasil dikeluarkan');
+        AppToast.success(message: 'Anggota berhasil dikeluarkan');
         fetchMemberTilawah(); // Refresh list
         Get.find<ShowGroupController>().fetchGroupDetail(groupId!);
       } else {
         Get.back(); // Close loading dialog
-        Get.snackbar(
-          'Error',
-          response.data['message'] ?? 'Gagal mengeluarkan anggota',
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal mengeluarkan anggota',
         );
       }
     } catch (e) {
       Get.back(); // Close loading dialog
-      Get.snackbar('Error', 'Terjadi kesalahan saat mengeluarkan anggota');
+      AppToast.error(message: 'Terjadi kesalahan saat mengeluarkan anggota');
     } finally {
       isLoading.value = false;
     }

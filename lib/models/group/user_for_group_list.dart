@@ -11,7 +11,7 @@ String userForMemberGroupToJson(UserForMemberGroup data) =>
     json.encode(data.toJson());
 
 class UserForMemberGroup {
-  bool status;
+  String status;
   List<Datum> data;
 
   UserForMemberGroup({required this.status, required this.data});

@@ -9,7 +9,7 @@ GroupShow groupShowFromJson(String str) => GroupShow.fromJson(json.decode(str));
 String groupShowToJson(GroupShow data) => json.encode(data.toJson());
 
 class GroupShow {
-  bool status;
+  String status;
   Data data;
 
   GroupShow({required this.status, required this.data});

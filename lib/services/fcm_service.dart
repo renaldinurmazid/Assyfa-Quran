@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
@@ -188,6 +190,22 @@ class FcmService {
         });
       }
     }
+
+    // Call saveToken on startup if already logged in (wait a bit to ensure AuthController is ready)
+    Future.delayed(const Duration(seconds: 5), () {
+      if (Get.isRegistered<AuthController>() &&
+          AuthController.to.isLogin.value) {
+        saveToken();
+      }
+    });
+
+    // Listen for token refreshes
+    _firebaseMessaging.onTokenRefresh.listen((token) {
+      if (Get.isRegistered<AuthController>() &&
+          AuthController.to.isLogin.value) {
+        saveToken();
+      }
+    });
   }
 
   static String? _lastToken;
@@ -201,7 +219,34 @@ class FcmService {
 
     _isSaving = true;
     try {
-      String? token = await _firebaseMessaging.getToken();
+      String? token;
+
+      // On iOS, we must ensure APNS token is available before calling getToken()
+      if (Platform.isIOS) {
+        int retryCount = 0;
+        while (retryCount < 3) {
+          final apnsToken = await _firebaseMessaging.getAPNSToken();
+          if (apnsToken != null) break;
+
+          print("Waiting for APNS token... (attempt ${retryCount + 1})");
+          await Future.delayed(Duration(seconds: 2 * (retryCount + 1)));
+          retryCount++;
+        }
+      }
+
+      try {
+        token = await _firebaseMessaging.getToken();
+      } on FirebaseException catch (e) {
+        if (e.code == 'apns-token-not-set') {
+          print(
+            "FCM Save Token: APNS token still not set, will try again later.",
+          );
+          _isSaving = false;
+          return;
+        }
+        rethrow;
+      }
+
       if (token != null) {
         if (!AuthController.to.isLogin.value) {
           _isSaving = false;

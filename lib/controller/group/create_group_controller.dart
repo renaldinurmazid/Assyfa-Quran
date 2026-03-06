@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CreateGroupController extends GetxController {
   final nameController = TextEditingController();
@@ -12,7 +13,7 @@ class CreateGroupController extends GetxController {
   Future<void> createGroup() async {
     try {
       if (nameController.text.isEmpty) {
-        Get.snackbar("Error", "Nama grup tidak boleh kosong");
+        AppToast.error(message: 'Nama grup tidak boleh kosong');
         return;
       }
 
@@ -29,14 +30,12 @@ class CreateGroupController extends GetxController {
       if (response.statusCode == 201 || response.statusCode == 200) {
         await Get.find<GroupNgajiScreenController>().fetchMyGroups();
         Get.back(); // Kembali ke halaman list grup
-        Get.snackbar("Success", "Grup berhasil dibuat");
+        AppToast.success(message: response.data['message']);
       } else {
-        final data = response.data;
-        Get.snackbar("Error", data['message'] ?? "Gagal membuat grup");
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print(e);
-      Get.snackbar("Error", "Terjadi kesalahan: $e");
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

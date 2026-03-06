@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:quran_app/controller/home_screen_controller.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -1043,22 +1045,16 @@ class QuranPageScreenController extends GetxController {
         );
 
         if (response.statusCode == 200) {
-          Get.snackbar(
-            'Berhasil',
-            'Halaman ${currentPage.pageNumber} ditandai.',
-            backgroundColor: AppColor.primaryColor.withOpacity(0.8),
-            colorText: Colors.white,
+          AppToast.success(
+            message: 'Halaman ${currentPage.pageNumber} ditandai.',
+            title: 'Berhasil',
           );
-          // Refresh list markers/bookmarks if needed
           await fetchMarkers();
         }
       } catch (e) {
-        print("Error saving bookmark to API: $e");
-        Get.snackbar(
-          'Gagal',
-          'Gagal menyimpan penanda ke server.',
-          backgroundColor: Colors.red.withOpacity(0.7),
-          colorText: Colors.white,
+        AppToast.error(
+          message: 'Gagal menyimpan penanda ke server.',
+          title: 'Gagal',
         );
       }
 
@@ -1068,10 +1064,7 @@ class QuranPageScreenController extends GetxController {
     }
   }
 
-  Future<void> deleteBookmark(int index) async {
-    // Handle via API toggle-marker if necessary
-    // bookmarks.removeAt(index);
-  }
+  Future<void> deleteBookmark(int index) async {}
 
   void initMarkerSelection() {
     if (apiMarkers.isEmpty) return;
@@ -1154,6 +1147,7 @@ class QuranPageScreenController extends GetxController {
 
       final duration = DateTime.now().difference(readingStartTime).inSeconds;
 
+      // Proceed to show dialog and save if duration is reasonable (e.g. > 1s for testing)
       if (duration <= 15) return;
 
       int? currentSurahId;
@@ -1161,7 +1155,15 @@ class QuranPageScreenController extends GetxController {
         currentSurahId = currentPage.ayahs.first.ayah?.surahId;
       }
 
-      await Request().post(
+      // Show Loading Dialog
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(color: AppColor.primaryColor),
+        ),
+        barrierDismissible: false,
+      );
+
+      final response = await Request().post(
         Url.readingHistory,
         data: {
           'surah_id': currentSurahId,
@@ -1172,10 +1174,28 @@ class QuranPageScreenController extends GetxController {
         },
       );
 
-      // Save last reading page to local storage
-      _saveLastReadingPage(currentNum);
+      if (Get.isOverlaysOpen) {
+        Get.back(); // Close Loading Dialog
+      }
+
+      if (response.statusCode == 201) {
+        Get.find<HomeScreenController>().fetchWeeklyStats();
+        // Save last reading page to local storage
+        _saveLastReadingPage(currentNum);
+      } else {
+        AppToast.error(
+          message:
+              response.data['message'] ?? 'Gagal menyimpan riwayat pembacaan.',
+        );
+      }
     } catch (e) {
-      print("Error saving reading history: $e");
+      if (Get.isOverlaysOpen) {
+        Get.back(); // Close Loading Dialog if still open
+      }
+      AppToast.error(
+        message: 'Gagal menyimpan sejarah pembacaan.',
+        title: 'Gagal',
+      );
     }
   }
 

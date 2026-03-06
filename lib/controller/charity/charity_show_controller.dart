@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/campaign_detail_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class CharityShowController extends GetxController {
   final int campaignId = Get.arguments['id'];
@@ -24,10 +25,10 @@ class CharityShowController extends GetxController {
         final detailModel = CampaignDetailModel.fromJson(response.data);
         campaign.value = detailModel.data;
       } else {
-        Get.snackbar('Error', 'Failed to load campaign details');
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

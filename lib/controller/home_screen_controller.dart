@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/theme/app_color.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
@@ -373,9 +373,13 @@ class HomeScreenController extends GetxController {
         calendarToday.value = '${dateData['hijri']}';
         dayName.value = '${dateData['day']}';
         jadwalToday.assignAll(prayerTimes);
+      } else {
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal mengambil waktu sholat',
+        );
       }
     } catch (e) {
-      print('Error getting prayer time: $e');
+      AppToast.error(message: 'Gagal mengambil waktu sholat');
     } finally {
       isLoadingPrayerTime.value = false;
     }
@@ -420,7 +424,7 @@ class HomeScreenController extends GetxController {
         weeklyStats.value = response.data['data'];
       }
     } catch (e) {
-      print("Error fetching weekly stats: $e");
+      AppToast.error(message: 'Gagal mengambil data statistik mingguan');
     } finally {
       isLoadingWeekly.value = false;
     }
@@ -433,9 +437,13 @@ class HomeScreenController extends GetxController {
       if (response.statusCode == 200) {
         final bannerResponse = BannerResponse.fromJson(response.data);
         dataBanner.assignAll(bannerResponse.data);
+      } else {
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat banner',
+        );
       }
     } catch (e) {
-      print("Error fetching banners: $e");
+      AppToast.error(message: 'Gagal memuat banner');
     } finally {
       isLoadingBanner.value = false;
     }
@@ -448,9 +456,11 @@ class HomeScreenController extends GetxController {
       if (response.statusCode == 200) {
         final prayerResponse = PrayerResponse.fromJson(response.data);
         prayers.assignAll(prayerResponse.data?.data ?? []);
+      } else {
+        AppToast.error(message: response.data['message'] ?? 'Gagal memuat doa');
       }
     } catch (e) {
-      print("Error fetching prayers: $e");
+      AppToast.error(message: 'Gagal memuat doa');
     } finally {
       isLoadingPrayers.value = false;
     }
@@ -483,26 +493,16 @@ class HomeScreenController extends GetxController {
             isMyPrayer: current.isMyPrayer,
           );
         }
-        Get.snackbar(
-          'Aamiin',
-          response.data['message'] ?? 'Doa telah diaminkan',
-          backgroundColor: AppColor.primaryColor,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
+        AppToast.success(
+          message: response.data['message'] ?? 'Doa telah diaminkan',
         );
       } else if (response.data['status'] == 'error') {
-        Get.snackbar(
-          'Informasi',
-          response.data['message'] ?? 'Anda sudah mengaminkan doa ini',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
+        AppToast.info(
+          message: response.data['message'] ?? 'Anda sudah mengaminkan doa ini',
         );
       }
     } catch (e) {
-      print("Error toggling amen: $e");
+      AppToast.error(message: 'Terjadi kesalahan saat mengaminkan doa');
     }
   }
 }

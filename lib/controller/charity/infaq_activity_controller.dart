@@ -3,6 +3,7 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/donation_history_model.dart';
 import 'package:quran_app/models/mosque_donation_history_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class InfaqActivityController extends GetxController {
   var isLoading = true.obs;
@@ -45,9 +46,11 @@ class InfaqActivityController extends GetxController {
         final model = DonationHistoryModel.fromJson(response.data);
         donations.addAll(model.data.data);
         hasNextPage.value = model.data.nextPageUrl != null;
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print('Error fetching infaq: $e');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }
@@ -69,9 +72,11 @@ class InfaqActivityController extends GetxController {
         final model = MosqueDonationHistoryModel.fromJson(response.data);
         mosqueDonations.addAll(model.data.data);
         mosqueHasNextPage.value = model.data.nextPageUrl != null;
+      } else {
+        AppToast.error(message: response.data['message']);
       }
     } catch (e) {
-      print('Error fetching mosque infaq: $e');
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/services/notification_service.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:geolocator/geolocator.dart';
 
 class PrayerTimeDetailController extends GetxController {
@@ -92,7 +93,7 @@ class PrayerTimeDetailController extends GetxController {
         _schedulePrayerNotifications();
       }
     } catch (e) {
-      print('Error loading prayer time data: $e');
+      AppToast.error(message: 'Gagal memuat data jadwal sholat');
     } finally {
       isLoading.value = false;
     }
@@ -125,7 +126,7 @@ class PrayerTimeDetailController extends GetxController {
           }
         }
       } catch (e) {
-        print('Error getting GPS: $e');
+        AppToast.error(message: 'Gagal mendapatkan koordinat GPS');
       }
 
       // Build query params
@@ -164,9 +165,16 @@ class PrayerTimeDetailController extends GetxController {
         jadwalToday.assignAll(prayerTimes);
         _calculateNextPrayer();
         _schedulePrayerNotifications();
+      } else {
+        AppToast.error(
+          message:
+              response.data['message'] ?? 'Gagal memperbarui jadwal sholat',
+        );
       }
     } catch (e) {
-      print('Error refreshing prayer times: $e');
+      AppToast.error(
+        message: 'Terjadi kesalahan koneksi saat memperbarui jadwal',
+      );
     } finally {
       isLoading.value = false;
     }
@@ -257,7 +265,7 @@ class PrayerTimeDetailController extends GetxController {
             soundName: soundName,
           );
         } catch (e) {
-          print('Error scheduling notification for $notifKey: $e');
+          AppToast.error(message: 'Gagal mengatur notifikasi untuk $notifKey');
         }
       } else {
         await NotificationService.cancel(idCounter);
@@ -357,7 +365,7 @@ class PrayerTimeDetailController extends GetxController {
         }
       }
     } catch (e) {
-      print('Error playing audio: $e');
+      AppToast.error(message: 'Gagal memutar audio');
     }
   }
 
