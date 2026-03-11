@@ -9,14 +9,23 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  /// Prevents multiple initializations
+  static bool _initialized = false;
+
   static Future<void> init() async {
+    if (_initialized) return;
+
     tz.initializeTimeZones();
 
     try {
       final info = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(info.identifier));
     } catch (e) {
-      print('Could not set local location: $e');
+      print('NotificationService: Could not set local location: $e');
+      // Fallback to Asia/Jakarta since the app is for Indonesian users
+      try {
+        tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
+      } catch (_) {}
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -58,14 +67,29 @@ class NotificationService {
       }
     }
 
-    // Request exact alarm permission for Android 12+ (API 31+)
+    // Request notification permission for Android 13+ (API 33+)
     final androidPlugin = _notificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
     if (androidPlugin != null) {
+      // Request POST_NOTIFICATIONS permission (Android 13+)
+      await androidPlugin.requestNotificationsPermission();
+      // Request exact alarm permission for Android 12+ (API 31+)
       await androidPlugin.requestExactAlarmsPermission();
     }
+
+    _initialized = true;
+    print('NotificationService: Initialized successfully');
+  }
+
+  /// Cancel all scheduled prayer notifications before rescheduling
+  static Future<void> cancelAllPrayerNotifications() async {
+    // Prayer notification IDs are 1-5 (fajr, dhuhr, asr, maghrib, isha)
+    for (int i = 1; i <= 5; i++) {
+      await _notificationsPlugin.cancel(i);
+    }
+    print('NotificationService: Cancelled all prayer notifications');
   }
 
   static Future<void> schedulePrayerNotification({
@@ -98,19 +122,32 @@ class NotificationService {
           sound: androidSoundRawResourceName != null
               ? RawResourceAndroidNotificationSound(androidSoundRawResourceName)
               : null,
+          // Ensure notification appears even in Do Not Disturb on some devices
+          category: AndroidNotificationCategory.alarm,
+          fullScreenIntent: true,
         );
 
     NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidUniqueDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
 
-    // Ensure scheduled time is in the future
+    // Convert to TZDateTime
     var tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
-    if (tzScheduledTime.isBefore(tz.TZDateTime.now(tz.local))) {
-      if (tzScheduledTime.isBefore(tz.TZDateTime.now(tz.local))) {
-        tzScheduledTime = tzScheduledTime.add(const Duration(days: 1));
-      }
+
+    // Ensure scheduled time is in the future
+    final now = tz.TZDateTime.now(tz.local);
+    if (tzScheduledTime.isBefore(now)) {
+      tzScheduledTime = tzScheduledTime.add(const Duration(days: 1));
     }
+
+    print(
+      'NotificationService: Scheduling "$title" at $tzScheduledTime (id=$id, sound=$soundName)',
+    );
 
     await _notificationsPlugin.zonedSchedule(
       id,

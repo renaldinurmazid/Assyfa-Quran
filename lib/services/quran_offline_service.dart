@@ -73,12 +73,25 @@ class QuranOfflineService {
     final quranDir = await _getQuranDir(type);
     final indexUrl = '${Url.baseUrl}${Url.quranOfflineIndex}?qurantype=$type';
     final indexResponse = await dio.get(indexUrl);
+
     if (indexResponse.statusCode == 200) {
+      var data = indexResponse.data;
+      if (data == null || data is! Map) {
+        throw Exception('Failed to download index: Invalid response data');
+      }
+
+      // Handle wrapper if exists
+      if (data.containsKey('data') && data['data'] is Map) {
+        data = data['data'];
+      }
+
       final indexFile = File(p.join(quranDir.path, 'index.json'));
-      await indexFile.writeAsString(json.encode(indexResponse.data));
-      return indexResponse.data['total_pages'] ?? 604;
+      await indexFile.writeAsString(json.encode(data));
+      return (data['total_pages'] as int?) ?? 604;
     } else {
-      throw Exception('Failed to download index');
+      throw Exception(
+        'Failed to download index: Server returned ${indexResponse.statusCode}',
+      );
     }
   }
 
@@ -89,19 +102,35 @@ class QuranOfflineService {
     final pageUrl = '${Url.baseUrl}${Url.quranOfflinePage}/$i?qurantype=$type';
     final pageResponse = await dio.get(pageUrl);
 
-    if (pageResponse.statusCode == 200) {
-      final pageData = pageResponse.data;
+    print("Page response: ${pageResponse.data}");
 
-      // Save Page JSON
+    if (pageResponse.statusCode == 200) {
+      var pageData = pageResponse.data;
+      if (pageData == null || pageData is! Map) {
+        throw Exception('Failed to download page $i: Invalid response data');
+      }
+
+      // Handle wrapper if exists (e.g. {status: success, data: { ... } })
+      if (pageData.containsKey('data') && pageData['data'] is Map) {
+        pageData = pageData['data'];
+      }
+
+      // Save Page JSON (Saving ONLY the inner data)
       final pageFile = File(p.join(quranDir.path, 'page_$i.json'));
       await pageFile.writeAsString(json.encode(pageData));
 
       // Download Image
-      final imageUrl = pageData['image_path'];
-      final extension = p.extension(imageUrl).split('?').first;
-      final imageFile = File(p.join(imagesDir.path, 'page_$i$extension'));
+      final String? imageUrl = pageData['image_path'];
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        final extension = p.extension(imageUrl).split('?').first;
+        final imageFile = File(p.join(imagesDir.path, 'page_$i$extension'));
 
-      await dio.download(imageUrl, imageFile.path);
+        await dio.download(imageUrl, imageFile.path);
+      } else {
+        print(
+          "Warning: image_path is null or empty for page $i in data: $pageData",
+        );
+      }
     } else {
       throw Exception('Failed to download page $i');
     }
@@ -154,12 +183,13 @@ class QuranOfflineService {
 
       // Update image_path to local path
       final imagesDir = await _getImagesDir(type);
-      final originalPath = data['image_path'] as String;
-      final extension = p.extension(originalPath).split('?').first;
-      final localImagePath = p.join(
-        imagesDir.path,
-        'page_$pageNumber$extension',
-      );
+      final String? originalPath = data['image_path'];
+      String localImagePath = "";
+
+      if (originalPath != null && originalPath.isNotEmpty) {
+        final extension = p.extension(originalPath).split('?').first;
+        localImagePath = p.join(imagesDir.path, 'page_$pageNumber$extension');
+      }
 
       // Mapping offline data to Datum model
       final List<dynamic> surahsJson = data['surahs'] ?? [];

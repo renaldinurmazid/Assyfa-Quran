@@ -1,6 +1,6 @@
 class Url {
-  // static const String baseUrl = 'https://quran.titiktolak.com';
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'https://quran.titiktolak.com';
+  // static const String baseUrl = 'http://127.0.0.1:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -46,4 +46,10 @@ class Url {
   static String prayerDetail(int id) => '/api/prayers/$id';
   static String amenPrayer(int id) => '/api/prayers/$id/amen';
   static const String prayerTimes = '/api/prayer-times';
+
+  // Popups
+  static const String popups = '/api/popups';
+  static String popupView(int id) => '/api/popups/$id/view';
+  static String popupDismiss(int id) => '/api/popups/$id/dismiss';
+  static String popupClick(int id) => '/api/popups/$id/click';
 }

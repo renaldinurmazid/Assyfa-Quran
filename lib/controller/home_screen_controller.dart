@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/controller/popup_controller.dart';
+import 'package:quran_app/widgets/popup_widget.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:quran_app/models/banner_model.dart';
@@ -71,6 +73,8 @@ class HomeScreenController extends GetxController {
         if (loggedIn == true) {
           fetchWeeklyStats();
           fetchPrayers();
+          // Re-fetch popups after login (server filters show_once)
+          _fetchAndShowPopups();
         } else {
           weeklyStats.clear();
           fetchPrayers();
@@ -86,7 +90,20 @@ class HomeScreenController extends GetxController {
       if (jadwalToday.isNotEmpty) {
         _calculatePrayers(this);
       }
+
+      // Fetch and show popups after a short delay for smooth UX
+      _fetchAndShowPopups();
     });
+  }
+
+  Future<void> _fetchAndShowPopups() async {
+    // Delay to let home screen settle
+    await Future.delayed(const Duration(milliseconds: 1500));
+    final popupController = Get.put(PopupController());
+    await popupController.fetchPopups();
+    if (popupController.popups.isNotEmpty) {
+      PopupWidget.showPopups();
+    }
   }
 
   @override

@@ -218,7 +218,13 @@ class PrayerTimeDetailController extends GetxController {
       'isha': 'Isya',
     };
 
-    if (jadwalToday.isEmpty) return;
+    if (jadwalToday.isEmpty) {
+      print('PrayerNotif: jadwalToday is empty, skipping scheduling');
+      return;
+    }
+
+    // Cancel all existing prayer notifications before rescheduling
+    await NotificationService.cancelAllPrayerNotifications();
 
     int idCounter = 1;
     for (var entry in keyMap.entries) {
@@ -226,11 +232,26 @@ class PrayerTimeDetailController extends GetxController {
       final notifKey = entry.value;
 
       final timeStr = jadwalToday[jadwalKey] as String?;
-      if (timeStr == null) continue;
+      if (timeStr == null) {
+        print('PrayerNotif: No time found for $jadwalKey, skipping');
+        idCounter++;
+        continue;
+      }
 
       final parts = timeStr.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
+      if (parts.length < 2) {
+        print('PrayerNotif: Invalid time format "$timeStr" for $jadwalKey');
+        idCounter++;
+        continue;
+      }
+
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour == null || minute == null) {
+        print('PrayerNotif: Could not parse time "$timeStr" for $jadwalKey');
+        idCounter++;
+        continue;
+      }
 
       DateTime scheduledTime = DateTime(
         now.year,
@@ -246,13 +267,14 @@ class PrayerTimeDetailController extends GetxController {
 
       final setting = notificationSettings[notifKey] ?? 'adzan';
       String soundName = 'silent';
-      if (setting == 'beep')
+      if (setting == 'beep') {
         soundName = 'beep';
-      else if (setting == 'adzan') {
-        if (notifKey == 'Subuh')
+      } else if (setting == 'adzan') {
+        if (notifKey == 'Subuh') {
           soundName = 'adzan_subuh';
-        else
+        } else {
           soundName = 'adzan_general';
+        }
       }
 
       if (soundName != 'silent') {
@@ -264,14 +286,20 @@ class PrayerTimeDetailController extends GetxController {
             scheduledTime: scheduledTime,
             soundName: soundName,
           );
+          print(
+            'PrayerNotif: Scheduled $notifKey at $scheduledTime (id=$idCounter, sound=$soundName)',
+          );
         } catch (e) {
+          print('PrayerNotif: Failed to schedule $notifKey: $e');
           AppToast.error(message: 'Gagal mengatur notifikasi untuk $notifKey');
         }
       } else {
+        print('PrayerNotif: $notifKey set to silent, skipping');
         await NotificationService.cancel(idCounter);
       }
       idCounter++;
     }
+    print('PrayerNotif: Scheduling complete');
   }
 
   void _updateCountdown() {
