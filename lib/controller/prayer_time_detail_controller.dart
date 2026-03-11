@@ -28,6 +28,31 @@ class PrayerTimeDetailController extends GetxController {
     loadDataFromPrefs();
     loadNotificationSettings();
     _startTimer();
+    _checkExactAlarmPermission();
+  }
+
+  Future<void> _checkExactAlarmPermission() async {
+    isExactAlarmGranted.value =
+        await NotificationService.canScheduleExactAlarms();
+    print('PrayerNotif: exactAlarmGranted=${isExactAlarmGranted.value}');
+  }
+
+  /// Panggil dari UI (tombol/banner) untuk meminta user mengizinkan exact alarm
+  Future<void> checkAndRequestExactAlarm() async {
+    final granted = await NotificationService.canScheduleExactAlarms();
+    if (!granted) {
+      // Buka halaman pengaturan alarm di Settings
+      await NotificationService.requestExactAlarmPermission();
+      // Cek ulang setelah user kembali
+      await Future.delayed(const Duration(seconds: 1));
+      isExactAlarmGranted.value =
+          await NotificationService.canScheduleExactAlarms();
+      if (isExactAlarmGranted.value) {
+        await _schedulePrayerNotifications();
+      }
+    } else {
+      isExactAlarmGranted.value = true;
+    }
   }
 
   final calendarToday = '-'.obs;
@@ -42,6 +67,8 @@ class PrayerTimeDetailController extends GetxController {
   final countdown = '-00:00:00'.obs;
   final isPrayerArrived = false.obs;
   final showHeartbeat = true.obs;
+  final isExactAlarmGranted =
+      true.obs; // track apakah exact alarm permission sudah di-grant
   Timer? _timer;
   Timer? _heartbeatTimer;
   DateTime? _prayerArrivalTime;
@@ -223,6 +250,10 @@ class PrayerTimeDetailController extends GetxController {
       return;
     }
 
+    // Update status exact alarm permission
+    isExactAlarmGranted.value =
+        await NotificationService.canScheduleExactAlarms();
+
     // Cancel all existing prayer notifications before rescheduling
     await NotificationService.cancelAllPrayerNotifications();
 
@@ -260,7 +291,6 @@ class PrayerTimeDetailController extends GetxController {
         hour,
         minute,
       );
-
       if (scheduledTime.isBefore(now)) {
         scheduledTime = scheduledTime.add(const Duration(days: 1));
       }
@@ -290,8 +320,9 @@ class PrayerTimeDetailController extends GetxController {
             'PrayerNotif: Scheduled $notifKey at $scheduledTime (id=$idCounter, sound=$soundName)',
           );
         } catch (e) {
+          // Log error tapi LANJUTKAN ke waktu sholat berikutnya
+          // Jangan tampilkan toast di sini (terlalu banyak toast jika semua gagal)
           print('PrayerNotif: Failed to schedule $notifKey: $e');
-          AppToast.error(message: 'Gagal mengatur notifikasi untuk $notifKey');
         }
       } else {
         print('PrayerNotif: $notifKey set to silent, skipping');
@@ -299,7 +330,9 @@ class PrayerTimeDetailController extends GetxController {
       }
       idCounter++;
     }
-    print('PrayerNotif: Scheduling complete');
+    print(
+      'PrayerNotif: Scheduling complete (exactAlarm=${isExactAlarmGranted.value})',
+    );
   }
 
   void _updateCountdown() {

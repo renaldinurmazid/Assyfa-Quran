@@ -441,7 +441,7 @@ class HomeScreenController extends GetxController {
         weeklyStats.value = response.data['data'];
       }
     } catch (e) {
-      AppToast.error(message: 'Gagal mengambil data statistik mingguan');
+      print(e);
     } finally {
       isLoadingWeekly.value = false;
     }

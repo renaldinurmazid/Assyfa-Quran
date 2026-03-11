@@ -83,6 +83,27 @@ class NotificationService {
     print('NotificationService: Initialized successfully');
   }
 
+  /// Check if exact alarms permission is granted (Android 12+ / API 31+)
+  static Future<bool> canScheduleExactAlarms() async {
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin == null) return true; // non-Android, assume ok
+    return await androidPlugin.canScheduleExactNotifications() ?? false;
+  }
+
+  /// Minta user untuk mengizinkan exact alarm di Settings (Android 12+)
+  static Future<void> requestExactAlarmPermission() async {
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin != null) {
+      await androidPlugin.requestExactAlarmsPermission();
+    }
+  }
+
   /// Cancel all scheduled prayer notifications before rescheduling
   static Future<void> cancelAllPrayerNotifications() async {
     // Prayer notification IDs are 1-5 (fajr, dhuhr, asr, maghrib, isha)
@@ -149,13 +170,28 @@ class NotificationService {
       'NotificationService: Scheduling "$title" at $tzScheduledTime (id=$id, sound=$soundName)',
     );
 
+    // Cek apakah exact alarm permission sudah di-grant oleh user.
+    // Di debug (install via ADB) selalu granted, tapi di production
+    // (install dari Play Store) user harus approve manual dari Settings.
+    // Jika tidak di-cek, zonedSchedule akan throw PlatformException di production.
+    final bool exactAlarmsGranted = await canScheduleExactAlarms();
+    final AndroidScheduleMode scheduleMode = exactAlarmsGranted
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexact;
+
+    if (!exactAlarmsGranted) {
+      print(
+        'NotificationService: exactAlarm permission not granted, using inexact mode for id=$id',
+      );
+    }
+
     await _notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
       tzScheduledTime,
       platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: scheduleMode,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
