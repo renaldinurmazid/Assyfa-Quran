@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/quran/quran_page_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -772,48 +771,45 @@ class QuranPageScreen extends StatelessWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (AuthController.to.isLogin.value &&
-                                    !controller.isOfflineMode.value) ...[
-                                  InkWell(
-                                    onTap: () {
-                                      controller.initMarkerSelection();
-                                      controller.isFocus.value = true;
-                                      controller.isBookmarkVisible.value = true;
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 14,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            IconlyBold.bookmark,
-                                            size: 22,
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Tandai Halaman Ini',
-                                            style: pSemiBold14,
-                                          ),
-                                          const Spacer(),
-                                          Icon(
-                                            IconlyLight.arrow_right_2,
-                                            size: 16,
-                                            color: Colors.grey.shade400,
-                                          ),
-                                        ],
-                                      ),
+                                InkWell(
+                                  onTap: () {
+                                    controller.initMarkerSelection();
+                                    controller.isFocus.value = true;
+                                    controller.isBookmarkVisible.value = true;
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 14,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          IconlyBold.bookmark,
+                                          size: 22,
+                                          color: Theme.of(
+                                            context,
+                                          ).primaryColor,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Tandai Halaman Ini',
+                                          style: pSemiBold14,
+                                        ),
+                                        const Spacer(),
+                                        Icon(
+                                          IconlyLight.arrow_right_2,
+                                          size: 16,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Container(
-                                    height: 1,
-                                    color: Colors.grey.shade100,
-                                  ),
-                                ],
+                                ),
+                                Container(
+                                  height: 1,
+                                  color: Colors.grey.shade100,
+                                ),
                                 // Audio Player Row
                                 Padding(
                                   padding: const EdgeInsets.all(12),
@@ -821,30 +817,34 @@ class QuranPageScreen extends StatelessWidget {
                                     children: [
                                       GestureDetector(
                                         onTap: () => controller.toggleAudio(),
-                                        child: Container(
-                                          height: 48,
-                                          width: 48,
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor,
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Theme.of(
-                                                  context,
-                                                ).primaryColor.withOpacity(0.3),
-                                                blurRadius: 10,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Icon(
-                                            controller.isPlaying.value
-                                                ? IconlyBold.voice
-                                                : IconlyBold.play,
-                                            color: Colors.white,
-                                            size: 24,
+                                        child: Obx(
+                                          () => Container(
+                                            height: 48,
+                                            width: 48,
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(
+                                                context,
+                                              ).primaryColor,
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).primaryColor.withOpacity(
+                                                    0.3,
+                                                  ),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Icon(
+                                              controller.isPlaying.value
+                                                  ? IconlyBold.voice
+                                                  : IconlyBold.play,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -863,35 +863,37 @@ class QuranPageScreen extends StatelessWidget {
                                             ),
                                           ),
                                           child: DropdownButtonHideUnderline(
-                                            child: DropdownButton<String>(
-                                              value: controller
-                                                  .selectedReciter
-                                                  .value,
-                                              isExpanded: true,
-                                              icon: Icon(
-                                                IconlyLight.arrow_down_2,
-                                                size: 16,
-                                                color: Theme.of(
-                                                  context,
-                                                ).primaryColor,
-                                              ),
-                                              items: controller.reciters.map((
-                                                reciter,
-                                              ) {
-                                                return DropdownMenuItem(
-                                                  value: reciter['code'],
-                                                  child: Text(
-                                                    reciter['name']!,
-                                                    style: pMedium14.copyWith(
-                                                      color: Theme.of(
-                                                        context,
-                                                      ).primaryColor,
+                                            child: Obx(
+                                              () => DropdownButton<String>(
+                                                value: controller
+                                                    .selectedReciter
+                                                    .value,
+                                                isExpanded: true,
+                                                icon: Icon(
+                                                  IconlyLight.arrow_down_2,
+                                                  size: 16,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).primaryColor,
+                                                ),
+                                                items: controller.reciters.map((
+                                                  reciter,
+                                                ) {
+                                                  return DropdownMenuItem(
+                                                    value: reciter['code'],
+                                                    child: Text(
+                                                      reciter['name']!,
+                                                      style: pMedium14.copyWith(
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).primaryColor,
+                                                      ),
                                                     ),
-                                                  ),
-                                                );
-                                              }).toList(),
-                                              onChanged: (value) => controller
-                                                  .changeReciter(value),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (value) => controller
+                                                    .changeReciter(value),
+                                              ),
                                             ),
                                           ),
                                         ),

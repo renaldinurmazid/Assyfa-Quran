@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TilawahController extends GetxController {
   final bookmarks = <Map<String, dynamic>>[].obs;
@@ -33,19 +35,14 @@ class TilawahController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (Get.isRegistered<AuthController>()) {
-      if (AuthController.to.isLogin.value) {
-        loadAllBookmarks();
-        fetchWeeklyStats();
-      }
+    loadAllBookmarks();
+    fetchWeeklyStats();
 
+    if (Get.isRegistered<AuthController>()) {
       ever(AuthController.to.isLogin, (bool loggedIn) {
         if (loggedIn) {
           loadAllBookmarks();
           fetchWeeklyStats();
-        } else {
-          bookmarks.clear();
-          weeklyStats.clear();
         }
       });
     }
@@ -70,21 +67,18 @@ class TilawahController extends GetxController {
   }
 
   Future<void> loadAllBookmarks() async {
-    if (!Get.isRegistered<AuthController>() ||
-        !AuthController.to.isLogin.value) {
-      return;
-    }
     isLoading.value = true;
     try {
-      final response = await Request().get(Url.listUserMarkers);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        bookmarks.value = data
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+      final prefs = await SharedPreferences.getInstance();
+      final String? bookmarksJson = prefs.getString('local_bookmarks');
+      if (bookmarksJson != null) {
+        final List<dynamic> data = jsonDecode(bookmarksJson);
+        bookmarks.value = data.map((e) => Map<String, dynamic>.from(e)).toList();
+      } else {
+        bookmarks.clear();
       }
     } catch (e) {
-      print("Error loading bookmarks from API: $e");
+      print("Error loading bookmarks from local storage: $e");
     } finally {
       isLoading.value = false;
     }

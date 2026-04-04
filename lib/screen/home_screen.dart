@@ -1901,7 +1901,11 @@ Widget _buildListDoa(BuildContext context, HomeScreenController controller) {
                                 InkWell(
                                   onTap: () {
                                     if (AuthController.to.isLogin.value) {
-                                      controller.toggleAmen(prayer.id!);
+                                      if (prayer.isAmened == false) {
+                                        controller.toggleAmen(prayer.id!);
+                                      } else {
+                                        return;
+                                      }
                                     } else {
                                       Get.dialog(
                                         const HomeScreen().buildLoginDialog(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
@@ -129,10 +130,8 @@ class QuranPageScreenController extends GetxController {
     ]);
 
     await fetchInitial();
-    if (AuthController.to.isLogin.value) {
-      await fetchMarkers();
-      await loadBookmarks();
-    }
+    await fetchMarkers();
+    await loadBookmarks();
     audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _playNextAyah();
@@ -385,6 +384,7 @@ class QuranPageScreenController extends GetxController {
             }
           }
           _precacheNearbyPages(currentPageIndex.value);
+          _cacheOnlinePages(data.data); // Automatic background download for persistence
           isLoading.value = false;
           return;
         }
@@ -439,6 +439,7 @@ class QuranPageScreenController extends GetxController {
           // Resolve local images even in online mode if they exist
           await _resolveLocalImages(data.data);
           dataPage.addAll(data.data);
+          _cacheOnlinePages(data.data); // Automatic background download for persistence
         }
         _applyMeta(data);
       }
@@ -474,6 +475,7 @@ class QuranPageScreenController extends GetxController {
 
           _updateDataPageWithWindow(data.data);
           _jumpToTargetPage();
+          _cacheOnlinePages(data.data); // Automatic background download for persistence
           isOfflineMode.value = false;
           isLoading.value = false;
           return;
@@ -546,6 +548,9 @@ class QuranPageScreenController extends GetxController {
       return;
     }
 
+    // Attempt to cache current and nearby pages in background
+    _cacheNearbyOnlinePages(index);
+
     // Save last reading page to local storage
     _saveLastReadingPage(selectedDatum.pageNumber);
 
@@ -561,13 +566,13 @@ class QuranPageScreenController extends GetxController {
   void _precacheNearbyPages(int index) {
     if (dataPage.isEmpty || index < 0 || index >= dataPage.length) return;
 
-    // Precache current, next 2, and previous 1 pages
-    final indicesToCache = [index, index + 1, index + 2, index - 1];
+    // Precache current, next 3, and previous 2 pages for smoother browsing
+    final indicesToCache = [index, index + 1, index + 2, index + 3, index - 1, index - 2];
 
     for (var idx in indicesToCache) {
       if (idx >= 0 && idx < dataPage.length) {
         final item = dataPage[idx];
-        if (item.imagePath.isEmpty || item.id < 0) continue;
+        if (item.id < 0) continue;
 
         final ImageProvider provider = item.imagePath.startsWith('http')
             ? CachedNetworkImageProvider(item.imagePath)
@@ -576,6 +581,48 @@ class QuranPageScreenController extends GetxController {
         precacheImage(provider, Get.context!);
       }
     }
+  }
+
+  /// Automatically download and cache online pages into the local file system
+  /// so that next time they are available offline instantly.
+  Future<void> _cacheOnlinePages(List<Datum> items) async {
+    final slug = currentSlug.value;
+    for (var item in items) {
+      if (item.id < 0) continue; // Skip dummy pages
+      
+      // If it's already local, no need to download
+      if (item.imagePath.isNotEmpty && !item.imagePath.startsWith('http')) continue;
+
+      // Check if it's already downloaded in local storage
+      final exists = await offlineService.isPageDownloaded(slug, item.pageNumber);
+      if (!exists) {
+        // Silently download in background
+        offlineService.downloadPage(slug, item.pageNumber).then((_) async {
+          // Once downloaded, update the in-memory path to the local one
+          final localPath = await offlineService.getLocalImagePath(slug, item.pageNumber);
+          if (localPath != null && await File(localPath).exists()) {
+            item.imagePath = localPath;
+          }
+        }).catchError((e) {
+          print("Background auto-cache failed for page ${item.pageNumber}: $e");
+        });
+      }
+    }
+  }
+
+  /// Cache nearby pages that haven't been downloaded yet
+  void _cacheNearbyOnlinePages(int index) {
+    if (dataPage.isEmpty || index < 0 || index >= dataPage.length) return;
+    
+    final nearby = <Datum>[];
+    // Cache current, next 2, and previous 1
+    final indices = [index, index + 1, index + 2, index - 1];
+    for(var idx in indices) {
+      if (idx >= 0 && idx < dataPage.length) {
+        nearby.add(dataPage[idx]);
+      }
+    }
+    _cacheOnlinePages(nearby);
   }
 
   /* =======================
@@ -920,18 +967,35 @@ class QuranPageScreenController extends GetxController {
    * BOOKMARK METHODS
    * ======================= */
   Future<void> loadBookmarks() async {
-    if (!AuthController.to.isLogin.value) return;
     try {
-      final response = await Request().get(Url.listUserMarkers);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        bookmarks.value = data
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+      final prefs = await SharedPreferences.getInstance();
+      final String? bookmarksJson = prefs.getString('local_bookmarks');
+      if (bookmarksJson != null) {
+        final List<dynamic> data = jsonDecode(bookmarksJson);
+        bookmarks.value = data.map((e) => Map<String, dynamic>.from(e)).toList();
+      } else {
+        bookmarks.clear();
       }
+      _updateMarkersUsageStatus();
     } catch (e) {
       print("Error loading bookmarks: $e");
     }
+  }
+
+  void _updateMarkersUsageStatus() {
+    if (apiMarkers.isEmpty) return;
+
+    // Get all marker IDs that are currently in use by bookmarks
+    final usedMarkerIds = bookmarks.map((b) => b['marker_id']).toSet();
+
+    // Update isUse for each marker in apiMarkers
+    final updatedMarkers = apiMarkers.map((marker) {
+      final updatedMarker = Map<String, dynamic>.from(marker);
+      updatedMarker['isUse'] = usedMarkerIds.contains(marker['id']);
+      return updatedMarker;
+    }).toList();
+
+    apiMarkers.value = updatedMarkers;
   }
 
   Future<void> saveBookmark() async {
@@ -1034,33 +1098,59 @@ class QuranPageScreenController extends GetxController {
       final currentPage = dataPage[currentPageIndex.value];
       final selectedMarker = apiMarkers[selectedBookmarkDesign.value];
 
-      // API Call
-      try {
-        final response = await Request().post(
-          Url.saveMarkers,
-          data: {
-            'marker_id': selectedMarker['id'],
-            'quran_page_id': currentPage.id,
-          },
-        );
-
-        if (response.statusCode == 200) {
-          AppToast.success(
-            message: 'Halaman ${currentPage.pageNumber} ditandai.',
-            title: 'Berhasil',
-          );
-          await fetchMarkers();
-        }
-      } catch (e) {
-        AppToast.error(
-          message: 'Gagal menyimpan penanda ke server.',
-          title: 'Gagal',
-        );
+      final prefs = await SharedPreferences.getInstance();
+      final String? bookmarksJson = prefs.getString('local_bookmarks');
+      List<Map<String, dynamic>> localBookmarks = [];
+      
+      if (bookmarksJson != null) {
+        localBookmarks = List<Map<String, dynamic>>.from(jsonDecode(bookmarksJson));
       }
 
+      // Find if there's already a bookmark for this page or with the same marker design
+      // Note: According to the logic in saveBookmark, if the marker design is in use, we're replacing it.
+      // Or maybe we want to allow multiple bookmarks but one per "marker design"?
+      
+      // Remove existing bookmark with the same marker design if we are "moving" it
+      localBookmarks.removeWhere((b) => b['marker_id'] == selectedMarker['id']);
+      
+      // Optionally also remove if there's already a bookmark on THIS page (common UX for Quran apps)
+      localBookmarks.removeWhere((b) => 
+        b['page_number'] == currentPage.pageNumber && 
+        b['quran_type_slug'] == currentSlug.value
+      );
+
+      // Get surah name for context
+      String surahName = 'Unknown';
+      if (currentPage.ayahs.isNotEmpty) {
+        surahName = currentPage.ayahs.first.ayah?.surah?.name ?? 'Unknown';
+      }
+
+      // Add new bookmark
+      localBookmarks.add({
+        'id': DateTime.now().millisecondsSinceEpoch, // Local ID
+        'marker_id': selectedMarker['id'],
+        'marker_path': selectedMarker['marker_path'],
+        'page_number': currentPage.pageNumber,
+        'quran_type_slug': currentSlug.value,
+        'surah_name': surahName,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      await prefs.setString('local_bookmarks', jsonEncode(localBookmarks));
+      
+      AppToast.success(
+        message: 'Halaman ${currentPage.pageNumber} ditandai.',
+        title: 'Berhasil',
+      );
+      
+      await loadBookmarks(); // Refresh local list
       isBookmarkVisible.value = false; // Close UI
     } catch (e) {
       print("Error in _executeSaveBookmark: $e");
+      AppToast.error(
+        message: 'Gagal menyimpan penanda secara lokal.',
+        title: 'Gagal',
+      );
     }
   }
 
@@ -1111,16 +1201,32 @@ class QuranPageScreenController extends GetxController {
 
   Future<void> fetchMarkers() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Load from cache first
+      final String? markersCache = prefs.getString('local_markers_cache');
+      if (markersCache != null) {
+        final List<dynamic> cachedData = jsonDecode(markersCache);
+        apiMarkers.value = cachedData.map((e) => Map<String, dynamic>.from(e)).toList();
+        _updateMarkersUsageStatus();
+        initMarkerSelection();
+      }
+
+      // Try fetching from API to update cache if online
       final response = await Request().get(Url.listMarkers);
       if (response.statusCode == 200) {
         final data = response.data;
-        apiMarkers.value = List<Map<String, dynamic>>.from(data['data']);
-
-        // Initial selection setup
+        final List<dynamic> markerList = data['data'];
+        
+        // Save to cache
+        await prefs.setString('local_markers_cache', jsonEncode(markerList));
+        
+        apiMarkers.value = markerList.map((e) => Map<String, dynamic>.from(e)).toList();
+        _updateMarkersUsageStatus();
         initMarkerSelection();
       }
     } catch (e) {
-      print("Error fetching markers: $e");
+      print("Error fetching/caching markers: $e");
     }
   }
 
@@ -1155,7 +1261,7 @@ class QuranPageScreenController extends GetxController {
         currentSurahId = currentPage.ayahs.first.ayah?.surahId;
       }
 
-      // Show Loading Dialog
+      // Show Loading indicator
       Get.dialog(
         const Center(
           child: CircularProgressIndicator(color: AppColor.primaryColor),
@@ -1163,30 +1269,42 @@ class QuranPageScreenController extends GetxController {
         barrierDismissible: false,
       );
 
-      final response = await Request().post(
-        Url.readingHistory,
-        data: {
-          'surah_id': currentSurahId,
-          'start_page': startPage,
-          'end_page': endPage,
-          'read_date': DateTime.now().toIso8601String().split('T')[0],
-          'duration_seconds': duration,
-        },
-      );
+      final prefs = await SharedPreferences.getInstance();
+      final String? historyJson = prefs.getString('local_history');
+      List<Map<String, dynamic>> localHistory = [];
+      
+      if (historyJson != null) {
+        localHistory = List<Map<String, dynamic>>.from(jsonDecode(historyJson));
+      }
+
+      final newHistory = {
+        'id': DateTime.now().millisecondsSinceEpoch,
+        'surah_id': currentSurahId,
+        'surah_name': currentPage.ayahs.isNotEmpty ? currentPage.ayahs.first.ayah?.surah?.name : 'Unknown',
+        'start_page': startPage,
+        'end_page': endPage,
+        'page_number': currentNum, // Helpful for display
+        'quran_type_slug': currentSlug.value,
+        'read_date': DateTime.now().toIso8601String().split('T')[0],
+        'duration_seconds': duration,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      localHistory.insert(0, newHistory); // Newest first
+      if (localHistory.length > 50) localHistory.removeLast(); // Limit history
+
+      await prefs.setString('local_history', jsonEncode(localHistory));
 
       if (Get.isOverlaysOpen) {
         Get.back(); // Close Loading Dialog
       }
 
-      if (response.statusCode == 201) {
+      // Save last reading page to local storage (already done by _saveLastReadingPage but keeping here for consistency)
+      _saveLastReadingPage(currentNum);
+      
+      // Refresh Home stats if needed
+      if (Get.isRegistered<HomeScreenController>()) {
         Get.find<HomeScreenController>().fetchWeeklyStats();
-        // Save last reading page to local storage
-        _saveLastReadingPage(currentNum);
-      } else {
-        AppToast.error(
-          message:
-              response.data['message'] ?? 'Gagal menyimpan riwayat pembacaan.',
-        );
       }
     } catch (e) {
       if (Get.isOverlaysOpen) {
