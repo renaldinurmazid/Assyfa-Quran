@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/quran/quran_list_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
@@ -13,7 +12,7 @@ class QuranListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(QuranListScreenController());
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -21,8 +20,8 @@ class QuranListScreen extends StatelessWidget {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColor.primaryColor,
-            surfaceTintColor: AppColor.primaryColor,
+            backgroundColor: Theme.of(context).primaryColor,
+            surfaceTintColor: Theme.of(context).primaryColor,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
@@ -35,8 +34,8 @@ class QuranListScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColor.primaryColor,
-                      AppColor.primaryColor.withOpacity(0.8),
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withOpacity(0.8),
                     ],
                   ),
                 ),
@@ -66,13 +65,15 @@ class QuranListScreen extends StatelessWidget {
                   Text(
                     'Assalamu\'alaikum',
                     style: pMedium14.copyWith(
-                      color: AppColor.primaryColor.withOpacity(0.6),
+                      color: Theme.of(context).primaryColor.withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Mari beribadah hari ini',
-                    style: pSemiBold20.copyWith(color: AppColor.primaryColor),
+                    style: pSemiBold20.copyWith(
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   TextInput(
@@ -86,10 +87,10 @@ class QuranListScreen extends StatelessWidget {
           ),
           Obx(() {
             if (controller.isLoading.value) {
-              return const SliverFillRemaining(
+              return SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: AppColor.primaryColor,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               );
@@ -112,17 +113,22 @@ class QuranListScreen extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: Colors.black.withOpacity(
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? 0.3
+                                    : 0.03,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
                           ],
                           border: Border.all(
-                            color: AppColor.primaryColor.withOpacity(0.05),
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.1),
                           ),
                         ),
                         child: Row(
@@ -134,14 +140,16 @@ class QuranListScreen extends StatelessWidget {
                                   height: 40,
                                   width: 40,
                                   decoration: BoxDecoration(
-                                    color: AppColor.primaryColor.withAlpha(20),
+                                    color: Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
                                 Text(
                                   quran.nomor.toString(),
                                   style: pBold14.copyWith(
-                                    color: AppColor.primaryColor,
+                                    color: Theme.of(context).primaryColor,
                                   ),
                                 ),
                               ],
@@ -154,7 +162,7 @@ class QuranListScreen extends StatelessWidget {
                                   Text(
                                     quran.namaLatin,
                                     style: pSemiBold16.copyWith(
-                                      color: AppColor.primaryColor,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -163,8 +171,7 @@ class QuranListScreen extends StatelessWidget {
                                       Text(
                                         quran.tempatTurun.toUpperCase(),
                                         style: pMedium10.copyWith(
-                                          color: AppColor.primaryColor
-                                              .withOpacity(0.5),
+                                          color: Theme.of(context).hintColor,
                                           letterSpacing: 0.5,
                                         ),
                                       ),
@@ -175,16 +182,14 @@ class QuranListScreen extends StatelessWidget {
                                         height: 3,
                                         width: 3,
                                         decoration: BoxDecoration(
-                                          color: AppColor.primaryColor
-                                              .withOpacity(0.3),
+                                          color: Theme.of(context).dividerColor,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
                                       Text(
                                         '${quran.jumlahAyat} AYAT',
                                         style: pMedium10.copyWith(
-                                          color: AppColor.primaryColor
-                                              .withOpacity(0.5),
+                                          color: Theme.of(context).hintColor,
                                           letterSpacing: 0.5,
                                         ),
                                       ),
@@ -196,7 +201,7 @@ class QuranListScreen extends StatelessWidget {
                             Text(
                               quran.nama,
                               style: pBold20.copyWith(
-                                color: AppColor.primaryColor,
+                                color: Theme.of(context).primaryColor,
                               ),
                             ),
                           ],

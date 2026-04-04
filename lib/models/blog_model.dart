@@ -72,14 +72,17 @@ class BlogItem {
   final String? thumbnail;
   final int? categoryId;
   final int? likes;
+  final int? shares;
   final int? views;
+  final int? commentsCount;
   final String? content;
-  final String? author;
+  final Author? author;
   final String? publishedAt;
   final DateTime? createdAt;
   final BlogCategory? category;
   final List<BlogItem>? otherPrograms;
   final bool? isLiked;
+  final String? shareUrl;
 
   BlogItem({
     this.id,
@@ -88,7 +91,9 @@ class BlogItem {
     this.thumbnail,
     this.categoryId,
     this.likes,
+    this.shares,
     this.views,
+    this.commentsCount,
     this.content,
     this.author,
     this.publishedAt,
@@ -96,6 +101,7 @@ class BlogItem {
     this.category,
     this.otherPrograms,
     this.isLiked,
+    this.shareUrl,
   });
 
   factory BlogItem.fromRawJson(String str) =>
@@ -110,9 +116,11 @@ class BlogItem {
     thumbnail: json["thumbnail"],
     categoryId: json["category_id"],
     likes: json["likes"],
+    shares: json["shares"],
     views: json["views"],
+    commentsCount: json["commentCount"],
     content: json["content"],
-    author: json["author"],
+    author: json["author"] == null ? null : Author.fromJson(json["author"]),
     publishedAt: json["published_at"],
     createdAt: json["created_at"] == null
         ? null
@@ -126,6 +134,7 @@ class BlogItem {
             json["other_programs"].map((x) => BlogItem.fromJson(x)),
           ),
     isLiked: json["is_liked"] ?? json["liked"],
+    shareUrl: json["share_url"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -135,9 +144,11 @@ class BlogItem {
     "thumbnail": thumbnail,
     "category_id": categoryId,
     "likes": likes,
+    "shares": shares,
     "views": views,
+    "commentCount": commentsCount,
     "content": content,
-    "author": author,
+    "author": author?.toJson(),
     "published_at": publishedAt,
     "created_at": createdAt?.toIso8601String(),
     "category": category?.toJson(),
@@ -145,7 +156,24 @@ class BlogItem {
         ? []
         : List<dynamic>.from(otherPrograms!.map((x) => x.toJson())),
     "is_liked": isLiked,
+    "share_url": shareUrl,
   };
+}
+
+class Author {
+  final int? id;
+  final String? name;
+
+  Author({this.id, this.name});
+
+  factory Author.fromRawJson(String str) => Author.fromJson(json.decode(str));
+
+  String toRawJson() => json.encode(toJson());
+
+  factory Author.fromJson(Map<String, dynamic> json) =>
+      Author(id: json["id"], name: json["name"]);
+
+  Map<String, dynamic> toJson() => {"id": id, "name": name};
 }
 
 class BlogCategory {

@@ -4,7 +4,6 @@ import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/controller/notification_controller.dart';
 import 'package:quran_app/models/notification_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -16,17 +15,17 @@ class ChatScreen extends StatelessWidget {
     final controller = Get.put(NotificationController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: RefreshIndicator(
         onRefresh: () => controller.fetchNotifications(),
-        color: AppColor.primaryColor,
+        color: context.theme.colorScheme.primary,
         edgeOffset: 100,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            _buildSliverAppBar(),
+            _buildSliverAppBar(context),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -45,7 +44,7 @@ class ChatScreen extends StatelessWidget {
                         child: Text(
                           'Tandai Dibaca',
                           style: pMedium12.copyWith(
-                            color: AppColor.primaryColor,
+                            color: context.theme.colorScheme.primary,
                           ),
                         ),
                       );
@@ -61,7 +60,7 @@ class ChatScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildShimmerTile(),
+                      (context, index) => _buildShimmerTile(context),
                       childCount: 5,
                     ),
                   ),
@@ -78,12 +77,14 @@ class ChatScreen extends StatelessWidget {
                         Icon(
                           IconlyLight.notification,
                           size: 64,
-                          color: Colors.grey[300],
+                          color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.2),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Belum ada notifikasi',
-                          style: pMedium14.copyWith(color: Colors.grey),
+                          style: pMedium14.copyWith(
+                            color: context.theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -96,7 +97,7 @@ class ChatScreen extends StatelessWidget {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final notification = controller.notifications[index];
-                    return _buildNotificationTile(notification, controller);
+                    return _buildNotificationTile(context, notification, controller);
                   }, childCount: controller.notifications.length),
                 ),
               );
@@ -108,12 +109,12 @@ class ChatScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar() {
+  Widget _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 220,
       pinned: true,
       stretch: true,
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: context.theme.colorScheme.primary,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       title: Text('Pesan', style: pSemiBold16.copyWith(color: Colors.white)),
@@ -132,7 +133,7 @@ class ChatScreen extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.black.withOpacity(0.1),
-                    AppColor.primaryColor.withOpacity(0.9),
+                    context.theme.colorScheme.primary.withOpacity(0.9),
                   ],
                 ),
               ),
@@ -165,9 +166,9 @@ class ChatScreen extends StatelessWidget {
               right: 0,
               child: Container(
                 height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColor.backgroundColor,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                decoration: BoxDecoration(
+                  color: context.theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
               ),
             ),
@@ -178,34 +179,39 @@ class ChatScreen extends StatelessWidget {
   }
 
   Widget _buildNotificationTile(
+    BuildContext context,
     NotificationModel notification,
     NotificationController controller,
   ) {
     final category = notification.scheduledNotification?.categoryNotification;
     final Color bgColor = category?.bgColor != null
         ? _HexColor(category!.bgColor!)
-        : AppColor.primaryColor.withOpacity(0.1);
+        : context.theme.colorScheme.primary.withOpacity(0.1);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: (notification.isRead ?? true)
-            ? Colors.white
-            : AppColor.primaryColor.withOpacity(0.05),
+            ? context.theme.colorScheme.surface
+            : context.theme.colorScheme.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: (notification.isRead ?? true)
-              ? Colors.grey.shade50
-              : AppColor.primaryColor.withOpacity(0.1),
+              ? context.isDarkMode
+                  ? Colors.grey.shade900
+                  : Colors.grey.shade100
+              : context.theme.colorScheme.primary.withOpacity(0.1),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: (notification.isRead ?? true)
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -231,9 +237,9 @@ class ChatScreen extends StatelessWidget {
                   ),
                   child: category?.icon != null
                       ? Image.network(category!.icon!)
-                      : const Icon(
+                      : Icon(
                           IconlyBold.notification,
-                          color: AppColor.primaryColor,
+                          color: context.theme.colorScheme.primary,
                           size: 20,
                         ),
                 ),
@@ -250,8 +256,8 @@ class ChatScreen extends StatelessWidget {
                               notification.title ?? '-',
                               style: pBold14.copyWith(
                                 color: (notification.isRead ?? true)
-                                    ? Colors.black87
-                                    : AppColor.primaryColor,
+                                    ? context.theme.colorScheme.onSurface
+                                    : context.theme.colorScheme.primary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -260,7 +266,10 @@ class ChatScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             _formatTime(notification.createdAt),
-                            style: pRegular10.copyWith(color: Colors.grey),
+                            style: pRegular10.copyWith(
+                              color: context.theme.colorScheme.onSurfaceVariant
+                                  .withOpacity(0.7),
+                            ),
                           ),
                         ],
                       ),
@@ -268,7 +277,7 @@ class ChatScreen extends StatelessWidget {
                       Text(
                         notification.body ?? '-',
                         style: pRegular12.copyWith(
-                          color: Colors.grey.shade700,
+                          color: context.theme.colorScheme.onSurfaceVariant,
                           height: 1.4,
                         ),
                       ),
@@ -280,8 +289,8 @@ class ChatScreen extends StatelessWidget {
                     width: 8,
                     height: 8,
                     margin: const EdgeInsets.only(left: 8, top: 4),
-                    decoration: const BoxDecoration(
-                      color: AppColor.primaryColor,
+                    decoration: BoxDecoration(
+                      color: context.theme.colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -293,18 +302,20 @@ class ChatScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmerTile() {
+  Widget _buildShimmerTile(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade50),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
       ),
       child: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: context.isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+        highlightColor: context.isDarkMode ? Colors.grey[700]! : Colors.grey[100]!,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

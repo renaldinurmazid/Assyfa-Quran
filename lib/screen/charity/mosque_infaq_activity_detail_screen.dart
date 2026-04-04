@@ -6,7 +6,6 @@ import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/controller/charity/mosque_infaq_activity_detail_controller.dart';
 import 'package:quran_app/models/mosque_donation_detail_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -21,31 +20,38 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Detail Infaq Masjid',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             IconlyLight.arrow_left_2,
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.primary,
           ),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return _buildLoadingState();
+          return _buildLoadingState(context);
         }
 
         final donation = controller.donationDetail.value;
         if (donation == null) {
-          return const Center(child: Text("Data tidak ditemukan"));
+          return Center(
+            child: Text(
+              "Data tidak ditemukan",
+              style: pMedium14.copyWith(
+                color: context.theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          );
         }
 
         final payment = donation.payment;
@@ -53,20 +59,20 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              _buildStatusHeader(donation),
+              _buildStatusHeader(context, donation),
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMosqueCard(donation.mosqueCharity),
+                    _buildMosqueCard(context, donation.mosqueCharity),
                     const SizedBox(height: 20),
-                    _buildPaymentSummary(payment),
+                    _buildPaymentSummary(context, payment),
                     const SizedBox(height: 24),
                     if (payment.status == 'UNPAID') ...[
-                      _buildPaymentInfo(payment),
+                      _buildPaymentInfo(context, payment),
                       const SizedBox(height: 24),
-                      _buildInstructions(payment.instructions),
+                      _buildInstructions(context, payment.instructions),
                     ],
                     const SizedBox(height: 48),
                   ],
@@ -79,7 +85,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusHeader(MosqueDonationDetailItem donation) {
+  Widget _buildStatusHeader(BuildContext context, MosqueDonationDetailItem donation) {
     Color statusColor;
     String statusText;
     IconData statusIcon;
@@ -91,7 +97,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
         statusIcon = IconlyBold.time_circle;
         break;
       case 'success':
-        statusColor = AppColor.primaryColor;
+        statusColor = context.theme.colorScheme.primary;
         statusText = 'Pembayaran Berhasil';
         statusIcon = IconlyBold.tick_square;
         break;
@@ -104,9 +110,14 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: context.theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+        border: Border(
+          bottom: BorderSide(
+            color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+          ),
+        ),
       ),
       child: Column(
         children: [
@@ -128,24 +139,32 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             donation.formattedAmount,
-            style: pBold24.copyWith(color: AppColor.primaryColor, fontSize: 32),
+            style: pBold24.copyWith(
+              color: context.theme.colorScheme.primary,
+              fontSize: 32,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Order ID: ${donation.orderId}',
-            style: pMedium12.copyWith(color: Colors.grey),
+            style: pMedium12.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMosqueCard(MosqueCharityShort mosque) {
+  Widget _buildMosqueCard(BuildContext context, MosqueCharityShort mosque) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -172,12 +191,16 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   'Infaq Masjid:',
-                  style: pMedium10.copyWith(color: Colors.grey),
+                  style: pMedium10.copyWith(
+                    color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   mosque.name,
-                  style: pBold14,
+                  style: pBold14.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -189,12 +212,15 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentSummary(MosquePaymentDetail payment) {
+  Widget _buildPaymentSummary(BuildContext context, MosquePaymentDetail payment) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -208,10 +234,17 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Detail Pembayaran', style: pBold14),
+              Text(
+                'Detail Pembayaran',
+                style: pBold14.copyWith(
+                  color: context.theme.colorScheme.onSurface,
+                ),
+              ),
               Text(
                 DateFormat('dd MMM yyyy, HH:mm').format(payment.createdAt),
-                style: pRegular10.copyWith(color: Colors.grey),
+                style: pRegular10.copyWith(
+                  color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                ),
               ),
             ],
           ),
@@ -226,7 +259,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                 height: 40,
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: context.theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: payment.paymentMethode?.logo != null
@@ -242,11 +275,15 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       payment.paymentMethode?.name ?? 'Metode Pembayaran',
-                      style: pBold14,
+                      style: pBold14.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                     ),
                     Text(
                       payment.paymentMethode?.accountName ?? '',
-                      style: pRegular12.copyWith(color: Colors.grey),
+                      style: pRegular12.copyWith(
+                        color: context.theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -255,20 +292,22 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _summaryRow(
+            context,
             'Status Pembayaran',
             payment.status,
             isStatus: true,
             color: payment.status == 'PAID'
-                ? AppColor.primaryColor
+                ? context.theme.colorScheme.primary
                 : Colors.orange,
           ),
-          _summaryRow('Total Bayar', payment.formattedAmount, isBold: true),
+          _summaryRow(context, 'Total Bayar', payment.formattedAmount, isBold: true),
         ],
       ),
     );
   }
 
   Widget _summaryRow(
+    BuildContext context,
     String label,
     String value, {
     bool isStatus = false,
@@ -280,7 +319,12 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: pMedium12.copyWith(color: Colors.grey)),
+          Text(
+            label,
+            style: pMedium12.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           if (isStatus)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -294,26 +338,31 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
             Text(
               value,
               style: isBold
-                  ? pBold14.copyWith(color: AppColor.primaryColor)
-                  : pSemiBold12,
+                  ? pBold14.copyWith(color: context.theme.colorScheme.primary)
+                  : pSemiBold12.copyWith(color: context.theme.colorScheme.onSurface),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentInfo(MosquePaymentDetail payment) {
+  Widget _buildPaymentInfo(BuildContext context, MosquePaymentDetail payment) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Nomor Rekening / Virtual Account', style: pBold14),
+        Text(
+          'Nomor Rekening / Virtual Account',
+          style: pBold14.copyWith(color: context.theme.colorScheme.onSurface),
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColor.primaryColor.withOpacity(0.05),
+            color: context.theme.colorScheme.primary.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColor.primaryColor.withOpacity(0.1)),
+            border: Border.all(
+              color: context.theme.colorScheme.primary.withOpacity(0.1),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -321,7 +370,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
               Text(
                 payment.payCode,
                 style: pBold20.copyWith(
-                  color: AppColor.primaryColor,
+                  color: context.theme.colorScheme.primary,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -332,7 +381,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                     'Berhasil',
                     'Nomor berhasil disalin',
                     snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: AppColor.primaryColor,
+                    backgroundColor: context.theme.colorScheme.primary,
                     colorText: Colors.white,
                     margin: const EdgeInsets.all(20),
                   );
@@ -343,7 +392,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor,
+                    color: context.theme.colorScheme.primary,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -359,12 +408,18 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructions(List<InstructionItem> instructions) {
+  Widget _buildInstructions(
+    BuildContext context,
+    List<InstructionItem> instructions,
+  ) {
     if (instructions.isEmpty) return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Instruksi Pembayaran', style: pBold14),
+        Text(
+          'Instruksi Pembayaran',
+          style: pBold14.copyWith(color: context.theme.colorScheme.onSurface),
+        ),
         const SizedBox(height: 16),
         ...instructions.map(
           (ins) => Theme(
@@ -372,11 +427,21 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
             child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+                ),
               ),
               child: ExpansionTile(
-                title: Text(ins.title, style: pSemiBold14),
+                title: Text(
+                  ins.title,
+                  style: pSemiBold14.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                ),
+                iconColor: context.theme.colorScheme.primary,
+                collapsedIconColor: context.theme.colorScheme.onSurfaceVariant,
                 childrenPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
@@ -393,8 +458,8 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                             Container(
                               width: 20,
                               height: 20,
-                              decoration: const BoxDecoration(
-                                color: AppColor.primaryColor,
+                              decoration: BoxDecoration(
+                                color: context.theme.colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -406,7 +471,12 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(entry.value, style: pRegular12),
+                              child: Text(
+                                entry.value,
+                                style: pRegular12.copyWith(
+                                  color: context.theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -421,14 +491,17 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+      highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Container(height: 150, color: Colors.white),
+            Container(
+              height: 150,
+              color: context.theme.colorScheme.surface,
+            ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -436,7 +509,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                   Container(
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -444,7 +517,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                   Container(
                     height: 150,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -452,7 +525,7 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),

@@ -6,7 +6,7 @@ import 'package:quran_app/controller/prayer/list_prayer_controller.dart';
 import 'package:quran_app/models/prayer_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/home_screen.dart';
-import 'package:quran_app/theme/app_color.dart';
+
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -49,29 +49,32 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFB),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Text(
           'Saling Mendoakan',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pBold18.copyWith(color: context.theme.colorScheme.primary),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+                bottom: BorderSide(
+                  color: context.theme.colorScheme.outline.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
             ),
             child: TabBar(
               controller: controller.tabController,
-              labelColor: AppColor.primaryColor,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: AppColor.primaryColor,
+              labelColor: context.theme.colorScheme.primary,
+              unselectedLabelColor: context.theme.colorScheme.onSurfaceVariant,
+              indicatorColor: context.theme.colorScheme.primary,
               indicatorWeight: 3,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
@@ -110,7 +113,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
             Get.dialog(const HomeScreen().buildLoginDialog(Get.find()));
           }
         },
-        backgroundColor: AppColor.primaryColor,
+        backgroundColor: context.theme.colorScheme.primary,
         elevation: 8,
         icon: const Icon(IconlyBold.plus, color: Colors.white, size: 20),
         label: Text('Buat Doa', style: pBold14.copyWith(color: Colors.white)),
@@ -146,26 +149,32 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColor.primaryColor.withOpacity(0.05),
+                  color:
+                      Get.context!.theme.colorScheme.primary.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   IconlyLight.chat,
                   size: 64,
-                  color: AppColor.primaryColor.withOpacity(0.4),
+                  color:
+                      Get.context!.theme.colorScheme.primary.withOpacity(0.4),
                 ),
               ),
               const SizedBox(height: 24),
               Text(
                 isAll ? 'Belum Ada Doa Hari Ini' : 'Kamu Belum Membuat Doa',
-                style: pBold16.copyWith(color: Colors.black87),
+                style: pBold16.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 isAll
                     ? 'Jadilah yang pertama mendoakan saudara kita'
                     : 'Ayo mulai bagikan doamu sekarang',
-                style: pRegular12.copyWith(color: Colors.grey),
+                style: pRegular12.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -176,7 +185,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
       return RefreshIndicator(
         onRefresh: () =>
             isAll ? controller.fetchAllPrayers() : controller.fetchMyPrayers(),
-        color: AppColor.primaryColor,
+        color: context.theme.colorScheme.primary,
         child: ListView.separated(
           controller: scrollController,
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
@@ -185,11 +194,11 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
           separatorBuilder: (context, index) => const SizedBox(height: 18),
           itemBuilder: (context, index) {
             if (index == prayers.length) {
-              return const Center(
+              return Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   child: CircularProgressIndicator(
-                    color: AppColor.primaryColor,
+                    color: Get.context!.theme.colorScheme.primary,
                     strokeWidth: 2,
                   ),
                 ),
@@ -219,11 +228,11 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColor.primaryColor.withOpacity(0.08),
+              color: context.theme.colorScheme.primary.withOpacity(0.08),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -240,7 +249,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                 child: Icon(
                   IconlyLight.chat,
                   size: 100,
-                  color: AppColor.primaryColor,
+                  color: context.theme.colorScheme.primary,
                 ),
               ),
             ),
@@ -256,15 +265,15 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColor.primaryColor.withOpacity(0.1),
+                            color:
+                                context.theme.colorScheme.primary.withOpacity(0.1),
                             width: 1,
                           ),
                         ),
                         child: CircleAvatar(
                           radius: 20,
-                          backgroundColor: AppColor.primaryColor.withOpacity(
-                            0.1,
-                          ),
+                          backgroundColor:
+                              context.theme.colorScheme.primary.withOpacity(0.1),
                           backgroundImage:
                               (prayer.isAnonymous == false &&
                                   prayer.userProfile != null)
@@ -279,7 +288,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                       : (prayer.userName?[0].toUpperCase() ??
                                             'U'),
                                   style: pBold14.copyWith(
-                                    color: AppColor.primaryColor,
+                                    color: context.theme.colorScheme.primary,
                                   ),
                                 )
                               : null,
@@ -296,14 +305,16 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                   : prayer.isMyPrayer == true
                                   ? 'Kamu'
                                   : prayer.userName ?? 'User',
-                              style: pBold14.copyWith(color: Colors.black87),
+                              style: pBold14.copyWith(
+                                color: context.theme.colorScheme.onSurface,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               prayer.publishedAt ?? '-',
-                              style: pRegular10.copyWith(color: Colors.grey),
+                              style: pRegular10.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -314,7 +325,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                   Text(
                     prayer.content ?? '-',
                     style: pMedium14.copyWith(
-                      color: AppColor.primaryColor,
+                      color: context.theme.colorScheme.primary,
                       height: 1.5,
                       fontStyle: FontStyle.italic,
                     ),
@@ -351,14 +362,14 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Colors.white,
+                                              color: context.theme.colorScheme.surface,
                                               width: 1.5,
                                             ),
                                           ),
                                           child: CircleAvatar(
                                             radius: 8,
-                                            backgroundColor: AppColor
-                                                .primaryColor
+                                            backgroundColor: Get.context!.theme
+                                                .colorScheme.primary
                                                 .withOpacity(0.2),
                                             backgroundImage:
                                                 amenUser.userProfile != null
@@ -373,8 +384,8 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                                         'A',
                                                     style: pBold10.copyWith(
                                                       fontSize: 6,
-                                                      color:
-                                                          AppColor.primaryColor,
+                                                      color: Get.context!.theme
+                                                          .colorScheme.primary,
                                                     ),
                                                   )
                                                 : null,
@@ -390,7 +401,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                             Text(
                               '${prayer.amensCount ?? 0} Aamiin',
                               style: pRegular10.copyWith(
-                                color: Colors.grey.shade600,
+                                color: Get.context!.theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -416,17 +427,17 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: prayer.isAmened == true
-                                  ? AppColor.primaryColor
-                                  : Colors.white,
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(100),
                               border: Border.all(
-                                color: AppColor.primaryColor,
+                                color: context.theme.colorScheme.primary,
                                 width: 1,
                               ),
                               boxShadow: prayer.isAmened == true
                                   ? [
                                       BoxShadow(
-                                        color: AppColor.primaryColor
+                                        color: context.theme.colorScheme.primary
                                             .withOpacity(0.3),
                                         blurRadius: 8,
                                         offset: const Offset(0, 4),
@@ -443,7 +454,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                   size: 14,
                                   color: prayer.isAmened == true
                                       ? Colors.white
-                                      : AppColor.primaryColor,
+                                      : context.theme.colorScheme.primary,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -453,7 +464,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                                   style: pSemiBold10.copyWith(
                                     color: prayer.isAmened == true
                                         ? Colors.white
-                                        : AppColor.primaryColor,
+                                        : context.theme.colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -477,12 +488,12 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
       itemCount: 5,
       separatorBuilder: (context, index) => const SizedBox(height: 18),
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Colors.grey[200]!,
-        highlightColor: Colors.grey[50]!,
+        baseColor: context.theme.colorScheme.surfaceVariant,
+        highlightColor: context.theme.colorScheme.surface,
         child: Container(
           height: 160,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
           ),
         ),

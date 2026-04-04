@@ -9,11 +9,12 @@ import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/controller/quran/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
+
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,35 +31,39 @@ class HomeScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFB),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
+        value: context.isDarkMode
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         child: RefreshIndicator(
           onRefresh: () async {
             await controller.getPrayerTime();
             await controller.fetchWeeklyStats();
             await controller.fetchPrayers();
             await blogController.refreshBlogs();
+            await controller.fetchReadingHistoryTotal();
           },
-          color: AppColor.primaryColor,
+          color: context.theme.colorScheme.primary,
           child: CustomScrollView(
             controller: blogController.scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildSliverAppBar(controller),
+              _buildSliverAppBar(context, controller),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
-                      _buildQuickActions(controller),
+                      _buildQuickActions(context, controller),
                       const SizedBox(height: 20),
-                      // _buildSectionHeader('Program Spesial'),
+                      // _buildSectionHeader(context, 'Program Spesial'),
                       const SizedBox(height: 16),
-                      _buildSlideBanner(controller),
+                      _buildSlideBanner(context, controller),
                       const SizedBox(height: 32),
                       _buildSectionHeader(
+                        context,
                         'Saling Mendoakan',
                         true,
                         InkWell(
@@ -75,30 +80,26 @@ class HomeScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(IconlyBroken.plus, size: 16),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Buat Doa',
-                                style: pSemiBold12.copyWith(
-                                  color: AppColor.primaryColor,
-                                ),
-                              ),
+                              Icon(Icons.add, size: 18),
+                              const SizedBox(width: 4),
+                              Text('Buat Doa', style: pSemiBold12),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildListDoa(controller),
+                      _buildListDoa(context, controller),
                       const SizedBox(height: 32),
                       _buildSectionHeader(
+                        context,
                         'Taman Syurga',
                         false,
                         const SizedBox.shrink(),
                       ),
                       const SizedBox(height: 16),
-                      _buildListBlog(controller),
+                      _buildListBlog(context, controller),
                       const SizedBox(height: 32),
-                      // _buildFeaturedCard(),
+                      // _buildFeaturedCard(context),
                       // const SizedBox(height: 40),
                     ],
                   ),
@@ -111,12 +112,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(HomeScreenController controller) {
+  Widget _buildSliverAppBar(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return SliverAppBar(
       expandedHeight: 420,
       pinned: true,
       stretch: true,
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: context.isDarkMode
+          ? context.theme.scaffoldBackgroundColor
+          : context.theme.colorScheme.primary,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [
@@ -138,38 +144,41 @@ class HomeScreen extends StatelessWidget {
                   colors: [
                     Colors.black.withOpacity(0.6),
                     Colors.black.withOpacity(0.2),
-                    const Color(0xFFFBFBFB).withOpacity(0.8),
-                    const Color(0xFFFBFBFB),
+                    context.theme.scaffoldBackgroundColor.withOpacity(0.8),
+                    context.theme.scaffoldBackgroundColor,
                   ],
                 ),
               ),
             ),
-            _buildHeroContent(controller),
+            _buildHeroContent(context, controller),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeroContent(HomeScreenController controller) {
+  Widget _buildHeroContent(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 20, 14, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(controller),
+            _buildHeader(context, controller),
             const SizedBox(height: 32),
-            _buildPrayerGlassCard(controller),
+            _buildPrayerGlassCard(context, controller),
             const SizedBox(height: 24),
-            _buildQuranQuickAccess(controller),
+            _buildQuranQuickAccess(context, controller),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(HomeScreenController controller) {
+  Widget _buildHeader(BuildContext context, HomeScreenController controller) {
     return Obx(() {
       final isLogin = AuthController.to.isLogin.value;
       final userData = AuthController.to.userData;
@@ -205,22 +214,30 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text(
                 isLogin ? 'Assalamu’alaikum,' : 'Selamat Datang,',
-                style: pRegular12.copyWith(
-                  color: Colors.white.withOpacity(0.8),
-                ),
+                style: pRegular12.copyWith(color: Colors.white),
               ),
               Text(
                 isLogin ? '${userData['name']}' : 'Orang Baik',
-                style: pBold16.copyWith(color: Colors.white),
+                style: pSemiBold14.copyWith(color: Colors.white),
               ),
             ],
+          ),
+          const Spacer(),
+          InkWell(
+            onTap: () {
+              Get.toNamed('/theme');
+            },
+            child: Icon(Icons.palette_outlined, size: 26, color: Colors.white),
           ),
         ],
       );
     });
   }
 
-  Widget _buildPrayerGlassCard(HomeScreenController controller) {
+  Widget _buildPrayerGlassCard(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
@@ -240,7 +257,7 @@ class HomeScreen extends StatelessWidget {
               // Show shimmer when loading and no cached data
               if (controller.isLoadingPrayerTime.value &&
                   controller.displayPrayers.isEmpty) {
-                return _buildPrayerCardShimmer();
+                return _buildPrayerCardShimmer(context);
               }
 
               return Column(
@@ -268,7 +285,7 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${controller.kabKota.value}',
+                                  controller.kabKota.value,
                                   style: pBold14.copyWith(color: Colors.white),
                                 ),
                               ],
@@ -350,10 +367,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPrayerCardShimmer() {
+  Widget _buildPrayerCardShimmer(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withOpacity(0.1),
-      highlightColor: Colors.white.withOpacity(0.3),
+      baseColor: context.isDarkMode
+          ? Colors.grey[800]!
+          : Colors.white.withOpacity(0.1),
+      highlightColor: context.isDarkMode
+          ? Colors.grey[700]!
+          : Colors.white.withOpacity(0.3),
       child: Column(
         children: [
           Row(
@@ -424,11 +445,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuranQuickAccess(HomeScreenController controller) {
+  Widget _buildQuranQuickAccess(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return Row(
       children: [
         GestureDetector(
-          onTap: () => Get.bottomSheet(_buildBottomSheetQuran(controller)),
+          onTap: () =>
+              Get.bottomSheet(_buildBottomSheetQuran(context, controller)),
           child: Container(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -439,35 +464,83 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
         Expanded(
-          child: Container(
-            height: 85,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+          child: Column(
+            children: [
+              Container(
+                height: 85,
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: context.theme.colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Obx(() {
-              final isLogin = AuthController.to.isLogin.value;
-              return isLogin
-                  ? _buildTilawahStats(controller)
-                  : _buildLoginOffer(controller);
-            }),
+                child: Obx(() {
+                  final isLogin = AuthController.to.isLogin.value;
+                  return isLogin
+                      ? _buildTilawahStats(context, controller)
+                      : _buildLoginOffer(context, controller);
+                }),
+              ),
+              Obx(() {
+                final isLogin = AuthController.to.isLogin.value;
+                return !isLogin
+                    ? Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.theme.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: controller.readingHistoryTotal.value
+                                    .toString(),
+                                style: pSemiBold14.copyWith(
+                                  color: context.theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' Halaman telah dibaca',
+                                style: pRegular12.copyWith(
+                                  color: context
+                                      .theme
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              }),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTilawahStats(HomeScreenController controller) {
+  Widget _buildTilawahStats(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     if (controller.isLoadingWeekly.value) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
@@ -494,12 +567,16 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text(
                 'Progres Ngaji',
-                style: pRegular10.copyWith(color: Colors.grey),
+                style: pRegular10.copyWith(
+                  color: context.theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 '$totalPages Halaman',
-                style: pBold12.copyWith(color: AppColor.primaryColor),
+                style: pBold12.copyWith(
+                  color: context.theme.colorScheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -521,8 +598,8 @@ class HomeScreen extends StatelessWidget {
                     height: (25 * heightFactor).toDouble(),
                     decoration: BoxDecoration(
                       color: val > 0
-                          ? AppColor.primaryColor
-                          : AppColor.primaryColor.withOpacity(0.1),
+                          ? context.theme.colorScheme.primary
+                          : context.theme.colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -531,7 +608,9 @@ class HomeScreen extends StatelessWidget {
                     item['day'],
                     style: pRegular10.copyWith(
                       fontSize: 8,
-                      color: val > 0 ? AppColor.primaryColor : Colors.grey,
+                      color: val > 0
+                          ? context.theme.colorScheme.primary
+                          : context.theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -543,57 +622,69 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginOffer(HomeScreenController controller) {
+  Widget _buildLoginOffer(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return InkWell(
       onTap: () => Get.dialog(buildLoginDialog(controller)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             IconlyLight.bookmark,
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.primary,
             size: 18,
           ),
           const SizedBox(height: 4),
           Text(
             'Login Yuk!',
-            style: pBold12.copyWith(color: AppColor.primaryColor),
+            style: pBold12.copyWith(color: context.theme.colorScheme.primary),
           ),
           Text(
             'Simpan Progres',
-            style: pRegular10.copyWith(color: Colors.grey),
+            style: pRegular10.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions(HomeScreenController controller) {
+  Widget _buildQuickActions(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildActionItem(
+          context,
           'Infaq',
           'assets/images/png/infaq.png',
           () => Get.toNamed(Routes.charity),
           const Color(0xFFF0F9F1),
         ),
         _buildActionItem(
+          context,
           'Dzikir',
           'assets/images/png/tasbih.png',
           () => Get.toNamed(Routes.dzikir),
           const Color(0xFFF0F7FF),
         ),
         _buildActionItem(
+          context,
           'Infaq Masjid',
           'assets/images/png/masjid.png',
           () => Get.toNamed(Routes.mosqueCharity),
           const Color(0xFFFFF7ED),
         ),
         _buildActionItem(
+          context,
           'More',
           'assets/images/png/menu.png',
-          () => Get.bottomSheet(_bottomSheetMoreMenu(controller)),
+          () => Get.bottomSheet(_bottomSheetMoreMenu(context, controller)),
           const Color(0xFFFAF5FF),
         ),
       ],
@@ -601,6 +692,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildActionItem(
+    BuildContext context,
     String label,
     String asset,
     VoidCallback onTap,
@@ -618,7 +710,10 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             label,
-            style: pSemiBold12.copyWith(fontSize: 11, color: Colors.black87),
+            style: pSemiBold12.copyWith(
+              fontSize: 11,
+              color: context.theme.colorScheme.onSurface,
+            ),
           ),
         ],
       ),
@@ -626,6 +721,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildSectionHeader(
+    BuildContext context,
     String title,
     bool isShowAction,
     Widget actionWidget,
@@ -637,7 +733,7 @@ class HomeScreen extends StatelessWidget {
         Text(
           title,
           style: pSemiBold16.copyWith(
-            color: Colors.black87,
+            color: context.theme.colorScheme.onSurface,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -646,7 +742,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSlideBanner(HomeScreenController controller) {
+  Widget _buildSlideBanner(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return Obx(() {
       if (controller.isLoadingBanner.value) {
         return _buildBannerShimmer();
@@ -712,13 +811,11 @@ class HomeScreen extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: context.isDarkMode
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(28),
@@ -726,7 +823,10 @@ class HomeScreen extends StatelessWidget {
                     banner.cover,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[200],
+                      decoration: BoxDecoration(
+                        color: context.theme.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
                       child: const Icon(IconlyLight.image, color: Colors.grey),
                     ),
                   ),
@@ -754,55 +854,58 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturedCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColor.primaryColor.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              IconlyBold.shield_done,
-              color: AppColor.primaryColor,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Solidaritas Palestina', style: pBold16),
-                const SizedBox(height: 4),
-                Text(
-                  'Bantu saudara kita di Gaza',
-                  style: pRegular12.copyWith(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          const Icon(IconlyLight.arrow_right_2, color: Colors.grey, size: 20),
-        ],
-      ),
-    );
-  }
+  // Widget _buildFeaturedCard() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(24),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(28),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.02),
+  //           blurRadius: 20,
+  //           offset: const Offset(0, 10),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           padding: const EdgeInsets.all(14),
+  //           decoration: BoxDecoration(
+  //             color: AppColor.primaryColor.withOpacity(0.08),
+  //             borderRadius: BorderRadius.circular(20),
+  //           ),
+  //           child: const Icon(
+  //             IconlyBold.shield_done,
+  //             color: AppColor.primaryColor,
+  //             size: 28,
+  //           ),
+  //         ),
+  //         const SizedBox(width: 20),
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text('Solidaritas Palestina', style: pBold16),
+  //               const SizedBox(height: 4),
+  //               Text(
+  //                 'Bantu saudara kita di Gaza',
+  //                 style: pRegular12.copyWith(color: Colors.grey),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         const Icon(IconlyLight.arrow_right_2, color: Colors.grey, size: 20),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildBottomSheetQuran(HomeScreenController controller) {
+  Widget _buildBottomSheetQuran(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     final dataQuran = [
       {
         'title': 'Per Ayat',
@@ -855,8 +958,8 @@ class HomeScreen extends StatelessWidget {
       },
     ];
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       padding: const EdgeInsets.all(28),
@@ -873,7 +976,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            _buildRiwayatCard(controller),
+            _buildRiwayatCard(context, controller),
             const SizedBox(height: 18),
             Align(
               alignment: Alignment.centerLeft,
@@ -937,23 +1040,26 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRiwayatCard(HomeScreenController controller) {
+  Widget _buildRiwayatCard(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     return Obx(() {
       if (!AuthController.to.isLogin.value || controller.isOfflineMode.value)
         return const SizedBox();
       return InkWell(
         onTap: () {
           Get.back();
-          _showTilawahHistoryDialog();
+          _showTilawahHistoryDialog(context);
         },
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppColor.primaryColor.withOpacity(0.3),
+                color: context.theme.colorScheme.primary.withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -990,7 +1096,10 @@ class HomeScreen extends StatelessWidget {
     });
   }
 
-  Widget _bottomSheetMoreMenu(HomeScreenController controller) {
+  Widget _bottomSheetMoreMenu(
+    BuildContext context,
+    HomeScreenController controller,
+  ) {
     final menu = [
       {
         'title': 'Grup Ngaji',
@@ -1007,13 +1116,18 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/share.png',
         'route': Routes.appShareLeaderboard,
       },
+      {
+        'title': 'Hafalan Al-Quran',
+        'icon': 'assets/images/png/hafalan.png',
+        'route': Routes.appShareLeaderboard,
+      },
     ];
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1022,11 +1136,12 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 18),
           GridView.builder(
             shrinkWrap: true,
+            padding: EdgeInsets.zero,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.8,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+              crossAxisCount: 4,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
             itemCount: menu.length,
             itemBuilder: (context, index) => InkWell(
@@ -1071,7 +1186,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget buildLoginDialog(HomeScreenController controller) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Get.context!.theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: Container(
         padding: const EdgeInsets.all(28),
@@ -1080,7 +1195,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Text(
               'Login Sekarang',
-              style: pBold20.copyWith(color: AppColor.primaryColor),
+              style: pBold20.copyWith(color: Get.theme.colorScheme.primary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -1105,13 +1220,13 @@ class HomeScreen extends StatelessWidget {
                     ? null
                     : () => AuthController.to.handleSignIn(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
+                  backgroundColor: Get.theme.colorScheme.primary,
                   minimumSize: const Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   elevation: 10,
-                  shadowColor: AppColor.primaryColor.withOpacity(0.4),
+                  shadowColor: Get.theme.colorScheme.primary.withOpacity(0.4),
                 ),
                 child: AuthController.to.isLoading.value
                     ? const SizedBox(
@@ -1144,12 +1259,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _showTilawahHistoryDialog() {
+  void _showTilawahHistoryDialog(BuildContext context) {
     final tilawahController = Get.put(TilawahController());
     tilawahController.loadAllBookmarks();
     Get.dialog(
       Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -1193,12 +1308,13 @@ class HomeScreen extends StatelessWidget {
                         leading: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColor.primaryColor.withOpacity(0.1),
+                            color: context.theme.colorScheme.primary
+                                .withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             IconlyBold.document,
-                            color: AppColor.primaryColor,
+                            color: context.theme.colorScheme.primary,
                             size: 20,
                           ),
                         ),
@@ -1235,7 +1351,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-Widget _buildListBlog(HomeScreenController controller) {
+Widget _buildListBlog(BuildContext context, HomeScreenController controller) {
   final blogController = BlogController.to;
   return Obx(() {
     return Column(
@@ -1261,20 +1377,26 @@ Widget _buildListBlog(HomeScreenController controller) {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: isSelected
-                            ? AppColor.primaryColor
-                            : AppColor.primaryColor.withOpacity(0.1),
+                            ? context.theme.colorScheme.primary
+                            : context.isDarkMode
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade100,
                       ),
                       color: isSelected
-                          ? AppColor.primaryColor
-                          : AppColor.primaryColor.withOpacity(0.1),
+                          ? context.theme.colorScheme.primary
+                          : context.isDarkMode
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade100,
                     ),
                     child: Text(
                       'Semua',
                       style: pSemiBold10.copyWith(
-                        color: isSelected ? Colors.white : Colors.black87,
+                        color: isSelected
+                            ? Colors.white
+                            : context.theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -1292,20 +1414,26 @@ Widget _buildListBlog(HomeScreenController controller) {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
                       color: isSelected
-                          ? AppColor.primaryColor
-                          : AppColor.primaryColor.withOpacity(0.1),
+                          ? context.theme.colorScheme.primary
+                          : context.isDarkMode
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade100,
                     ),
                     color: isSelected
-                        ? AppColor.primaryColor
-                        : AppColor.primaryColor.withOpacity(0.1),
+                        ? context.theme.colorScheme.primary
+                        : context.isDarkMode
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
                   ),
                   child: Text(
                     category.name ?? '-',
                     style: pSemiBold10.copyWith(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected
+                          ? Colors.white
+                          : context.theme.colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -1319,7 +1447,7 @@ Widget _buildListBlog(HomeScreenController controller) {
 
         // Blog content area
         if (blogController.isLoading.value && blogController.blogs.isEmpty)
-          _buildBlogShimmer()
+          _buildBlogShimmer(context)
         else if (blogController.blogs.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -1342,23 +1470,63 @@ Widget _buildListBlog(HomeScreenController controller) {
                 onTap: () => Get.toNamed(Routes.showBlog, arguments: blog.slug),
                 child: Stack(
                   children: [
-                    Container(
-                      height: 160,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColor.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        image: blog.thumbnail != null
-                            ? DecorationImage(
-                                image: NetworkImage(blog.thumbnail!),
-                                fit: BoxFit.cover,
-                                colorFilter: ColorFilter.mode(
-                                  Colors.black.withOpacity(0.50),
-                                  BlendMode.darken,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: blog.thumbnail != null
+                          ? CachedNetworkImage(
+                              imageUrl: blog.thumbnail!,
+                              height: 160,
+                              width: double.infinity,
+                              imageBuilder: (context, imageProvider) =>
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: imageProvider,
+                                        fit: BoxFit.cover,
+                                        colorFilter: ColorFilter.mode(
+                                          Colors.black.withOpacity(0.50),
+                                          BlendMode.darken,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              placeholder: (context, url) => Container(
+                                color: context.theme.colorScheme.primary
+                                    .withOpacity(0.1),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: context.theme.colorScheme.primary,
+                                  ),
                                 ),
-                              )
-                            : null,
-                      ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey.shade200,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      IconlyLight.image,
+                                      color: Colors.grey.shade400,
+                                      size: 32,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Gagal memuat gambar',
+                                      style: pRegular10.copyWith(
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Container(
+                              height: 160,
+                              width: double.infinity,
+                              color: context.theme.colorScheme.primary
+                                  .withOpacity(0.1),
+                            ),
                     ),
                     Positioned(
                       top: 16,
@@ -1369,10 +1537,23 @@ Widget _buildListBlog(HomeScreenController controller) {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           if (blog.category?.icon != null)
-                            Image.network(
-                              blog.category!.icon!,
+                            CachedNetworkImage(
+                              imageUrl: blog.category!.icon!,
                               width: 20,
                               height: 20,
+                              placeholder: (context, url) => const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.category,
+                                size: 16,
+                                color: Colors.white,
+                              ),
                             )
                           else
                             const Icon(
@@ -1430,12 +1611,12 @@ Widget _buildListBlog(HomeScreenController controller) {
             itemCount: blogController.blogs.length,
           ),
         if (blogController.isLoadingMore.value)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Center(
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColor.primaryColor,
+                color: context.theme.colorScheme.primary,
               ),
             ),
           ),
@@ -1444,18 +1625,20 @@ Widget _buildListBlog(HomeScreenController controller) {
   });
 }
 
-Widget _buildBlogShimmer() {
+Widget _buildBlogShimmer(BuildContext context) {
   return ListView.separated(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     itemBuilder: (context, index) => Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: context.isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+      highlightColor: context.isDarkMode
+          ? Colors.grey[700]!
+          : Colors.grey[100]!,
       child: Container(
         height: 160,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
         ),
       ),
@@ -1465,7 +1648,7 @@ Widget _buildBlogShimmer() {
   );
 }
 
-Widget _buildListDoa(HomeScreenController controller) {
+Widget _buildListDoa(BuildContext context, HomeScreenController controller) {
   return Align(
     alignment: Alignment.centerLeft,
     child: Obx(() {
@@ -1504,7 +1687,7 @@ Widget _buildListDoa(HomeScreenController controller) {
       }
 
       return SizedBox(
-        height: 230,
+        height: 190,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
@@ -1522,77 +1705,119 @@ Widget _buildListDoa(HomeScreenController controller) {
                 }
               },
               child: Container(
-                width: 300,
+                width: 260,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  color: context.theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: context.isDarkMode
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColor.primaryColor.withOpacity(0.08),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Stack(
                   children: [
-                    // Corner Ornament
-                    Positioned(
-                      right: -10,
-                      top: -10,
-                      child: Opacity(
-                        opacity: 0.05,
-                        child: Icon(
-                          IconlyLight.chat,
-                          size: 100,
-                          color: AppColor.primaryColor,
-                        ),
-                      ),
-                    ),
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(2),
+                                padding: const EdgeInsets.all(1.5),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColor.primaryColor.withOpacity(
-                                      0.2,
-                                    ),
+                                    color: context.theme.colorScheme.primary
+                                        .withOpacity(0.2),
                                     width: 1,
                                   ),
                                 ),
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: AppColor.primaryColor
-                                      .withOpacity(0.1),
-                                  backgroundImage:
-                                      (prayer.isAnonymous == false &&
-                                          prayer.userProfile != null)
-                                      ? NetworkImage(prayer.userProfile!)
-                                      : null,
-                                  child:
-                                      (prayer.isAnonymous == true ||
-                                          prayer.userProfile == null)
-                                      ? Text(
+                                child:
+                                    (prayer.isAnonymous == false &&
+                                        prayer.userProfile != null)
+                                    ? CachedNetworkImage(
+                                        imageUrl: prayer.userProfile!,
+                                        imageBuilder:
+                                            (context, imageProvider) =>
+                                                CircleAvatar(
+                                                  radius: 16,
+                                                  backgroundImage:
+                                                      imageProvider,
+                                                ),
+                                        placeholder: (context, url) =>
+                                            CircleAvatar(
+                                              radius: 16,
+                                              backgroundColor: context
+                                                  .theme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.1),
+                                              child: SizedBox(
+                                                width: 12,
+                                                height: 12,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 1.5,
+                                                      color: context
+                                                          .theme
+                                                          .colorScheme
+                                                          .primary,
+                                                    ),
+                                              ),
+                                            ),
+                                        errorWidget: (context, url, error) =>
+                                            CircleAvatar(
+                                              radius: 16,
+                                              backgroundColor: context
+                                                  .theme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.1),
+                                              child: Text(
+                                                prayer.userName?[0]
+                                                        .toUpperCase() ??
+                                                    'U',
+                                                style: pBold12.copyWith(
+                                                  color: context
+                                                      .theme
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
+                                              ),
+                                            ),
+                                      )
+                                    : CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: context
+                                            .theme
+                                            .colorScheme
+                                            .primary
+                                            .withOpacity(0.1),
+                                        child: Text(
                                           (prayer.isAnonymous == true)
                                               ? 'H'
                                               : (prayer.userName?[0]
                                                         .toUpperCase() ??
                                                     'U'),
-                                          style: pBold14.copyWith(
-                                            color: AppColor.primaryColor,
+                                          style: pBold12.copyWith(
+                                            color: context
+                                                .theme
+                                                .colorScheme
+                                                .primary,
                                           ),
-                                        )
-                                      : null,
-                                ),
+                                        ),
+                                      ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1603,17 +1828,21 @@ Widget _buildListDoa(HomeScreenController controller) {
                                           : prayer.isMyPrayer == true
                                           ? 'Kamu'
                                           : prayer.userName ?? 'User',
-                                      style: pSemiBold14.copyWith(
-                                        color: Colors.black87,
+                                      style: pSemiBold12.copyWith(
+                                        color:
+                                            context.theme.colorScheme.onSurface,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 2),
                                     Text(
                                       prayer.publishedAt ?? '-',
                                       style: pRegular10.copyWith(
-                                        color: Colors.grey.shade500,
+                                        color: context
+                                            .theme
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                            .withOpacity(0.7),
                                       ),
                                     ),
                                   ],
@@ -1621,14 +1850,15 @@ Widget _buildListDoa(HomeScreenController controller) {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           Expanded(
                             child: Text(
                               prayer.content ?? '-',
-                              style: pMedium14.copyWith(
-                                color: AppColor.primaryColor,
-                                height: 1.5,
+                              style: pMedium12.copyWith(
+                                height: 1.4,
                                 fontStyle: FontStyle.italic,
+                                color: context.theme.colorScheme.onSurface
+                                    .withOpacity(0.9),
                               ),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
@@ -1638,85 +1868,35 @@ Widget _buildListDoa(HomeScreenController controller) {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (prayer.amensCount != 0)
-                                Row(
-                                  children: [
-                                    if (prayer.latestAmens != null &&
-                                        prayer.latestAmens!.isNotEmpty) ...[
-                                      SizedBox(
-                                        width:
-                                            (prayer.latestAmens!.length > 3
-                                                    ? 3
-                                                    : prayer
-                                                          .latestAmens!
-                                                          .length) *
-                                                14.0 +
-                                            10,
-                                        height: 20,
-                                        child: Stack(
-                                          children: List.generate(
-                                            prayer.latestAmens!.length > 3
-                                                ? 3
-                                                : prayer.latestAmens!.length,
-                                            (idx) {
-                                              final amenUser =
-                                                  prayer.latestAmens![idx];
-                                              return Positioned(
-                                                left: idx * 14.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: Colors.white,
-                                                      width: 1.5,
-                                                    ),
-                                                  ),
-                                                  child: CircleAvatar(
-                                                    radius: 8,
-                                                    backgroundColor: AppColor
-                                                        .primaryColor
-                                                        .withOpacity(0.2),
-                                                    backgroundImage:
-                                                        amenUser.userProfile !=
-                                                            null
-                                                        ? NetworkImage(
-                                                            amenUser
-                                                                .userProfile!,
-                                                          )
-                                                        : null,
-                                                    child:
-                                                        amenUser.userProfile ==
-                                                            null
-                                                        ? Text(
-                                                            amenUser.userName?[0]
-                                                                    .toUpperCase() ??
-                                                                'A',
-                                                            style: pBold10.copyWith(
-                                                              fontSize: 6,
-                                                              color: AppColor
-                                                                  .primaryColor,
-                                                            ),
-                                                          )
-                                                        : null,
-                                                  ),
-                                                ),
-                                              );
-                                            },
+                              // Amens Count
+                              Expanded(
+                                child: prayer.amensCount != 0
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            IconlyBold.heart,
+                                            size: 12,
+                                            color: context
+                                                .theme
+                                                .colorScheme
+                                                .primary,
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                    ],
-                                    Text(
-                                      '${prayer.amensCount ?? 0} Aamiin',
-                                      style: pRegular10.copyWith(
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              else
-                                const SizedBox.shrink(),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${prayer.amensCount ?? 0} Aamiin',
+                                            style: pSemiBold10.copyWith(
+                                              color: context
+                                                  .theme
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                              // Aamiinkan Button
                               if (prayer.isMyPrayer != true)
                                 InkWell(
                                   onTap: () {
@@ -1733,41 +1913,32 @@ Widget _buildListDoa(HomeScreenController controller) {
                                   borderRadius: BorderRadius.circular(100),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
+                                      horizontal: 12,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
                                       color: prayer.isAmened == true
-                                          ? AppColor.primaryColor
-                                          : Colors.white,
+                                          ? context.theme.colorScheme.primary
+                                          : context.theme.colorScheme.primary
+                                                .withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(100),
-                                      border: Border.all(
-                                        color: AppColor.primaryColor,
-                                        width: 1,
-                                      ),
-                                      boxShadow: prayer.isAmened == true
-                                          ? [
-                                              BoxShadow(
-                                                color: AppColor.primaryColor
-                                                    .withOpacity(0.3),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ]
-                                          : null,
                                     ),
                                     child: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
                                           prayer.isAmened == true
-                                              ? Icons.check_circle
+                                              ? Icons.check_circle_rounded
                                               : IconlyLight.heart,
-                                          size: 14,
+                                          size: 12,
                                           color: prayer.isAmened == true
                                               ? Colors.white
-                                              : AppColor.primaryColor,
+                                              : context
+                                                    .theme
+                                                    .colorScheme
+                                                    .primary,
                                         ),
-                                        const SizedBox(width: 6),
+                                        const SizedBox(width: 4),
                                         Text(
                                           prayer.isAmened == true
                                               ? 'Diaminkan'
@@ -1775,7 +1946,10 @@ Widget _buildListDoa(HomeScreenController controller) {
                                           style: pSemiBold10.copyWith(
                                             color: prayer.isAmened == true
                                                 ? Colors.white
-                                                : AppColor.primaryColor,
+                                                : context
+                                                      .theme
+                                                      .colorScheme
+                                                      .primary,
                                           ),
                                         ),
                                       ],

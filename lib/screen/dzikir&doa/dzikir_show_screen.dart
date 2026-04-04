@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/dzikir_show_screen_controller.dart';
 import 'package:quran_app/models/dzikir_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
 class DzikirShowScreen extends StatelessWidget {
   const DzikirShowScreen({super.key});
@@ -15,18 +15,18 @@ class DzikirShowScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(DzikirShowScreenController());
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildSliverAppBar(controller),
+          _buildSliverAppBar(context, controller),
           SliverToBoxAdapter(
             child: Obx(() {
               if (controller.isLoading.value) {
                 return SizedBox(
                   height: Get.height * 0.7,
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
-                      color: AppColor.primaryColor,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 );
@@ -36,7 +36,12 @@ class DzikirShowScreen extends StatelessWidget {
                 return SizedBox(
                   height: Get.height * 0.7,
                   child: Center(
-                    child: Text('Tidak ada data dzikir', style: pRegular14),
+                    child: Text(
+                      'Tidak ada data dzikir',
+                      style: pRegular14.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
+                    ),
                   ),
                 );
               }
@@ -61,12 +66,15 @@ class DzikirShowScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(DzikirShowScreenController controller) {
+  Widget _buildSliverAppBar(
+    BuildContext context,
+    DzikirShowScreenController controller,
+  ) {
     return SliverAppBar(
       expandedHeight: 120,
       floating: false,
       pinned: true,
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: Theme.of(context).primaryColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
@@ -83,8 +91,8 @@ class DzikirShowScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColor.primaryColor,
-                    AppColor.primaryColor.withOpacity(0.8),
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -119,13 +127,14 @@ class _DzikirCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColor.primaryColor.withOpacity(0.06),
+            color: Colors.black.withOpacity(isDark ? 0.1 : 0.04),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -146,7 +155,7 @@ class _DzikirCard extends StatelessWidget {
                       child: Text(
                         dzikir.title,
                         style: pBold16.copyWith(
-                          color: AppColor.primaryColor,
+                          color: Theme.of(context).primaryColor,
                           height: 1.2,
                         ),
                       ),
@@ -158,12 +167,14 @@ class _DzikirCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColor.primaryColor.withOpacity(0.1),
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         'Baca ${dzikir.read}x',
-                        style: pBold10.copyWith(color: AppColor.primaryColor),
+                        style: pBold10.copyWith(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ],
@@ -174,10 +185,10 @@ class _DzikirCard extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor.withOpacity(0.03),
+                    color: Theme.of(context).primaryColor.withOpacity(0.03),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColor.primaryColor.withOpacity(0.05),
+                      color: Theme.of(context).primaryColor.withOpacity(0.05),
                     ),
                   ),
                   child: Text(
@@ -186,7 +197,7 @@ class _DzikirCard extends StatelessWidget {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       height: 2.2,
-                      color: const Color(0xFF2D2D2D),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     textAlign: TextAlign.right,
                     textDirection: TextDirection.rtl,
@@ -197,7 +208,7 @@ class _DzikirCard extends StatelessWidget {
                 Text(
                   dzikir.latin,
                   style: pMedium14.copyWith(
-                    color: AppColor.primaryColor.withOpacity(0.7),
+                    color: Theme.of(context).primaryColor.withOpacity(0.8),
                     fontStyle: FontStyle.italic,
                     height: 1.5,
                   ),
@@ -207,18 +218,19 @@ class _DzikirCard extends StatelessWidget {
                 Text(
                   dzikir.arti,
                   style: pRegular14.copyWith(
-                    color: Colors.grey[700],
+                    color: Theme.of(context).hintColor,
                     height: 1.6,
                   ),
                   textAlign: TextAlign.justify,
                 ),
                 const SizedBox(height: 20),
-                const Divider(height: 1),
+                Divider(height: 1, color: Theme.of(context).dividerColor),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     _buildActionButton(
+                      context,
                       icon: Icons.copy_rounded,
                       onTap: () {
                         Clipboard.setData(
@@ -227,13 +239,9 @@ class _DzikirCard extends StatelessWidget {
                                 "${dzikir.title}\n\n${dzikir.arab}\n\n${dzikir.arti}",
                           ),
                         );
-                        Get.snackbar(
-                          'Berhasil',
-                          'Dzikir berhasil disalin',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: AppColor.primaryColor,
-                          colorText: Colors.white,
-                          margin: const EdgeInsets.all(20),
+                        AppToast.success(
+                          context: context,
+                          message: 'Dzikir berhasil disalin',
                         );
                       },
                     ),
@@ -247,7 +255,8 @@ class _DzikirCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildActionButton(
+    BuildContext context, {
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -257,10 +266,10 @@ class _DzikirCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColor.primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppColor.primaryColor, size: 20),
+        child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
       ),
     );
   }

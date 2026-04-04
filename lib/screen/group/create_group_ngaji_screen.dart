@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/group/create_group_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
@@ -13,10 +12,15 @@ class CreateGroupNgajiScreen extends StatelessWidget {
     final controller = Get.put(CreateGroupController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColor.backgroundColor,
-        title: Text('Buat Grup Ngaji', style: pSemiBold16),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text(
+          'Buat Grup Ngaji',
+          style: pSemiBold16.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -26,7 +30,9 @@ class CreateGroupNgajiScreen extends StatelessWidget {
           children: [
             Text(
               'Yuk, buat grup ngaji! ajak temanmu untuk bergabung, raih berlipat pahala dan kebaikan',
-              style: pSemiBold14,
+              style: pSemiBold14.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -41,10 +47,17 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Set Private Grup', style: pSemiBold14),
+                      Text(
+                        'Set Private Grup',
+                        style: pSemiBold14.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       Text(
                         'Informasi grup hanya bisa dilihat oleh anggota grup',
-                        style: pRegular12,
+                        style: pRegular12.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
                       ),
                     ],
                   ),
@@ -56,7 +69,7 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                     onChanged: (value) {
                       controller.isPrivate.value = value;
                     },
-                    activeColor: AppColor.primaryColor,
+                    activeColor: Theme.of(context).primaryColor,
                   ),
                 ),
               ],
@@ -68,7 +81,7 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                     ? null
                     : () => controller.createGroup(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
+                  backgroundColor: Theme.of(context).primaryColor,
                   fixedSize: const Size(double.maxFinite, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
@@ -86,7 +99,7 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                     : Text(
                         'Simpan',
                         style: pMedium14.copyWith(
-                          color: AppColor.backgroundColor,
+                          color: Colors.white,
                         ),
                       ),
               ),

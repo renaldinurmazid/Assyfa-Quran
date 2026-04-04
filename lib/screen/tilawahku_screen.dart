@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/quran/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class TilawahkuScreen extends StatelessWidget {
@@ -11,36 +10,34 @@ class TilawahkuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controller
     final controller = Get.put(TilawahController());
-
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: RefreshIndicator(
         onRefresh: () async {
           await controller.loadAllBookmarks();
           await controller.fetchWeeklyStats();
         },
-        color: AppColor.primaryColor,
+        color: context.theme.colorScheme.primary,
         edgeOffset: 100,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
-            _buildAppBar(controller),
+            _buildAppBar(context, controller),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                child: _buildWeeklyChart(controller),
+                child: _buildWeeklyChart(context, controller),
               ),
             ),
             Obx(() {
               if (controller.isLoading.value && controller.bookmarks.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: AppColor.primaryColor,
+                      color: context.theme.colorScheme.primary,
                     ),
                   ),
                 );
@@ -58,20 +55,22 @@ class TilawahkuScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: AppColor.primaryColor.withOpacity(0.05),
+                              color: context.theme.colorScheme.primary
+                                  .withOpacity(0.05),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               IconlyLight.bookmark,
                               size: 64,
-                              color: AppColor.primaryColor.withOpacity(0.3),
+                              color: context.theme.colorScheme.primary
+                                  .withOpacity(0.3),
                             ),
                           ),
                           const SizedBox(height: 24),
                           Text(
                             'Belum ada pembatas',
                             style: pBold18.copyWith(
-                              color: AppColor.primaryColor,
+                              color: context.theme.colorScheme.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -79,7 +78,7 @@ class TilawahkuScreen extends StatelessWidget {
                             'Simpan halaman favoritmu agar lebih mudah melanjutkan tilawah di lain waktu.',
                             textAlign: TextAlign.center,
                             style: pRegular14.copyWith(
-                              color: Colors.grey.shade500,
+                              color: context.theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -97,7 +96,7 @@ class TilawahkuScreen extends StatelessWidget {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final bookmark = controller.bookmarks[index];
-                    return _buildBookmarkCard(bookmark, controller);
+                    return _buildBookmarkCard(context, bookmark, controller);
                   }, childCount: controller.bookmarks.length),
                 ),
               );
@@ -109,13 +108,13 @@ class TilawahkuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyChart(TilawahController controller) {
+  Widget _buildWeeklyChart(BuildContext context, TilawahController controller) {
     return Obx(() {
       if (controller.isLoadingWeekly.value) {
         return Container(
           height: 180,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.theme.colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(24),
           ),
           child: const Center(child: CircularProgressIndicator()),
@@ -136,7 +135,7 @@ class TilawahkuScreen extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -157,12 +156,16 @@ class TilawahkuScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Statistik Mingguan',
-                      style: pBold16.copyWith(color: AppColor.primaryColor),
+                      style: pBold16.copyWith(
+                        color: context.theme.colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Total $totalPages Halaman Terbaca',
-                      style: pRegular12.copyWith(color: Colors.grey),
+                      style: pRegular12.copyWith(
+                        color: context.theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -172,20 +175,22 @@ class TilawahkuScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor.withOpacity(0.1),
+                    color: context.theme.colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         IconlyBold.calendar,
                         size: 14,
-                        color: AppColor.primaryColor,
+                        color: context.theme.colorScheme.primary,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         '7 Hari',
-                        style: pBold10.copyWith(color: AppColor.primaryColor),
+                        style: pBold10.copyWith(
+                          color: context.theme.colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -206,7 +211,9 @@ class TilawahkuScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${item['total_pages']}',
-                        style: pMedium12.copyWith(color: Colors.grey),
+                        style: pMedium12.copyWith(
+                          color: context.theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       AnimatedContainer(
@@ -219,18 +226,28 @@ class TilawahkuScreen extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: val > 0
                                 ? [
-                                    AppColor.primaryColor,
-                                    AppColor.primaryColor.withOpacity(0.6),
+                                    context.theme.colorScheme.primary,
+                                    context.theme.colorScheme.primary
+                                        .withOpacity(0.6),
                                   ]
-                                : [Colors.grey.shade200, Colors.grey.shade100],
+                                : [
+                                    context
+                                        .theme
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                    context
+                                        .theme
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withOpacity(0.5),
+                                  ],
                           ),
                           borderRadius: BorderRadius.circular(6),
                           boxShadow: val > 0
                               ? [
                                   BoxShadow(
-                                    color: AppColor.primaryColor.withOpacity(
-                                      0.2,
-                                    ),
+                                    color: context.theme.colorScheme.primary
+                                        .withOpacity(0.2),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -242,7 +259,9 @@ class TilawahkuScreen extends StatelessWidget {
                       Text(
                         item['day'],
                         style: pMedium12.copyWith(
-                          color: val > 0 ? AppColor.primaryColor : Colors.grey,
+                          color: val > 0
+                              ? context.theme.colorScheme.primary
+                              : context.theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -256,11 +275,11 @@ class TilawahkuScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildAppBar(TilawahController controller) {
+  Widget _buildAppBar(BuildContext context, TilawahController controller) {
     return SliverAppBar(
       pinned: true,
       expandedHeight: 120,
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
@@ -269,13 +288,13 @@ class TilawahkuScreen extends StatelessWidget {
         title: Text(
           'Aktivitas Tilawah',
           style: pSemiBold16.copyWith(
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.onSurface,
             fontWeight: FontWeight.w800,
           ),
         ),
         background: Container(
           decoration: BoxDecoration(
-            color: AppColor.primaryColor.withOpacity(0.03),
+            color: context.theme.colorScheme.surface,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(32),
               bottomRight: Radius.circular(32),
@@ -295,12 +314,16 @@ class TilawahkuScreen extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColor.primaryColor.withOpacity(0.1),
+                        color: context.theme.colorScheme.primary.withOpacity(
+                          0.1,
+                        ),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         '${controller.bookmarks.length}',
-                        style: pBold12.copyWith(color: AppColor.primaryColor),
+                        style: pBold12.copyWith(
+                          color: context.theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -311,7 +334,11 @@ class TilawahkuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookmarkCard(dynamic bookmark, TilawahController controller) {
+  Widget _buildBookmarkCard(
+    BuildContext context,
+    dynamic bookmark,
+    TilawahController controller,
+  ) {
     final pageNumber = bookmark['page_number'];
     final quranType = bookmark['quran_type'] ?? 'Quran';
     final quranTypeSlug = bookmark['quran_type_slug'];
@@ -322,7 +349,7 @@ class TilawahkuScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -356,11 +383,13 @@ class TilawahkuScreen extends StatelessWidget {
                   height: 60,
                   width: 60,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: context.theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColor.primaryColor.withOpacity(0.1),
+                        color: context.theme.colorScheme.primary.withOpacity(
+                          0.1,
+                        ),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -373,9 +402,9 @@ class TilawahkuScreen extends StatelessWidget {
                             markerPath,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                                _buildFallbackPreview(),
+                                _buildFallbackPreview(context),
                           )
-                        : _buildFallbackPreview(),
+                        : _buildFallbackPreview(context),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -389,13 +418,15 @@ class TilawahkuScreen extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColor.primaryColor.withOpacity(0.08),
+                          color: context.theme.colorScheme.primary.withOpacity(
+                            0.08,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           quranType.toUpperCase(),
                           style: pBold10.copyWith(
-                            color: AppColor.primaryColor,
+                            color: context.theme.colorScheme.primary,
                             letterSpacing: 1,
                           ),
                         ),
@@ -403,7 +434,9 @@ class TilawahkuScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       Text(
                         surahName,
-                        style: pBold16.copyWith(color: Colors.black87),
+                        style: pBold16.copyWith(
+                          color: context.theme.colorScheme.onSurface,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -413,13 +446,14 @@ class TilawahkuScreen extends StatelessWidget {
                           Icon(
                             IconlyLight.document,
                             size: 14,
-                            color: AppColor.primaryColor.withOpacity(0.6),
+                            color: context.theme.colorScheme.primary
+                                .withOpacity(0.6),
                           ),
                           const SizedBox(width: 6),
                           Text(
                             'Halaman $pageNumber',
                             style: pMedium12.copyWith(
-                              color: Colors.grey.shade700,
+                              color: context.theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -430,14 +464,16 @@ class TilawahkuScreen extends StatelessWidget {
                           Icon(
                             IconlyLight.time_circle,
                             size: 12,
-                            color: Colors.grey.shade400,
+                            color: context.theme.colorScheme.onSurfaceVariant
+                                .withOpacity(0.5),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             savedAt ??
                                 controller.getTimeAgo(bookmark['created_at']),
                             style: pRegular10.copyWith(
-                              color: Colors.grey.shade400,
+                              color: context.theme.colorScheme.onSurfaceVariant
+                                  .withOpacity(0.5),
                             ),
                           ),
                         ],
@@ -447,7 +483,7 @@ class TilawahkuScreen extends StatelessWidget {
                 ),
                 Icon(
                   IconlyLight.arrow_right_2,
-                  color: AppColor.primaryColor.withOpacity(0.3),
+                  color: context.theme.colorScheme.primary.withOpacity(0.3),
                   size: 20,
                 ),
               ],
@@ -458,13 +494,13 @@ class TilawahkuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFallbackPreview() {
+  Widget _buildFallbackPreview(BuildContext context) {
     return Container(
-      color: AppColor.primaryColor.withOpacity(0.05),
+      color: context.theme.colorScheme.primary.withOpacity(0.05),
       child: Center(
         child: Icon(
           Icons.menu_book_rounded,
-          color: AppColor.primaryColor.withOpacity(0.2),
+          color: context.theme.colorScheme.primary.withOpacity(0.2),
           size: 24,
         ),
       ),

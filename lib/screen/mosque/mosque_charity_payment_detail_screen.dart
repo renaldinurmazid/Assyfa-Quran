@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/models/mosque_donation_response_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'dart:convert';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -30,37 +30,37 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Instruksi Pembayaran',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pBold18.copyWith(color: Theme.of(context).primaryColor),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             IconlyLight.arrow_left_2,
-            color: AppColor.primaryColor,
+            color: Theme.of(context).primaryColor,
           ),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildStatusHeader(payment),
+            _buildStatusHeader(context, payment),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildPaymentSummary(payment),
+                  _buildPaymentSummary(context, payment),
                   const SizedBox(height: 24),
-                  _buildPaymentInfo(payment),
+                  _buildPaymentInfo(context, payment),
                   const SizedBox(height: 24),
-                  _buildInstructions(instructions),
+                  _buildInstructions(context, instructions),
                   const SizedBox(height: 48),
                 ],
               ),
@@ -68,17 +68,17 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomAction(),
+      bottomNavigationBar: _buildBottomAction(context),
     );
   }
 
-  Widget _buildStatusHeader(MosquePayment payment) {
+  Widget _buildStatusHeader(BuildContext context, MosquePayment payment) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       ),
       child: Column(
         children: [
@@ -107,27 +107,32 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             payment.formattedAmount,
-            style: pBold24.copyWith(color: AppColor.primaryColor, fontSize: 32),
+            style: pBold24.copyWith(
+              color: Theme.of(context).primaryColor,
+              fontSize: 32,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Order ID: ${payment.payCode}',
-            style: pMedium12.copyWith(color: Colors.grey),
+            style: pMedium12.copyWith(color: Theme.of(context).hintColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentSummary(MosquePayment payment) {
+  Widget _buildPaymentSummary(BuildContext context, MosquePayment payment) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(
+              Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.03,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -138,10 +143,15 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total Pembayaran', style: pMedium14),
+              Text(
+                'Total Pembayaran',
+                style: pMedium14.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
               Text(
                 payment.formattedAmount,
-                style: pBold16.copyWith(color: AppColor.primaryColor),
+                style: pBold16.copyWith(color: Theme.of(context).primaryColor),
               ),
             ],
           ),
@@ -156,14 +166,17 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                 height: 40,
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: Theme.of(context).dividerColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: payment.paymentMethode?.logo != null
                     ? (payment.paymentMethode!.logo.contains('.svg')
                           ? SvgPicture.network(payment.paymentMethode!.logo)
                           : Image.network(payment.paymentMethode!.logo))
-                    : const Icon(IconlyLight.wallet, color: Colors.grey),
+                    : Icon(
+                        IconlyLight.wallet,
+                        color: Theme.of(context).hintColor,
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -172,11 +185,15 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       payment.paymentMethode?.name ?? 'Metode Pembayaran',
-                      style: pBold14,
+                      style: pBold14.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     Text(
                       payment.paymentMethode?.accountName ?? '',
-                      style: pRegular12.copyWith(color: Colors.grey),
+                      style: pRegular12.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
                     ),
                   ],
                 ),
@@ -188,18 +205,25 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentInfo(MosquePayment payment) {
+  Widget _buildPaymentInfo(BuildContext context, MosquePayment payment) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Nomor Rekening / Virtual Account', style: pBold14),
+        Text(
+          'Nomor Rekening / Virtual Account',
+          style: pBold14.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColor.primaryColor.withOpacity(0.05),
+            color: Theme.of(context).primaryColor.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColor.primaryColor.withOpacity(0.1)),
+            border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,20 +231,16 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
               Text(
                 payment.payCode,
                 style: pBold20.copyWith(
-                  color: AppColor.primaryColor,
+                  color: Theme.of(context).primaryColor,
                   letterSpacing: 1.2,
                 ),
               ),
               GestureDetector(
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: payment.payCode));
-                  Get.snackbar(
-                    'Berhasil',
-                    'Nomor berhasil disalin',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: AppColor.primaryColor,
-                    colorText: Colors.white,
-                    margin: const EdgeInsets.all(20),
+                  AppToast.success(
+                    context: context,
+                    message: 'Nomor berhasil disalin',
                   );
                 },
                 child: Container(
@@ -229,7 +249,7 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor,
+                    color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -245,23 +265,42 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructions(List<Instruction> instructions) {
+  Widget _buildInstructions(
+    BuildContext context,
+    List<Instruction> instructions,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Instruksi Pembayaran', style: pBold14),
+        Text(
+          'Instruksi Pembayaran',
+          style: pBold14.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 16),
         ...instructions.map(
           (ins) => Theme(
-            data: ThemeData().copyWith(dividerColor: Colors.transparent),
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+              expansionTileTheme: ExpansionTileThemeData(
+                iconColor: Theme.of(context).primaryColor,
+                collapsedIconColor: Theme.of(context).primaryColor,
+              ),
+            ),
             child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: ExpansionTile(
-                title: Text(ins.title, style: pSemiBold14),
+                title: Text(
+                  ins.title,
+                  style: pSemiBold14.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
                 childrenPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
@@ -278,8 +317,8 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                             Container(
                               width: 20,
                               height: 20,
-                              decoration: const BoxDecoration(
-                                color: AppColor.primaryColor,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -291,7 +330,14 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(entry.value, style: pRegular12),
+                              child: Text(
+                                entry.value,
+                                style: pRegular12.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -306,14 +352,16 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomAction() {
+  Widget _buildBottomAction(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(
+              Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05,
+            ),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -330,17 +378,14 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
           if (await canLaunchUrl(whatsappUrl)) {
             await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
           } else {
-            Get.snackbar(
-              'Gagal',
-              'Tidak dapat membuka WhatsApp',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
+            AppToast.error(
+              context: context,
+              message: 'Tidak dapat membuka WhatsApp',
             );
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.primaryColor,
+          backgroundColor: Theme.of(context).primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

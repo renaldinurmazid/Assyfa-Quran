@@ -177,6 +177,13 @@ class DeepLinkService {
         }
         break;
 
+      // quranuna://blog/SLUG
+      case 'blog':
+        if (segments.isNotEmpty) {
+          _navigateToBlog(segments.first);
+        }
+        break;
+
       default:
         break;
     }
@@ -220,6 +227,13 @@ class DeepLinkService {
         return;
       }
     }
+
+    // ── Blog: /b/SLUG ──
+    int bIndex = segments.indexOf('b');
+    if (bIndex != -1 && bIndex + 1 < segments.length) {
+      _navigateToBlog(segments[bIndex + 1]);
+      return;
+    }
   }
 
   // ════════════════════════════════════════════════════
@@ -257,6 +271,17 @@ class DeepLinkService {
     final asInt = int.tryParse(code);
     _ensureMainAndNavigate(() {
       Get.toNamed(Routes.showGroup, arguments: asInt ?? code);
+    });
+  }
+
+  /// Navigate to blog detail screen.
+  /// ShowBlogScreen expects: Get.arguments = String (slug)
+  void _navigateToBlog(String slug) {
+    print(
+      'DeepLink: Navigating to blog "$slug" (current route: ${Get.currentRoute})',
+    );
+    _ensureMainAndNavigate(() {
+      Get.toNamed(Routes.showBlog, arguments: slug);
     });
   }
 

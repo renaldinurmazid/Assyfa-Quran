@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/prayer/create_prayer_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class CreatePrayerScreen extends StatelessWidget {
@@ -12,21 +11,21 @@ class CreatePrayerScreen extends StatelessWidget {
     final controller = Get.put(CreatePrayerController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.black87,
+            color: Theme.of(context).primaryColor,
             size: 20,
           ),
         ),
         title: Text(
           'Buat Doa',
-          style: pSemiBold16.copyWith(color: Colors.black87),
+          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
         ),
         centerTitle: true,
       ),
@@ -38,21 +37,23 @@ class CreatePrayerScreen extends StatelessWidget {
             children: [
               Text(
                 'Tulis Doa atau Harapan Anda',
-                style: pBold16.copyWith(color: Colors.black87),
+                style: pBold16.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Biarkan saudara muslim lainnya ikut mengaminkan doa baik Anda.',
-                style: pRegular12.copyWith(color: Colors.grey),
+                style: pRegular12.copyWith(color: Theme.of(context).hintColor),
               ),
               const SizedBox(height: 24),
 
               // Input Field
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -63,10 +64,14 @@ class CreatePrayerScreen extends StatelessWidget {
                   maxLines: 8,
                   decoration: InputDecoration(
                     hintText: 'Tulis doa Anda di sini...',
-                    hintStyle: pRegular14.copyWith(color: Colors.grey),
+                    hintStyle: pRegular14.copyWith(
+                      color: Theme.of(context).hintColor,
+                    ),
                     border: InputBorder.none,
                   ),
-                  style: pRegular14.copyWith(color: Colors.black87),
+                  style: pRegular14.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -86,13 +91,13 @@ class CreatePrayerScreen extends StatelessWidget {
                           height: 20,
                           decoration: BoxDecoration(
                             color: controller.isAnonymous.value
-                                ? AppColor.primaryColor
-                                : Colors.white,
+                                ? Theme.of(context).primaryColor
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: controller.isAnonymous.value
-                                  ? AppColor.primaryColor
-                                  : Colors.grey.shade400,
+                                  ? Theme.of(context).primaryColor
+                                  : Theme.of(context).dividerColor,
                             ),
                           ),
                           child: controller.isAnonymous.value
@@ -106,7 +111,9 @@ class CreatePrayerScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           'Kirim sebagai Hamba Allah (Anonim)',
-                          style: pMedium12.copyWith(color: Colors.black87),
+                          style: pMedium12.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ],
                     ),
@@ -123,7 +130,7 @@ class CreatePrayerScreen extends StatelessWidget {
                       ? null
                       : () => controller.submitPrayer(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.primaryColor,
+                    backgroundColor: Theme.of(context).primaryColor,
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

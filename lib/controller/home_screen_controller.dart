@@ -24,6 +24,7 @@ class HomeScreenController extends GetxController {
   final kabKota = 'Jakarta'.obs;
   final jadwalToday = <String, dynamic>{}.obs;
   final isOfflineMode = false.obs;
+  final readingHistoryTotal = 0.obs;
 
   final prayers = <PrayerItem>[].obs;
   final isLoadingPrayers = false.obs;
@@ -64,6 +65,7 @@ class HomeScreenController extends GetxController {
     fetchPrayers();
     _checkConnection();
     _listenToConnectivity();
+    fetchReadingHistoryTotal();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (AuthController.to.isLogin.value) {
         fetchWeeklyStats();
@@ -520,6 +522,18 @@ class HomeScreenController extends GetxController {
       }
     } catch (e) {
       AppToast.error(message: 'Terjadi kesalahan saat mengaminkan doa');
+    }
+  }
+
+  Future<void> fetchReadingHistoryTotal() async {
+    try {
+      final response = await Request().get(Url.readingHistoryTotal);
+      if (response.statusCode == 200) {
+        readingHistoryTotal.value = response.data['data']['total_pages'];
+      }
+    } catch (e) {
+      print(e);
+      AppToast.error(message: 'Gagal memuat total halaman yang dibaca');
     }
   }
 }

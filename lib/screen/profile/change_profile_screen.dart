@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/change_profile_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
@@ -16,11 +15,16 @@ class ChangeProfileScreen extends StatelessWidget {
     final controller = Get.put(ChangeProfileController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Ubah Profil', style: pBold18),
+        title: Text(
+          'Ubah Profil',
+          style: pSemiBold16.copyWith(
+            color: context.theme.colorScheme.onSurface,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: AppColor.backgroundColor,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
@@ -41,10 +45,11 @@ class ChangeProfileScreen extends StatelessWidget {
                         height: 110,
                         width: 110,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.theme.colorScheme.surface,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColor.primaryColor.withOpacity(0.1),
+                            color: context.theme.colorScheme.primary
+                                .withOpacity(0.1),
                             width: 3,
                           ),
                           boxShadow: [
@@ -82,7 +87,8 @@ class ChangeProfileScreen extends StatelessWidget {
                             ? Icon(
                                 IconlyBold.profile,
                                 size: 45,
-                                color: AppColor.primaryColor.withOpacity(0.2),
+                                color: context.theme.colorScheme.primary
+                                    .withOpacity(0.2),
                               )
                             : null,
                       ),
@@ -94,12 +100,16 @@ class ChangeProfileScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColor.primaryColor,
+                              color: context.theme.colorScheme.primary,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(
+                                color: context.theme.colorScheme.surface,
+                                width: 2,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColor.primaryColor.withOpacity(0.3),
+                                  color: context.theme.colorScheme.primary
+                                      .withOpacity(0.3),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -122,7 +132,12 @@ class ChangeProfileScreen extends StatelessWidget {
               // Form Section
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Nama Lengkap', style: pSemiBold14),
+                child: Text(
+                  'Nama Lengkap',
+                  style: pSemiBold14.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               TextInput(
@@ -132,7 +147,12 @@ class ChangeProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Nomor Telepon', style: pSemiBold14),
+                child: Text(
+                  'Nomor Telepon',
+                  style: pSemiBold14.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               TextInput(
@@ -144,7 +164,12 @@ class ChangeProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Email', style: pSemiBold14),
+                child: Text(
+                  'Email',
+                  style: pSemiBold14.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               TextInput(
@@ -162,7 +187,9 @@ class ChangeProfileScreen extends StatelessWidget {
                       ? null
                       : () => controller.updateProfile(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.primaryColor,
+                    backgroundColor: context.theme.colorScheme.primary,
+                    disabledBackgroundColor: context.theme.colorScheme.primary
+                        .withOpacity(0.6),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 54),
                     elevation: 0,

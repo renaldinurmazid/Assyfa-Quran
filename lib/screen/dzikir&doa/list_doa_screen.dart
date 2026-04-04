@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/list_doa_screen_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class ListDoaScreen extends StatelessWidget {
@@ -14,14 +13,14 @@ class ListDoaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(ListDoaScreenController());
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
             pinned: true,
-            backgroundColor: AppColor.primaryColor,
+            backgroundColor: context.theme.colorScheme.primary,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
@@ -36,8 +35,8 @@ class ListDoaScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColor.primaryColor,
-                          AppColor.primaryColor.withOpacity(0.8),
+                          context.theme.colorScheme.primary,
+                          context.theme.colorScheme.primary.withOpacity(0.8),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -66,9 +65,9 @@ class ListDoaScreen extends StatelessWidget {
               if (controller.isLoading.value) {
                 return SizedBox(
                   height: Get.height * 0.7,
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
-                      color: AppColor.primaryColor,
+                      color: context.theme.colorScheme.primary,
                     ),
                   ),
                 );
@@ -78,7 +77,12 @@ class ListDoaScreen extends StatelessWidget {
                 return SizedBox(
                   height: Get.height * 0.7,
                   child: Center(
-                    child: Text('Tidak ada data doa', style: pRegular14),
+                    child: Text(
+                      'Tidak ada data doa',
+                      style: pRegular14.copyWith(
+                        color: context.theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 );
               }
@@ -121,11 +125,14 @@ class _DoaCardState extends State<_DoaCard> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColor.primaryColor.withOpacity(0.06),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -151,13 +158,15 @@ class _DoaCardState extends State<_DoaCard> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: AppColor.primaryColor.withOpacity(0.1),
+                        color: context.theme.colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
                         child: Text(
                           '${widget.index}',
-                          style: pBold16.copyWith(color: AppColor.primaryColor),
+                          style: pBold16.copyWith(
+                            color: context.theme.colorScheme.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -169,7 +178,7 @@ class _DoaCardState extends State<_DoaCard> {
                           Text(
                             widget.doa.nama,
                             style: pBold16.copyWith(
-                              color: AppColor.primaryColor,
+                              color: context.theme.colorScheme.primary,
                               height: 1.2,
                             ),
                           ),
@@ -177,7 +186,7 @@ class _DoaCardState extends State<_DoaCard> {
                           Text(
                             widget.doa.grup,
                             style: pMedium10.copyWith(
-                              color: Colors.grey,
+                              color: context.theme.colorScheme.onSurfaceVariant,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -188,7 +197,7 @@ class _DoaCardState extends State<_DoaCard> {
                       isExpanded
                           ? IconlyLight.arrow_up_2
                           : IconlyLight.arrow_down_2,
-                      color: AppColor.primaryColor,
+                      color: context.theme.colorScheme.primary,
                       size: 20,
                     ),
                   ],
@@ -207,10 +216,10 @@ class _DoaCardState extends State<_DoaCard> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColor.primaryColor.withOpacity(0.03),
+                          color: context.theme.colorScheme.primary.withOpacity(0.03),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: AppColor.primaryColor.withOpacity(0.05),
+                            color: context.theme.colorScheme.primary.withOpacity(0.05),
                           ),
                         ),
                         child: Text(
@@ -219,7 +228,7 @@ class _DoaCardState extends State<_DoaCard> {
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
                             height: 2.2,
-                            color: const Color(0xFF2D2D2D),
+                            color: context.theme.colorScheme.onSurface,
                           ),
                           textAlign: TextAlign.right,
                           textDirection: TextDirection.rtl,
@@ -229,13 +238,15 @@ class _DoaCardState extends State<_DoaCard> {
                       // Transliterasi Latin
                       Text(
                         'Artinya:',
-                        style: pBold12.copyWith(color: AppColor.primaryColor),
+                        style: pBold12.copyWith(
+                          color: context.theme.colorScheme.primary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         widget.doa.idn,
                         style: pRegular14.copyWith(
-                          color: Colors.grey[800],
+                          color: context.theme.colorScheme.onSurfaceVariant,
                           height: 1.6,
                         ),
                         textAlign: TextAlign.left,
@@ -258,7 +269,7 @@ class _DoaCardState extends State<_DoaCard> {
                                 'Berhasil',
                                 'Doa berhasil disalin',
                                 snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: AppColor.primaryColor,
+                                backgroundColor: context.theme.colorScheme.primary,
                                 colorText: Colors.white,
                                 margin: const EdgeInsets.all(20),
                               );
@@ -287,10 +298,14 @@ class _DoaCardState extends State<_DoaCard> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColor.primaryColor.withOpacity(0.1),
+          color: context.theme.colorScheme.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppColor.primaryColor, size: 20),
+        child: Icon(
+          icon,
+          color: context.theme.colorScheme.primary,
+          size: 20,
+        ),
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/group/show_member_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/models/group/member_group_tilawah.dart';
 
@@ -13,17 +12,17 @@ class ShowMemberScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(ShowMemberController());
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildAppBar(controller),
+          _buildAppBar(context, controller),
           Obx(() {
             if (controller.isLoading.value && controller.group.value == null) {
-              return const SliverFillRemaining(
+              return SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: AppColor.primaryColor,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               );
@@ -39,12 +38,14 @@ class ShowMemberScreen extends StatelessWidget {
                       Icon(
                         IconlyLight.user,
                         size: 64,
-                        color: Colors.grey.shade300,
+                        color: Theme.of(context).disabledColor.withOpacity(0.3),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'Belum ada anggota',
-                        style: pMedium14.copyWith(color: Colors.grey),
+                        style: pMedium14.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
                       ),
                     ],
                   ),
@@ -57,7 +58,7 @@ class ShowMemberScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final member = controller.group.value!.groupUser[index];
-                  return _buildMemberTile(member, controller);
+                  return _buildMemberTile(context, member, controller);
                 }, childCount: controller.group.value!.groupUser.length),
               ),
             );
@@ -67,10 +68,10 @@ class ShowMemberScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppBar(ShowMemberController controller) {
+  Widget _buildAppBar(BuildContext context, ShowMemberController controller) {
     return SliverAppBar(
       pinned: true,
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
@@ -78,39 +79,51 @@ class ShowMemberScreen extends StatelessWidget {
         () => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Anggota Grup', style: pBold18),
+            Text(
+              'Anggota Grup',
+              style: pBold18.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
             Text(
               '${controller.group.value?.memberCount ?? 0} Anggota Terdaftar',
-              style: pRegular12.copyWith(color: Colors.grey),
+              style: pRegular12.copyWith(color: Theme.of(context).hintColor),
             ),
           ],
         ),
       ),
       leading: IconButton(
-        icon: const Icon(
+        icon: Icon(
           IconlyLight.arrow_left_2,
-          color: AppColor.primaryColor,
+          color: Theme.of(context).primaryColor,
         ),
         onPressed: () => Get.back(),
       ),
     );
   }
 
-  Widget _buildMemberTile(GroupUser member, ShowMemberController controller) {
+  Widget _buildMemberTile(
+    BuildContext context,
+    GroupUser member,
+    ShowMemberController controller,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.1 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade50),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.05),
+        ),
       ),
       child: Row(
         children: [
@@ -122,7 +135,7 @@ class ShowMemberScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColor.primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     width: 2,
                   ),
                 ),
@@ -146,8 +159,8 @@ class ShowMemberScreen extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppColor.primaryColor,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
@@ -165,7 +178,9 @@ class ShowMemberScreen extends StatelessWidget {
               children: [
                 Text(
                   member.user.name,
-                  style: pBold14.copyWith(color: Colors.grey.shade800),
+                  style: pBold14.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -173,12 +188,14 @@ class ShowMemberScreen extends StatelessWidget {
                     Icon(
                       IconlyLight.document,
                       size: 12,
-                      color: Colors.grey.shade400,
+                      color: Theme.of(context).hintColor,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${member.totalPages} Halaman',
-                      style: pRegular12.copyWith(color: Colors.grey),
+                      style: pRegular12.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
                     ),
                   ],
                 ),
@@ -187,8 +204,12 @@ class ShowMemberScreen extends StatelessWidget {
           ),
           if (controller.isOwner && member.userId != controller.creatorId)
             IconButton(
-              onPressed: () =>
-                  _confirmDropUser(controller, member.userId, member.user.name),
+              onPressed: () => _confirmDropUser(
+                context,
+                controller,
+                member.userId,
+                member.user.name,
+              ),
               icon: const Icon(
                 Icons.person_remove_rounded,
                 color: Colors.red,
@@ -201,6 +222,7 @@ class ShowMemberScreen extends StatelessWidget {
   }
 
   void _confirmDropUser(
+    BuildContext context,
     ShowMemberController controller,
     int userId,
     String name,
@@ -211,7 +233,7 @@ class ShowMemberScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -238,7 +260,7 @@ class ShowMemberScreen extends StatelessWidget {
               Text(
                 'Apakah Anda yakin ingin mengeluarkan $name dari grup ini?',
                 textAlign: TextAlign.center,
-                style: pRegular14.copyWith(color: Colors.grey.shade600),
+                style: pRegular14.copyWith(color: Theme.of(context).hintColor),
               ),
               const SizedBox(height: 32),
               Row(
@@ -247,7 +269,7 @@ class ShowMemberScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () => Get.back(),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade300),
+                        side: BorderSide(color: Theme.of(context).dividerColor),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -255,7 +277,9 @@ class ShowMemberScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'Batal',
-                        style: pBold14.copyWith(color: Colors.grey),
+                        style: pBold14.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
                       ),
                     ),
                   ),

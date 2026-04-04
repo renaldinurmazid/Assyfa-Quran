@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/controller/charity/infaq_activity_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
@@ -16,32 +15,32 @@ class InfaqActivityScreen extends StatelessWidget {
     final controller = Get.put(InfaqActivityController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Aktivitas Infaq',
-          style: pBold18.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: context.theme.colorScheme.onSurface),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             IconlyLight.arrow_left_2,
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.primary,
           ),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: Column(
         children: [
-          _buildTabs(controller),
+          _buildTabs(context, controller),
           Expanded(
             child: Obx(() {
               if (controller.selectedTab.value == 0) {
-                return _buildInfaqList(controller);
+                return _buildInfaqList(context, controller);
               } else {
-                return _buildMosqueInfaqList(controller);
+                return _buildMosqueInfaqList(context, controller);
               }
             }),
           ),
@@ -50,13 +49,16 @@ class InfaqActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTabs(InfaqActivityController controller) {
+  Widget _buildTabs(BuildContext context, InfaqActivityController controller) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -70,6 +72,7 @@ class InfaqActivityScreen extends StatelessWidget {
           children: [
             Expanded(
               child: _buildTabItem(
+                context,
                 label: 'Infaq',
                 isSelected: controller.selectedTab.value == 0,
                 onTap: () => controller.changeTab(0),
@@ -78,6 +81,7 @@ class InfaqActivityScreen extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: _buildTabItem(
+                context,
                 label: 'Infaq Masjid',
                 isSelected: controller.selectedTab.value == 1,
                 onTap: () => controller.changeTab(1),
@@ -89,7 +93,8 @@ class InfaqActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTabItem({
+  Widget _buildTabItem(
+    BuildContext context, {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -100,14 +105,14 @@ class InfaqActivityScreen extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColor.primaryColor : Colors.transparent,
+          color: isSelected ? context.theme.colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
           child: Text(
             label,
             style: pBold14.copyWith(
-              color: isSelected ? Colors.white : Colors.grey,
+              color: isSelected ? Colors.white : context.theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -115,19 +120,19 @@ class InfaqActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfaqList(InfaqActivityController controller) {
+  Widget _buildInfaqList(BuildContext context, InfaqActivityController controller) {
     return Obx(() {
       if (controller.isLoading.value && controller.donations.isEmpty) {
-        return _buildLoadingState();
+        return _buildLoadingState(context);
       }
 
       if (controller.donations.isEmpty) {
-        return _buildEmptyState();
+        return _buildEmptyState(context);
       }
 
       return RefreshIndicator(
         onRefresh: () => controller.fetchDonationHistory(isRefresh: true),
-        color: AppColor.primaryColor,
+        color: context.theme.colorScheme.primary,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20),
@@ -147,6 +152,7 @@ class InfaqActivityScreen extends StatelessWidget {
 
             final donation = controller.donations[index];
             return _buildHistoryCard(
+              context,
               title: donation.campaign.title,
               image: donation.campaign.coverImage,
               orderId: donation.orderId,
@@ -164,19 +170,22 @@ class InfaqActivityScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildMosqueInfaqList(InfaqActivityController controller) {
+  Widget _buildMosqueInfaqList(
+    BuildContext context,
+    InfaqActivityController controller,
+  ) {
     return Obx(() {
       if (controller.isLoading.value && controller.mosqueDonations.isEmpty) {
-        return _buildLoadingState();
+        return _buildLoadingState(context);
       }
 
       if (controller.mosqueDonations.isEmpty) {
-        return _buildEmptyState();
+        return _buildEmptyState(context);
       }
 
       return RefreshIndicator(
         onRefresh: () => controller.fetchMosqueDonationHistory(isRefresh: true),
-        color: AppColor.primaryColor,
+        color: context.theme.colorScheme.primary,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(20),
@@ -196,6 +205,7 @@ class InfaqActivityScreen extends StatelessWidget {
 
             final donation = controller.mosqueDonations[index];
             return _buildHistoryCard(
+              context,
               title: donation.mosqueCharity.name,
               image: donation.mosqueCharity.coverImage,
               orderId: donation.orderId,
@@ -215,7 +225,8 @@ class InfaqActivityScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildHistoryCard({
+  Widget _buildHistoryCard(
+    BuildContext context, {
     required String title,
     required String image,
     required String orderId,
@@ -235,7 +246,7 @@ class InfaqActivityScreen extends StatelessWidget {
         statusText = 'Menunggu';
         break;
       case 'success':
-        statusColor = AppColor.primaryColor;
+        statusColor = context.theme.colorScheme.primary;
         statusText = 'Berhasil';
         break;
       default:
@@ -246,8 +257,11 @@ class InfaqActivityScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -276,8 +290,11 @@ class InfaqActivityScreen extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 60,
                       height: 60,
-                      color: Colors.grey[200],
-                      child: const Icon(IconlyLight.image, color: Colors.grey),
+                      color: context.theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        IconlyLight.image,
+                        color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                      ),
                     ),
                   ),
                 ),
@@ -292,7 +309,9 @@ class InfaqActivityScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               title,
-                              style: pBold14,
+                              style: pBold14.copyWith(
+                                color: context.theme.colorScheme.onSurface,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -317,7 +336,9 @@ class InfaqActivityScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         orderId,
-                        style: pMedium10.copyWith(color: Colors.grey),
+                        style: pMedium10.copyWith(
+                          color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -326,12 +347,14 @@ class InfaqActivityScreen extends StatelessWidget {
                           Text(
                             amount,
                             style: pBold14.copyWith(
-                              color: AppColor.primaryColor,
+                              color: context.theme.colorScheme.primary,
                             ),
                           ),
                           Text(
                             formattedDate,
-                            style: pRegular10.copyWith(color: Colors.grey),
+                            style: pRegular10.copyWith(
+                              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                            ),
                           ),
                         ],
                       ),
@@ -346,7 +369,7 @@ class InfaqActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -354,39 +377,46 @@ class InfaqActivityScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColor.primaryColor.withOpacity(0.1),
+              color: context.theme.colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               IconlyLight.chart,
               size: 64,
-              color: AppColor.primaryColor,
+              color: context.theme.colorScheme.primary,
             ),
           ),
           const SizedBox(height: 24),
-          Text('Belum Ada Riwayat', style: pBold18),
+          Text(
+            'Belum Ada Riwayat',
+            style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+          ),
           const SizedBox(height: 8),
           Text(
             'Infaq yang Anda berikan akan muncul di sini',
-            style: pRegular14.copyWith(color: Colors.grey),
+            style: pRegular14.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor:
+            context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+        highlightColor:
+            context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
           ),
         ),

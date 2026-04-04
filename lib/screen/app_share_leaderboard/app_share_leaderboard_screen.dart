@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/app_share_leaderboard_controller.dart';
 import 'package:quran_app/models/leaderboard/app_share_leaderboard_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class AppShareLeaderboardScreen extends StatelessWidget {
@@ -15,7 +14,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
     final controller = Get.put(AppShareLeaderboardController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -32,7 +31,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          _buildBackgroundHeader(),
+          _buildBackgroundHeader(context),
           SafeArea(
             child: Column(
               children: [
@@ -40,12 +39,14 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                 Expanded(
                   child: Obx(() {
                     if (controller.isLoading.value) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       );
                     }
                     if (controller.leaderboard.isEmpty) {
-                      return _buildEmptyState();
+                      return _buildEmptyState(context);
                     }
                     return SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -55,7 +56,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                             _buildPodium(controller),
                           const SizedBox(height: 24),
                           if (controller.otherUsers.isNotEmpty)
-                            _buildUserList(controller),
+                            _buildUserList(context, controller),
                           const SizedBox(height: 100), // Space for bottom bar
                         ],
                       ),
@@ -67,7 +68,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           ),
           Obx(
             () => controller.myStats.value != null
-                ? _buildMyRankFixed(controller.myStats.value!)
+                ? _buildMyRankFixed(context, controller.myStats.value!)
                 : const SizedBox.shrink(),
           ),
         ],
@@ -75,25 +76,25 @@ class AppShareLeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundHeader() {
+  Widget _buildBackgroundHeader(BuildContext context) {
     return Container(
       height: 400,
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1B4D3E),
-            AppColor.primaryColor,
+            const Color(0xFF1B4D3E),
+            Theme.of(context).primaryColor,
           ], // Green theme matching primaryColor
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -102,17 +103,17 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           Icon(
             IconlyLight.user,
             size: 80,
-            color: AppColor.primaryColor.withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'Belum ada data penyebar',
-            style: pBold16.copyWith(color: AppColor.primaryColor),
+            style: pBold16.copyWith(color: Theme.of(context).primaryColor),
           ),
           const SizedBox(height: 4),
           Text(
             'Ajak teman Anda sekarang!',
-            style: pRegular12.copyWith(color: AppColor.primaryColor),
+            style: pRegular12.copyWith(color: Theme.of(context).primaryColor),
           ),
         ],
       ),
@@ -225,12 +226,15 @@ class AppShareLeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUserList(AppShareLeaderboardController controller) {
+  Widget _buildUserList(
+    BuildContext context,
+    AppShareLeaderboardController controller,
+  ) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
@@ -238,16 +242,16 @@ class AppShareLeaderboardScreen extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: controller.otherUsers.length,
         separatorBuilder: (context, index) =>
-            const Divider(height: 1, color: Color(0xFFF1F1F1)),
+            Divider(height: 1, color: Theme.of(context).dividerColor),
         itemBuilder: (context, index) {
           final user = controller.otherUsers[index];
-          return _buildListTile(user);
+          return _buildListTile(context, user);
         },
       ),
     );
   }
 
-  Widget _buildListTile(LeaderboardEntry user) {
+  Widget _buildListTile(BuildContext context, LeaderboardEntry user) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -256,18 +260,18 @@ class AppShareLeaderboardScreen extends StatelessWidget {
             width: 30,
             child: Text(
               '${user.rank}',
-              style: pBold14.copyWith(color: Colors.grey),
+              style: pBold14.copyWith(color: Theme.of(context).hintColor),
             ),
           ),
           const SizedBox(width: 8),
           CircleAvatar(
             radius: 24,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
             backgroundImage: user.profilePicture != null
                 ? NetworkImage(user.profilePicture!)
                 : null,
             child: user.profilePicture == null
-                ? const Icon(IconlyBold.profile, color: Colors.grey)
+                ? Icon(IconlyBold.profile, color: Theme.of(context).disabledColor)
                 : null,
           ),
           const SizedBox(width: 16),
@@ -277,14 +281,16 @@ class AppShareLeaderboardScreen extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: pBold14,
+                  style: pBold14.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'KODE: ${user.referralCode}',
-                  style: pRegular12.copyWith(color: Colors.grey),
+                  style: pRegular12.copyWith(color: Theme.of(context).hintColor),
                 ),
               ],
             ),
@@ -294,11 +300,11 @@ class AppShareLeaderboardScreen extends StatelessWidget {
             children: [
               Text(
                 '${user.totalReferral} Teman',
-                style: pBold14.copyWith(color: AppColor.primaryColor),
+                style: pBold14.copyWith(color: Theme.of(context).primaryColor),
               ),
               Text(
                 '${user.totalShare} Share',
-                style: pRegular10.copyWith(color: Colors.grey),
+                style: pRegular10.copyWith(color: Theme.of(context).hintColor),
               ),
             ],
           ),
@@ -307,7 +313,8 @@ class AppShareLeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMyRankFixed(LeaderboardEntry me) {
+  Widget _buildMyRankFixed(BuildContext context, LeaderboardEntry me) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Positioned(
       bottom: 0,
       left: 0,
@@ -315,10 +322,10 @@ class AppShareLeaderboardScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -329,17 +336,17 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           children: [
             Text(
               '${me.rank}',
-              style: pBold18.copyWith(color: AppColor.primaryColor),
+              style: pBold18.copyWith(color: Theme.of(context).primaryColor),
             ),
             const SizedBox(width: 16),
             CircleAvatar(
               radius: 24,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
               backgroundImage: me.profilePicture != null
                   ? NetworkImage(me.profilePicture!)
                   : null,
               child: me.profilePicture == null
-                  ? const Icon(IconlyBold.profile, color: Colors.grey)
+                  ? Icon(IconlyBold.profile, color: Theme.of(context).disabledColor)
                   : null,
             ),
             const SizedBox(width: 16),
@@ -349,16 +356,18 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Level Penyebar: ${me.rank > 10 ? 'Pemula' : 'Inspirator'}',
-                    style: pBold14,
+                    style: pBold14.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   Text(
                     'Anda telah mengajak ${me.totalReferral} teman',
-                    style: pRegular12.copyWith(color: Colors.grey),
+                    style: pRegular12.copyWith(color: Theme.of(context).hintColor),
                   ),
                 ],
               ),
             ),
-            const Icon(IconlyLight.send, color: AppColor.primaryColor),
+            Icon(IconlyLight.send, color: Theme.of(context).primaryColor),
           ],
         ),
       ),

@@ -71,6 +71,14 @@
                 <data android:scheme="quranuna" android:host="mosque-charity" />
             </intent-filter>
 
+            <!-- Deep linking: Blog (quranuna://blog/SLUG) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="quranuna" android:host="blog" />
+            </intent-filter>
+
             <!-- App Links (Web HTTP/HTTPS) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

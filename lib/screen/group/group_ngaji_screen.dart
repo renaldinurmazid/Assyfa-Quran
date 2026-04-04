@@ -5,7 +5,6 @@ import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/home_screen.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class GroupNgajiScreen extends StatelessWidget {
@@ -15,22 +14,30 @@ class GroupNgajiScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(GroupNgajiScreenController());
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColor.backgroundColor,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: Text('Grup Ngaji', style: pSemiBold16),
+        title: Text(
+          'Grup Ngaji',
+          style: pSemiBold16.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          _searchGroup(),
+          _searchGroup(context),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 24),
               child: Column(
-                children: [_createGroupCard(), _listGroup(controller)],
+                children: [
+                  _createGroupCard(context),
+                  _listGroup(context, controller),
+                ],
               ),
             ),
           ),
@@ -39,16 +46,17 @@ class GroupNgajiScreen extends StatelessWidget {
     );
   }
 
-  Widget _searchGroup() {
+  Widget _searchGroup(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(isDark ? 0.1 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -60,15 +68,18 @@ class GroupNgajiScreen extends StatelessWidget {
               Get.toNamed(Routes.groupSearch, arguments: value);
             }
           },
-          cursorColor: AppColor.primaryColor,
+          cursorColor: Theme.of(context).primaryColor,
+          style: pRegular14.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
             prefixIcon: Icon(
               Icons.search,
-              color: Colors.grey.shade400,
+              color: Theme.of(context).hintColor,
               size: 22,
             ),
             hintText: 'Cari Grup Ngaji...',
-            hintStyle: pRegular14.copyWith(color: Colors.grey.shade400),
+            hintStyle: pRegular14.copyWith(color: Theme.of(context).hintColor),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -80,7 +91,7 @@ class GroupNgajiScreen extends StatelessWidget {
     );
   }
 
-  Widget _createGroupCard() {
+  Widget _createGroupCard(BuildContext context) {
     void _showLoginDialog() {
       final homeController = Get.find<HomeScreenController>();
       Get.dialog(const HomeScreen().buildLoginDialog(homeController));
@@ -92,8 +103,8 @@ class GroupNgajiScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColor.primaryColor,
-            AppColor.primaryColor.withOpacity(0.8),
+            Theme.of(context).primaryColor,
+            Theme.of(context).primaryColor.withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -101,7 +112,7 @@ class GroupNgajiScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColor.primaryColor.withOpacity(0.25),
+            color: Theme.of(context).primaryColor.withOpacity(0.25),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -137,7 +148,7 @@ class GroupNgajiScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: AppColor.primaryColor,
+              foregroundColor: Theme.of(context).primaryColor,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -151,7 +162,10 @@ class GroupNgajiScreen extends StatelessWidget {
     );
   }
 
-  Widget _listGroup(GroupNgajiScreenController controller) {
+  Widget _listGroup(
+    BuildContext context,
+    GroupNgajiScreenController controller,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,22 +174,30 @@ class GroupNgajiScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Grup Saya',
-            style: pSemiBold16.copyWith(fontWeight: FontWeight.w800),
+            style: pSemiBold16.copyWith(
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        _listViewMyGroup(controller),
+        _listViewMyGroup(context, controller),
       ],
     );
   }
 
-  Widget _listViewMyGroup(GroupNgajiScreenController controller) {
+  Widget _listViewMyGroup(
+    BuildContext context,
+    GroupNgajiScreenController controller,
+  ) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: CircularProgressIndicator(color: AppColor.primaryColor),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           ),
         );
       }
@@ -189,13 +211,13 @@ class GroupNgajiScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.group_outlined,
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).disabledColor.withOpacity(0.3),
                   size: 64,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada grup ngaji',
-                  style: pMedium14.copyWith(color: Colors.grey),
+                  style: pMedium14.copyWith(color: Theme.of(context).hintColor),
                 ),
               ],
             ),
@@ -213,11 +235,15 @@ class GroupNgajiScreen extends StatelessWidget {
           final group = controller.myGroups[index];
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withOpacity(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 0.15
+                        : 0.05,
+                  ),
                   blurRadius: 15,
                   offset: const Offset(0, 10),
                 ),
@@ -243,7 +269,10 @@ class GroupNgajiScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            _buildCreatorAvatar(group.createdBy.profilePicture),
+                            _buildCreatorAvatar(
+                              context,
+                              group.createdBy.profilePicture,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -252,7 +281,9 @@ class GroupNgajiScreen extends StatelessWidget {
                                   Text(
                                     group.name,
                                     style: pBold16.copyWith(
-                                      color: Colors.grey.shade800,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -261,7 +292,7 @@ class GroupNgajiScreen extends StatelessWidget {
                                   Text(
                                     'Dibuat oleh ${group.createdBy.name}',
                                     style: pRegular12.copyWith(
-                                      color: Colors.grey.shade500,
+                                      color: Theme.of(context).hintColor,
                                     ),
                                   ),
                                 ],
@@ -334,14 +365,14 @@ class GroupNgajiScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCreatorAvatar(String? profilePicture) {
+  Widget _buildCreatorAvatar(BuildContext context, String? profilePicture) {
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColor.primaryColor.withOpacity(0.2),
+          color: Theme.of(context).primaryColor.withOpacity(0.2),
           width: 2,
         ),
       ),
@@ -349,10 +380,10 @@ class GroupNgajiScreen extends StatelessWidget {
         child: profilePicture != null && profilePicture.isNotEmpty
             ? Image.network(profilePicture, fit: BoxFit.cover)
             : Container(
-                color: Colors.grey.shade200,
+                color: Theme.of(context).dividerColor,
                 child: Icon(
                   Icons.person,
-                  color: Colors.grey.shade400,
+                  color: Theme.of(context).hintColor.withOpacity(0.5),
                   size: 20,
                 ),
               ),

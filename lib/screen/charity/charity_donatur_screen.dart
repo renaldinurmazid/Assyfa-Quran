@@ -4,7 +4,6 @@ import 'package:iconly/iconly.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/controller/charity/charity_donatur_controller.dart';
 import 'package:quran_app/models/campaign_donatur_model.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class CharityDonaturScreen extends StatelessWidget {
@@ -15,44 +14,44 @@ class CharityDonaturScreen extends StatelessWidget {
     final controller = Get.put(CharityDonaturController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        surfaceTintColor: Colors.grey[100],
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             IconlyLight.arrow_left_2,
-            color: AppColor.textColor,
+            color: context.theme.colorScheme.onSurface,
             size: 22,
           ),
           onPressed: () => Get.back(),
         ),
         title: Text(
           'Daftar Donatur',
-          style: pSemiBold16.copyWith(color: AppColor.textColor),
+          style: pSemiBold16.copyWith(color: context.theme.colorScheme.onSurface),
         ),
         centerTitle: true,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return _buildLoadingState();
+          return _buildLoadingState(context);
         }
 
         if (controller.donaturList.isEmpty) {
-          return _buildEmptyState();
+          return _buildEmptyState(context);
         }
 
         return Column(
           children: [
             // Total donatur header
-            _buildDonaturHeader(controller),
+            _buildDonaturHeader(context, controller),
 
             // Donatur list with infinite scroll
             Expanded(
               child: RefreshIndicator(
-                color: AppColor.primaryColor,
+                color: context.theme.colorScheme.primary,
                 onRefresh: () => controller.refreshData(),
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (scrollInfo) {
@@ -77,13 +76,13 @@ class CharityDonaturScreen extends StatelessWidget {
                         (controller.isLoadingMore.value ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == controller.donaturList.length) {
-                        return _buildLoadMoreIndicator();
+                        return _buildLoadMoreIndicator(context);
                       }
                       final donatur = controller.donaturList[index];
                       final isLast =
                           index == controller.donaturList.length - 1 &&
                           !controller.isLoadingMore.value;
-                      return _buildDonaturCard(donatur, index, isLast);
+                      return _buildDonaturCard(context, donatur, index, isLast);
                     },
                   ),
                 ),
@@ -95,33 +94,35 @@ class CharityDonaturScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDonaturHeader(CharityDonaturController controller) {
+  Widget _buildDonaturHeader(BuildContext context, CharityDonaturController controller) {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColor.primaryColor.withOpacity(0.08),
-            AppColor.primaryColor.withOpacity(0.03),
+            context.theme.colorScheme.primary.withOpacity(0.08),
+            context.theme.colorScheme.primary.withOpacity(0.03),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColor.primaryColor.withOpacity(0.12)),
+        border: Border.all(
+          color: context.theme.colorScheme.primary.withOpacity(0.12),
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColor.primaryColor.withOpacity(0.1),
+              color: context.theme.colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               IconlyBold.heart,
-              color: AppColor.primaryColor,
+              color: context.theme.colorScheme.primary,
               size: 20,
             ),
           ),
@@ -131,13 +132,15 @@ class CharityDonaturScreen extends StatelessWidget {
             children: [
               Text(
                 'Total Donatur',
-                style: pMedium12.copyWith(color: Colors.grey[600]),
+                style: pMedium12.copyWith(
+                  color: context.theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 2),
               Obx(
                 () => Text(
                   '${controller.total.value} Orang',
-                  style: pBold16.copyWith(color: AppColor.primaryColor),
+                  style: pBold16.copyWith(color: context.theme.colorScheme.primary),
                 ),
               ),
             ],
@@ -145,7 +148,7 @@ class CharityDonaturScreen extends StatelessWidget {
           const Spacer(),
           Icon(
             IconlyLight.user_1,
-            color: AppColor.primaryColor.withOpacity(0.3),
+            color: context.theme.colorScheme.primary.withOpacity(0.3),
             size: 36,
           ),
         ],
@@ -153,7 +156,7 @@ class CharityDonaturScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDonaturCard(DonaturItem donatur, int index, bool isLast) {
+  Widget _buildDonaturCard(BuildContext context, DonaturItem donatur, int index, bool isLast) {
     return Column(
       children: [
         Padding(
@@ -162,7 +165,7 @@ class CharityDonaturScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Avatar
-              _buildAvatar(donatur),
+              _buildAvatar(context, donatur),
               const SizedBox(width: 14),
 
               // Name & time
@@ -172,7 +175,9 @@ class CharityDonaturScreen extends StatelessWidget {
                   children: [
                     Text(
                       donatur.name,
-                      style: pSemiBold14.copyWith(color: AppColor.textColor),
+                      style: pSemiBold14.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -188,7 +193,7 @@ class CharityDonaturScreen extends StatelessWidget {
                         Text(
                           donatur.time,
                           style: pRegular10.copyWith(
-                            color: Colors.grey[500],
+                            color: context.theme.colorScheme.onSurfaceVariant,
                             fontSize: 11,
                           ),
                         ),
@@ -205,40 +210,48 @@ class CharityDonaturScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColor.primaryColor.withOpacity(0.08),
+                  color: context.theme.colorScheme.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   donatur.amount,
-                  style: pSemiBold12.copyWith(color: AppColor.primaryColor),
+                  style: pSemiBold12.copyWith(color: context.theme.colorScheme.primary),
                 ),
               ),
             ],
           ),
         ),
         if (!isLast)
-          Divider(height: 1, thickness: 0.5, color: Colors.grey[200]),
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+          ),
       ],
     );
   }
 
-  Widget _buildAvatar(DonaturItem donatur) {
+  Widget _buildAvatar(BuildContext context, DonaturItem donatur) {
     if (donatur.isAnonymous) {
       return Container(
         width: 46,
         height: 46,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: context.theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(IconlyBold.user_3, color: Colors.grey[400], size: 22),
+        child: Icon(
+          IconlyBold.user_3,
+          color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+          size: 22,
+        ),
       );
     }
 
-    return _buildInitialsAvatar(donatur.name);
+    return _buildInitialsAvatar(context, donatur.name);
   }
 
-  Widget _buildInitialsAvatar(String name) {
+  Widget _buildInitialsAvatar(BuildContext context, String name) {
     final initials = name.isNotEmpty
         ? name
               .split(' ')
@@ -253,8 +266,8 @@ class CharityDonaturScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColor.primaryColor.withOpacity(0.7),
-            AppColor.primaryColor,
+            context.theme.colorScheme.primary.withOpacity(0.7),
+            context.theme.colorScheme.primary,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -266,23 +279,25 @@ class CharityDonaturScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadMoreIndicator() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
+  Widget _buildLoadMoreIndicator(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Center(
         child: SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColor.primaryColor),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              context.theme.colorScheme.primary,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -292,25 +307,28 @@ class CharityDonaturScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: context.theme.colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 IconlyLight.user_1,
                 size: 56,
-                color: Colors.grey[350],
+                color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Belum Ada Donatur',
-              style: pBold18.copyWith(color: AppColor.textColor),
+              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
             ),
             const SizedBox(height: 8),
             Text(
               'Jadilah yang pertama berdonasi\nuntuk kampanye ini',
               textAlign: TextAlign.center,
-              style: pRegular14.copyWith(color: Colors.grey[500], height: 1.5),
+              style: pRegular14.copyWith(
+                color: context.theme.colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
             ),
           ],
         ),
@@ -318,10 +336,10 @@ class CharityDonaturScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+      highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -330,7 +348,7 @@ class CharityDonaturScreen extends StatelessWidget {
             Container(
               height: 70,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
@@ -346,7 +364,7 @@ class CharityDonaturScreen extends StatelessWidget {
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
@@ -359,7 +377,7 @@ class CharityDonaturScreen extends StatelessWidget {
                             height: 14,
                             width: 140,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -368,7 +386,7 @@ class CharityDonaturScreen extends StatelessWidget {
                             height: 10,
                             width: 90,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -379,7 +397,7 @@ class CharityDonaturScreen extends StatelessWidget {
                       height: 28,
                       width: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),

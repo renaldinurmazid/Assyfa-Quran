@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -146,7 +144,7 @@ class AuthController extends GetxController {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColor.backgroundColor,
+            color: Theme.of(Get.context!).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -167,13 +165,17 @@ class AuthController extends GetxController {
               const SizedBox(height: 20),
               Text(
                 'Keluar Akun',
-                style: pBold18.copyWith(color: AppColor.primaryColor),
+                style: pBold18.copyWith(
+                  color: Theme.of(Get.context!).primaryColor,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 'Apakah Anda yakin ingin keluar dari akun Anda?',
-                style: pRegular14.copyWith(color: Colors.grey[700]),
+                style: pRegular14.copyWith(
+                  color: Theme.of(Get.context!).hintColor,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -190,7 +192,9 @@ class AuthController extends GetxController {
                       ),
                       child: Text(
                         'Batal',
-                        style: pSemiBold14.copyWith(color: Colors.grey),
+                        style: pSemiBold14.copyWith(
+                          color: Theme.of(Get.context!).hintColor,
+                        ),
                       ),
                     ),
                   ),
@@ -227,8 +231,10 @@ class AuthController extends GetxController {
   Future<void> _executeSignOut() async {
     // Show Loading Dialog
     Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(color: AppColor.primaryColor),
+      Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(Get.context!).primaryColor,
+        ),
       ),
       barrierDismissible: false,
     );

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/charity/charity_search_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -22,9 +21,9 @@ class CharitySearchScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColor.primaryColor,
+        backgroundColor: context.theme.colorScheme.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
@@ -57,11 +56,11 @@ class CharitySearchScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return _buildLoadingState();
+          return _buildLoadingState(context);
         }
 
         if (controller.searchResults.isEmpty) {
-          return _buildEmptyState(controller.query.value);
+          return _buildEmptyState(context, controller.query.value);
         }
 
         return ListView.builder(
@@ -69,21 +68,24 @@ class CharitySearchScreen extends StatelessWidget {
           itemCount: controller.searchResults.length,
           itemBuilder: (context, index) {
             final item = controller.searchResults[index];
-            return _buildSearchItem(item);
+            return _buildSearchItem(context, item);
           },
         );
       }),
     );
   }
 
-  Widget _buildSearchItem(dynamic item) {
+  Widget _buildSearchItem(BuildContext context, dynamic item) {
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.charityShow, arguments: {'id': item.id}),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),
@@ -106,8 +108,12 @@ class CharitySearchScreen extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 100,
                   height: 100,
-                  color: Colors.grey[200],
-                  child: const Icon(IconlyLight.image, color: Colors.grey),
+                  color: context.theme.colorScheme.surfaceContainerHighest,
+                  child: Icon(
+                    IconlyLight.image,
+                    color: context.theme.colorScheme.onSurfaceVariant
+                        .withOpacity(0.5),
+                  ),
                 ),
               ),
             ),
@@ -123,16 +129,18 @@ class CharitySearchScreen extends StatelessWidget {
                   children: [
                     Text(
                       item.title,
-                      style: pBold14.copyWith(color: Colors.black87),
+                      style: pBold14.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
                       value: item.percentage / 100,
-                      backgroundColor: Colors.grey[100],
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColor.primaryColor,
+                      backgroundColor: context.theme.colorScheme.surfaceContainerHighest,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        context.theme.colorScheme.primary,
                       ),
                       minHeight: 4,
                       borderRadius: BorderRadius.circular(2),
@@ -143,11 +151,11 @@ class CharitySearchScreen extends StatelessWidget {
                       children: [
                         Text(
                           item.collectedAmount,
-                          style: pBold12.copyWith(color: AppColor.primaryColor),
+                          style: pBold12.copyWith(color: context.theme.colorScheme.primary),
                         ),
                         Text(
                           '${item.percentage}%',
-                          style: pMedium10.copyWith(color: Colors.grey),
+                          style: pMedium10.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -161,18 +169,18 @@ class CharitySearchScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
+        highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
         ),
@@ -180,18 +188,22 @@ class CharitySearchScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(String query) {
+  Widget _buildEmptyState(BuildContext context, String query) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(IconlyLight.search, size: 64, color: Colors.grey[300]),
+          Icon(
+            IconlyLight.search,
+            size: 64,
+            color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+          ),
           const SizedBox(height: 16),
           Text(
             query.isEmpty
                 ? 'Cari program kebaikan'
                 : 'Tidak ditemukan hasil untuk "$query"',
-            style: pMedium14.copyWith(color: Colors.grey),
+            style: pMedium14.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
           ),
         ],
       ),

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/leaderboard_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class LeaderboardScreen extends StatelessWidget {
@@ -14,7 +13,7 @@ class LeaderboardScreen extends StatelessWidget {
     final controller = Get.put(LeaderboardController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -36,14 +35,14 @@ class LeaderboardScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 10),
-                _buildFilterTabs(controller),
+                _buildFilterTabs(context, controller),
                 const SizedBox(height: 24),
                 Expanded(
                   child: Obx(() {
                     if (controller.isLoading.value) {
-                      return const Center(
+                      return Center(
                         child: CircularProgressIndicator(
-                          color: AppColor.primaryColor,
+                          color: Theme.of(context).primaryColor,
                         ),
                       );
                     }
@@ -56,20 +55,24 @@ class LeaderboardScreen extends StatelessWidget {
                             Icon(
                               IconlyLight.chart,
                               size: 80,
-                              color: AppColor.primaryColor.withOpacity(0.3),
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withOpacity(0.3),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Belum ada data peringkat',
                               style: pBold16.copyWith(
-                                color: AppColor.primaryColor,
+                                color: Theme.of(context).primaryColor,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Jadilah yang pertama untuk tampil di sini!',
                               style: pRegular12.copyWith(
-                                color: AppColor.primaryColor,
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withOpacity(0.8),
                               ),
                             ),
                           ],
@@ -84,7 +87,7 @@ class LeaderboardScreen extends StatelessWidget {
                             _buildPodium(controller),
                           const SizedBox(height: 24),
                           if (controller.otherUsers.isNotEmpty)
-                            _buildUserList(controller),
+                            _buildUserList(context, controller),
                           const SizedBox(height: 100), // Space for bottom bar
                         ],
                       ),
@@ -96,7 +99,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           Obx(
             () => controller.myStats.isNotEmpty
-                ? _buildMyRankFixed(controller)
+                ? _buildMyRankFixed(context, controller)
                 : const SizedBox.shrink(),
           ),
         ],
@@ -119,7 +122,10 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterTabs(LeaderboardController controller) {
+  Widget _buildFilterTabs(
+    BuildContext context,
+    LeaderboardController controller,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(4),
@@ -130,8 +136,8 @@ class LeaderboardScreen extends StatelessWidget {
       child: Obx(
         () => Row(
           children: [
-            _buildTabItem(controller, 0, 'Mingguan'),
-            _buildTabItem(controller, 1, 'Bulanan'),
+            _buildTabItem(context, controller, 0, 'Mingguan'),
+            _buildTabItem(context, controller, 1, 'Bulanan'),
           ],
         ),
       ),
@@ -139,6 +145,7 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildTabItem(
+    BuildContext context,
     LeaderboardController controller,
     int index,
     String label,
@@ -168,7 +175,9 @@ class LeaderboardScreen extends StatelessWidget {
             child: Text(
               label,
               style: (isActive ? pBold12 : pMedium12).copyWith(
-                color: isActive ? AppColor.primaryColor : Colors.white70,
+                color: isActive
+                    ? Theme.of(context).primaryColor
+                    : Colors.white70,
               ),
             ),
           ),
@@ -289,12 +298,15 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUserList(LeaderboardController controller) {
+  Widget _buildUserList(
+    BuildContext context,
+    LeaderboardController controller,
+  ) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Obx(
         () => ListView.separated(
@@ -303,17 +315,17 @@ class LeaderboardScreen extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           itemCount: controller.otherUsers.length,
           separatorBuilder: (context, index) =>
-              const Divider(height: 1, color: Color(0xFFF1F1F1)),
+              Divider(height: 1, color: Theme.of(context).dividerColor),
           itemBuilder: (context, index) {
             final user = controller.otherUsers[index];
-            return _buildListTile(user);
+            return _buildListTile(context, user);
           },
         ),
       ),
     );
   }
 
-  Widget _buildListTile(Map<String, dynamic> user) {
+  Widget _buildListTile(BuildContext context, Map<String, dynamic> user) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -322,18 +334,21 @@ class LeaderboardScreen extends StatelessWidget {
             width: 30,
             child: Text(
               '${user['rank']}',
-              style: pBold14.copyWith(color: Colors.grey),
+              style: pBold14.copyWith(color: Theme.of(context).hintColor),
             ),
           ),
           const SizedBox(width: 8),
           CircleAvatar(
             radius: 24,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
             backgroundImage: user['profile_picture'] != null
                 ? NetworkImage(user['profile_picture'])
                 : null,
             child: user['profile_picture'] == null
-                ? const Icon(IconlyBold.profile, color: Colors.grey)
+                ? Icon(
+                    IconlyBold.profile,
+                    color: Theme.of(context).disabledColor,
+                  )
                 : null,
           ),
           const SizedBox(width: 16),
@@ -343,7 +358,9 @@ class LeaderboardScreen extends StatelessWidget {
               children: [
                 Text(
                   user['name'],
-                  style: pBold14,
+                  style: pBold14.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -352,14 +369,18 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           Text(
             '${user['total_pages']} Hal',
-            style: pBold14.copyWith(color: AppColor.primaryColor),
+            style: pBold14.copyWith(color: Theme.of(context).primaryColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMyRankFixed(LeaderboardController controller) {
+  Widget _buildMyRankFixed(
+    BuildContext context,
+    LeaderboardController controller,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Positioned(
       bottom: 0,
       left: 0,
@@ -367,10 +388,10 @@ class LeaderboardScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -383,17 +404,22 @@ class LeaderboardScreen extends StatelessWidget {
             children: [
               Text(
                 '${me['rank']}',
-                style: pBold18.copyWith(color: AppColor.primaryColor),
+                style: pBold18.copyWith(color: Theme.of(context).primaryColor),
               ),
               const SizedBox(width: 16),
               CircleAvatar(
                 radius: 24,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Theme.of(
+                  context,
+                ).dividerColor.withOpacity(0.5),
                 backgroundImage: me['profile_picture'] != null
                     ? NetworkImage(me['profile_picture'])
                     : null,
                 child: me['profile_picture'] == null
-                    ? const Icon(IconlyBold.profile, color: Colors.grey)
+                    ? Icon(
+                        IconlyBold.profile,
+                        color: Theme.of(context).disabledColor,
+                      )
                     : null,
               ),
               const SizedBox(width: 16),
@@ -401,10 +427,17 @@ class LeaderboardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Anda', style: pBold16),
+                    Text(
+                      'Anda',
+                      style: pBold16.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
                     Text(
                       'Terus semangat tilawahnya!',
-                      style: pRegular12.copyWith(color: Colors.grey),
+                      style: pRegular12.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
                     ),
                   ],
                 ),

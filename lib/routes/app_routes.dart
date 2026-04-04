@@ -38,4 +38,6 @@ abstract class Routes {
   static const showPrayer = '/show_prayer';
   static const listPrayer = '/list_prayer';
   static const notification = '/notification';
+  static const comment = '/comment';
+  static const theme = '/theme';
 }

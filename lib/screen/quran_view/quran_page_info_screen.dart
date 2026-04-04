@@ -18,14 +18,20 @@ class QuranPageInfoScreen extends StatelessWidget {
     final info = _getMushafInfo(slug);
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Info Mushaf', style: pBold18),
+        title: Text(
+          'Info Mushaf',
+          style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(IconlyLight.arrow_left, color: Colors.black),
+          icon: Icon(
+            IconlyLight.arrow_left,
+            color: context.theme.colorScheme.primary,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -39,13 +45,19 @@ class QuranPageInfoScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Description Section
-            Text('Tentang Mushaf', style: pBold18),
+            Text(
+              'Tentang Mushaf',
+              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+            ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.04),
@@ -57,21 +69,48 @@ class QuranPageInfoScreen extends StatelessWidget {
               child: Text(
                 info['description'],
                 style: pRegular14.copyWith(
-                  color: Colors.grey[700],
+                  color: context.theme.colorScheme.onSurfaceVariant,
                   height: 1.6,
                 ),
                 textAlign: TextAlign.justify,
               ),
             ),
-            const SizedBox(height: 24),
-            // Features Section
-            // Text('Fitur Utama', style: pBold18),
-            // const SizedBox(height: 16),
-            // ...List.generate(
-            //   (info['features'] as List).length,
-            //   (index) => _buildFeatureItem(info['features'][index]),
-            // ),
             const SizedBox(height: 32),
+            // Features Section
+            Text(
+              'Fitur Utama',
+              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(
+              (info['features'] as List).length,
+              (index) => _buildFeatureItem(context, info['features'][index]),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'Spesifikasi',
+              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: context.theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+                ),
+              ),
+              child: Column(
+                children: [
+                   _buildInfoRow(context, 'Penerbit', info['publisher'] ?? '-'),
+                   const SizedBox(height: 12),
+                   _buildInfoRow(context, 'Jumlah Halaman', info['pages'] ?? '-'),
+                   const SizedBox(height: 12),
+                   _buildInfoRow(context, 'Jenis Khat', info['script_type'] ?? '-'),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -142,7 +181,7 @@ class QuranPageInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureItem(String feature) {
+  Widget _buildFeatureItem(BuildContext context, String feature) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -150,12 +189,12 @@ class QuranPageInfoScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: context.theme.colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               IconlyBold.tick_square,
-              color: Colors.green,
+              color: context.theme.colorScheme.primary,
               size: 20,
             ),
           ),
@@ -163,7 +202,7 @@ class QuranPageInfoScreen extends StatelessWidget {
           Expanded(
             child: Text(
               feature,
-              style: pMedium14.copyWith(color: Colors.black87),
+              style: pMedium14.copyWith(color: context.theme.colorScheme.onSurface),
             ),
           ),
         ],
@@ -171,12 +210,18 @@ class QuranPageInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: pMedium14.copyWith(color: Colors.grey[600])),
-        Text(value, style: pSemiBold14.copyWith(color: AppColor.primaryColor)),
+        Text(
+          label,
+          style: pMedium14.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
+        ),
+        Text(
+          value,
+          style: pSemiBold14.copyWith(color: context.theme.colorScheme.primary),
+        ),
       ],
     );
   }

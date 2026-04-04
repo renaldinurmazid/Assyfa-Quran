@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/group/show_group_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
+
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
@@ -15,7 +15,7 @@ class ShowGroupScreen extends StatelessWidget {
     final controller = Get.put(ShowGroupController());
     return Obx(
       () => Scaffold(
-        backgroundColor: AppColor.backgroundColor,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -49,7 +49,7 @@ class ShowGroupScreen extends StatelessWidget {
       onPressed: () {
         Get.dialog(_buildJoinConfirmDialog(controller));
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: Get.context!.theme.colorScheme.primary,
       elevation: 4,
       icon: const Icon(IconlyBold.user_3, color: Colors.white),
       label: Text('Gabung Grup', style: pBold14.copyWith(color: Colors.white)),
@@ -68,22 +68,29 @@ class ShowGroupScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColor.primaryColor.withOpacity(0.1),
+                color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 IconlyBold.user_3,
-                color: AppColor.primaryColor,
+                color: Get.context!.theme.colorScheme.primary,
                 size: 32,
               ),
             ),
             const SizedBox(height: 20),
-            Text('Gabung Grup?', style: pBold18),
+            Text(
+              'Gabung Grup?',
+              style: pBold18.copyWith(
+                color: Get.context!.theme.colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               'Anda akan bergabung dalam grup "${controller.group.value?.name}" dan dapat melihat aktivitas tilawah anggota lainnya.',
               textAlign: TextAlign.center,
-              style: pRegular14.copyWith(color: Colors.grey),
+              style: pRegular14.copyWith(
+                color: Get.context!.theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 32),
             Row(
@@ -100,7 +107,9 @@ class ShowGroupScreen extends StatelessWidget {
                     ),
                     child: Text(
                       'Batal',
-                      style: pBold14.copyWith(color: Colors.grey),
+                      style: pBold14.copyWith(
+                        color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
@@ -112,7 +121,7 @@ class ShowGroupScreen extends StatelessWidget {
                       controller.joinGroup();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.primaryColor,
+                      backgroundColor: Get.context!.theme.colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -137,7 +146,7 @@ class ShowGroupScreen extends StatelessWidget {
     return SliverAppBar(
       expandedHeight: 280,
       pinned: true,
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: Get.context!.theme.colorScheme.primary,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
@@ -147,7 +156,7 @@ class ShowGroupScreen extends StatelessWidget {
       actions: [
         if (controller.group.value?.isMyGroup == true)
           PopupMenuButton<String>(
-            color: Colors.white,
+            color: Get.context!.theme.colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -167,13 +176,18 @@ class ShowGroupScreen extends StatelessWidget {
                 value: 'edit',
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       IconlyLight.edit,
                       size: 20,
-                      color: AppColor.primaryColor,
+                      color: Get.context!.theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 12),
-                    Text('Edit Grup', style: pMedium14),
+                    Text(
+                      'Edit Grup',
+                      style: pMedium14.copyWith(
+                        color: Get.context!.theme.colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -181,13 +195,18 @@ class ShowGroupScreen extends StatelessWidget {
                 value: 'change_cover',
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       IconlyLight.image,
                       size: 20,
-                      color: AppColor.primaryColor,
+                      color: Get.context!.theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 12),
-                    Text('Ganti Cover', style: pMedium14),
+                    Text(
+                      'Ganti Cover',
+                      style: pMedium14.copyWith(
+                        color: Get.context!.theme.colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -287,9 +306,11 @@ class ShowGroupScreen extends StatelessWidget {
               right: 0,
               child: Container(
                 height: 30,
-                decoration: const BoxDecoration(
-                  color: AppColor.backgroundColor,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                decoration: BoxDecoration(
+                  color: Get.context!.theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                 ),
               ),
             ),
@@ -316,7 +337,7 @@ class ShowGroupScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.context!.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -335,23 +356,31 @@ class ShowGroupScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Statistik Tilawah', style: pBold18),
+                  Text(
+                    'Statistik Tilawah',
+                    style: pBold18.copyWith(
+                      color: Get.context!.theme.colorScheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     'Aktivitas mingguan grup Anda',
-                    style: pRegular12.copyWith(color: Colors.grey),
+                    style: pRegular12.copyWith(
+                      color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColor.primaryColor.withOpacity(0.1),
+                  color:
+                      Get.context!.theme.colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
+                child: Icon(
                   IconlyLight.activity,
-                  color: AppColor.primaryColor,
+                  color: Get.context!.theme.colorScheme.primary,
                   size: 24,
                 ),
               ),
@@ -380,7 +409,7 @@ class ShowGroupScreen extends StatelessWidget {
                   Text(
                     '$totalPages',
                     style: pBold24.copyWith(
-                      color: AppColor.primaryColor,
+                      color: Get.context!.theme.colorScheme.primary,
                       fontSize: 32,
                     ),
                   ),
@@ -404,7 +433,9 @@ class ShowGroupScreen extends StatelessWidget {
       children: [
         Text(
           '$totalPages',
-          style: pMedium10.copyWith(color: AppColor.primaryColor),
+          style: pMedium10.copyWith(
+            color: Get.context!.theme.colorScheme.primary,
+          ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -415,8 +446,8 @@ class ShowGroupScreen extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColor.primaryColor.withOpacity(0.8),
-                AppColor.primaryColor.withOpacity(0.2),
+                Get.context!.theme.colorScheme.primary.withOpacity(0.8),
+                Get.context!.theme.colorScheme.primary.withOpacity(0.2),
               ],
             ),
             borderRadius: BorderRadius.circular(6),
@@ -438,7 +469,9 @@ class ShowGroupScreen extends StatelessWidget {
             Obx(
               () => Text(
                 '${controller.group.value?.groupUser.length ?? 0} Anggota',
-                style: pBold18,
+                style: pBold18.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurface,
+                ),
               ),
             ),
             TextButton(
@@ -455,13 +488,15 @@ class ShowGroupScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Lihat Semua',
-                    style: pSemiBold14.copyWith(color: AppColor.primaryColor),
+                    style: pSemiBold14.copyWith(
+                      color: Get.context!.theme.colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(
+                  Icon(
                     IconlyLight.arrow_right_2,
                     size: 16,
-                    color: AppColor.primaryColor,
+                    color: Get.context!.theme.colorScheme.primary,
                   ),
                 ],
               ),
@@ -525,7 +560,7 @@ class ShowGroupScreen extends StatelessWidget {
           arguments: controller.group.value!.id,
         );
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: Get.context!.theme.colorScheme.primary,
       elevation: 4,
       icon: const Icon(IconlyBold.add_user, color: Colors.white),
       label: Text(
@@ -540,14 +575,21 @@ class ShowGroupScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.context!.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(child: Text('Edit Info Grup', style: pBold18)),
+          Center(
+            child: Text(
+              'Edit Info Grup',
+              style: pBold18.copyWith(
+                color: Get.context!.theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           Text('Nama Grup', style: pSemiBold14),
           const SizedBox(height: 8),
@@ -574,7 +616,7 @@ class ShowGroupScreen extends StatelessWidget {
                 () => Switch(
                   value: controller.isPrivate.value,
                   onChanged: (val) => controller.isPrivate.value = val,
-                  activeColor: AppColor.primaryColor,
+                  activeColor: Get.context!.theme.colorScheme.primary,
                 ),
               ),
             ],
@@ -585,7 +627,7 @@ class ShowGroupScreen extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => controller.updateGroup(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.primaryColor,
+                backgroundColor: Get.context!.theme.colorScheme.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -625,7 +667,9 @@ class ShowGroupScreen extends StatelessWidget {
             Text(
               'Grup akan dihapus permanen. Anggota tidak akan bisa lagi mengakses grup ini.',
               textAlign: TextAlign.center,
-              style: pRegular14.copyWith(color: Colors.grey),
+              style: pRegular14.copyWith(
+                color: Get.context!.theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 32),
             Row(
@@ -676,9 +720,9 @@ class ShowGroupScreen extends StatelessWidget {
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        decoration: BoxDecoration(
+          color: Get.context!.theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -698,17 +742,17 @@ class ShowGroupScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColor.primaryColor.withOpacity(0.05),
+                color: Get.context!.theme.colorScheme.primary.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColor.primaryColor.withOpacity(0.1),
+                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
                   width: 2,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 IconlyBold.image,
                 size: 64,
-                color: AppColor.primaryColor,
+                color: Get.context!.theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 24),
@@ -747,7 +791,7 @@ class ShowGroupScreen extends StatelessWidget {
                   controller.pickAndUploadCoverImage();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
+                  backgroundColor: Get.context!.theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

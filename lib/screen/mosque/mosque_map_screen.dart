@@ -5,7 +5,6 @@ import 'package:iconly/iconly.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:quran_app/controller/mosque_charity_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class MosqueMapScreen extends StatelessWidget {
@@ -26,15 +25,18 @@ class MosqueMapScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(IconlyLight.arrow_left_2, color: Colors.black87),
+          icon: Icon(
+            IconlyLight.arrow_left_2,
+            color: Theme.of(context).primaryColor,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text(
           'Lokasi Masjid',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
         ),
         centerTitle: true,
       ),
@@ -70,17 +72,22 @@ class MosqueMapScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withOpacity(
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? 0.3
+                                        : 0.1,
+                                  ),
                                   blurRadius: 10,
                                   offset: const Offset(0, 5),
                                 ),
                               ],
                               border: Border.all(
-                                color: AppColor.primaryColor,
+                                color: Theme.of(context).primaryColor,
                                 width: 2,
                               ),
                             ),
@@ -89,9 +96,9 @@ class MosqueMapScreen extends StatelessWidget {
                               backgroundImage: NetworkImage(mosque.coverImage),
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.arrow_drop_down,
-                            color: AppColor.primaryColor,
+                            color: Theme.of(context).primaryColor,
                             size: 20,
                           ),
                         ],
@@ -111,9 +118,9 @@ class MosqueMapScreen extends StatelessWidget {
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -137,12 +144,16 @@ class MosqueMapScreen extends StatelessWidget {
                     children: [
                       Text(
                         mosque.name,
-                        style: pBold16.copyWith(color: Colors.black87),
+                        style: pBold16.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         mosque.address,
-                        style: pRegular12.copyWith(color: Colors.black45),
+                        style: pRegular12.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -160,11 +171,15 @@ class MosqueMapScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Terkumpul',
-                      style: pMedium10.copyWith(color: Colors.black38),
+                      style: pMedium10.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
                     ),
                     Text(
                       'Rp ${mosque.currentAmount.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
-                      style: pBold16.copyWith(color: AppColor.primaryColor),
+                      style: pBold16.copyWith(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ],
                 ),
@@ -176,7 +191,7 @@ class MosqueMapScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.primaryColor,
+                    backgroundColor: Theme.of(context).primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

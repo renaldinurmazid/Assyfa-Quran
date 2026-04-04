@@ -4,9 +4,8 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
-import 'package:quran_app/theme/app_color.dart';
-import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/controller/dzikir_screen_controller.dart';
+import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/circular_progress_painter.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
@@ -18,16 +17,16 @@ class DzikirScreen extends StatelessWidget {
     final controller = Get.put(DzikirScreenController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Panduan Dzikir',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
         ),
-        backgroundColor: AppColor.backgroundColor,
-        elevation: 1,
-        surfaceTintColor: AppColor.backgroundColor,
-        iconTheme: const IconThemeData(color: AppColor.primaryColor),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -35,9 +34,9 @@ class DzikirScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildMenuVarianDzikir(),
+            _buildMenuVarianDzikir(context),
             const Spacer(),
-            _buildTasbih(controller),
+            _buildTasbih(context, controller),
             const Spacer(),
           ],
         ),
@@ -45,7 +44,7 @@ class DzikirScreen extends StatelessWidget {
     );
   }
 
-  Widget _bottomSheetDzikir() {
+  Widget _bottomSheetDzikir(BuildContext context) {
     final data = [
       {
         'title': 'Dzikir Shalat Pendek',
@@ -58,8 +57,8 @@ class DzikirScreen extends StatelessWidget {
     ];
     return Container(
       decoration: BoxDecoration(
-        color: AppColor.backgroundColor,
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -67,10 +66,10 @@ class DzikirScreen extends StatelessWidget {
           Align(
             alignment: Alignment.center,
             child: Container(
-              height: 2,
-              width: 100,
+              height: 4,
+              width: 40,
               decoration: BoxDecoration(
-                color: AppColor.primaryColor,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -96,9 +95,9 @@ class DzikirScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.backgroundColor,
+                    color: Colors.transparent,
                     border: Border(
-                      bottom: BorderSide(color: AppColor.borderColor),
+                      bottom: BorderSide(color: Theme.of(context).dividerColor),
                     ),
                   ),
                   child: Row(
@@ -108,17 +107,22 @@ class DzikirScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColor.primaryColor,
+                          color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           IconlyBold.bookmark,
-                          color: AppColor.backgroundColor,
+                          color: Colors.white,
                           size: 18,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(data[index]['title'] as String, style: pMedium14),
+                      Text(
+                        data[index]['title'] as String,
+                        style: pMedium14.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -134,7 +138,7 @@ class DzikirScreen extends StatelessWidget {
     );
   }
 
-  Widget _bottomSheetAlmasurat() {
+  Widget _bottomSheetAlmasurat(BuildContext context) {
     final data = [
       {
         'title': 'Al-Matsurat Sugro Pagi',
@@ -155,8 +159,8 @@ class DzikirScreen extends StatelessWidget {
     ];
     return Container(
       decoration: BoxDecoration(
-        color: AppColor.backgroundColor,
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -164,10 +168,10 @@ class DzikirScreen extends StatelessWidget {
           Align(
             alignment: Alignment.center,
             child: Container(
-              height: 2,
-              width: 100,
+              height: 4,
+              width: 40,
               decoration: BoxDecoration(
-                color: AppColor.primaryColor,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -193,9 +197,9 @@ class DzikirScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.backgroundColor,
+                    color: Colors.transparent,
                     border: Border(
-                      bottom: BorderSide(color: AppColor.borderColor),
+                      bottom: BorderSide(color: Theme.of(context).dividerColor),
                     ),
                   ),
                   child: Row(
@@ -205,17 +209,22 @@ class DzikirScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColor.primaryColor,
+                          color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           IconlyBold.bookmark,
-                          color: AppColor.backgroundColor,
+                          color: Colors.white,
                           size: 18,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(data[index]['title'] as String, style: pMedium14),
+                      Text(
+                        data[index]['title'] as String,
+                        style: pMedium14.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -231,19 +240,19 @@ class DzikirScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuVarianDzikir() {
+  Widget _buildMenuVarianDzikir(BuildContext context) {
     final menu = [
       {
         'assets': 'assets/images/svg/ic-doa.svg',
         'title': 'Dzikir Shalat',
         'isBottomSheet': true,
-        'bottomSheet': _bottomSheetDzikir(),
+        'bottomSheet': _bottomSheetDzikir(context),
       },
       {
         'assets': 'assets/images/svg/ic-alma.svg',
         'title': 'Al-Matsurat',
         'isBottomSheet': true,
-        'bottomSheet': _bottomSheetAlmasurat(),
+        'bottomSheet': _bottomSheetAlmasurat(context),
       },
       {
         'assets': 'assets/images/svg/ic-prayer.svg',
@@ -284,17 +293,17 @@ class DzikirScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor,
-                    border: Border.all(color: AppColor.borderColor),
+                    color: Theme.of(context).primaryColor,
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    ),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       menu[index]['title'] as String,
-                      style: pSemiBold14.copyWith(
-                        color: AppColor.backgroundColor,
-                      ),
+                      style: pSemiBold14.copyWith(color: Colors.white),
                     ),
                   ),
                 ),
@@ -315,14 +324,14 @@ class DzikirScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTasbih(DzikirScreenController controller) {
+  Widget _buildTasbih(BuildContext context, DzikirScreenController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           'TASBIH DIGITAL',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
         ),
         const SizedBox(height: 12),
         Row(
@@ -333,11 +342,11 @@ class DzikirScreen extends StatelessWidget {
               onPressed: () {
                 controller.dzikirCount.value = 0;
               },
-              icon: Icon(Icons.replay_rounded, size: 24),
+              icon: const Icon(Icons.replay_rounded, size: 24),
               style: IconButton.styleFrom(
                 fixedSize: const Size(40, 40),
-                backgroundColor: AppColor.primaryColor,
-                foregroundColor: AppColor.backgroundColor,
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
               ),
             ),
             const SizedBox(width: 12),
@@ -356,8 +365,8 @@ class DzikirScreen extends StatelessWidget {
                       size: const Size(160, 160),
                       painter: CircularProgressPainter(
                         progress: progress,
-                        progressColor: AppColor.primaryColor,
-                        backgroundColor: AppColor.borderColor,
+                        progressColor: Theme.of(context).primaryColor,
+                        backgroundColor: Theme.of(context).dividerColor,
                         strokeWidth: 3.0,
                       ),
                     ),
@@ -369,16 +378,14 @@ class DzikirScreen extends StatelessWidget {
                           controller.increment();
                         },
                         style: TextButton.styleFrom(
-                          backgroundColor: AppColor.primaryColor,
-                          foregroundColor: AppColor.backgroundColor,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
                           alignment: Alignment.center,
                           shape: const CircleBorder(),
                         ),
                         child: Text(
                           controller.dzikirCount.value.toString(),
-                          style: pSemiBold24.copyWith(
-                            color: AppColor.backgroundColor,
-                          ),
+                          style: pSemiBold24.copyWith(color: Colors.white),
                         ),
                       ),
                     ),
@@ -391,18 +398,18 @@ class DzikirScreen extends StatelessWidget {
               () => TextButton(
                 onPressed: () {
                   controller.dzikirInputController.clear();
-                  Get.dialog(_buildListDzikir(controller));
+                  Get.dialog(_buildListDzikir(context, controller));
                 },
                 style: TextButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
-                  foregroundColor: AppColor.backgroundColor,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
                   fixedSize: const Size(40, 40),
                   alignment: Alignment.center,
                   shape: const CircleBorder(),
                 ),
                 child: Text(
                   controller.maxDzikirCount.value.toString(),
-                  style: pSemiBold14.copyWith(color: AppColor.backgroundColor),
+                  style: pSemiBold14.copyWith(color: Colors.white),
                 ),
               ),
             ),
@@ -412,14 +419,17 @@ class DzikirScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListDzikir(DzikirScreenController controller) {
+  Widget _buildListDzikir(
+    BuildContext context,
+    DzikirScreenController controller,
+  ) {
     return Dialog(
       alignment: Alignment.center,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColor.backgroundColor,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -427,7 +437,7 @@ class DzikirScreen extends StatelessWidget {
           children: [
             Text(
               'Masukan Jumlah Dzikir',
-              style: pRegular14.copyWith(color: AppColor.primaryColor),
+              style: pRegular14.copyWith(color: Theme.of(context).primaryColor),
             ),
             const SizedBox(height: 16),
             TextInput(
@@ -449,9 +459,9 @@ class DzikirScreen extends StatelessWidget {
                         backgroundColor:
                             controller.dzikirInputText.value ==
                                 data['value'].toString()
-                            ? AppColor.primaryColor
-                            : AppColor.backgroundColor,
-                        side: BorderSide(color: AppColor.primaryColor),
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).colorScheme.surface,
+                        side: BorderSide(color: Theme.of(context).primaryColor),
                         alignment: Alignment.center,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -468,11 +478,9 @@ class DzikirScreen extends StatelessWidget {
                         style:
                             controller.dzikirInputText.value ==
                                 data['value'].toString()
-                            ? pSemiBold12.copyWith(
-                                color: AppColor.backgroundColor,
-                              )
+                            ? pSemiBold12.copyWith(color: Colors.white)
                             : pSemiBold12.copyWith(
-                                color: AppColor.primaryColor,
+                                color: Theme.of(context).primaryColor,
                               ),
                       ),
                     ),
@@ -497,15 +505,17 @@ class DzikirScreen extends StatelessWidget {
                       Get.back();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.backgroundColor,
-                      side: BorderSide(color: AppColor.primaryColor),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       'Batal',
-                      style: pRegular14.copyWith(color: AppColor.primaryColor),
+                      style: pRegular14.copyWith(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                 ),
@@ -521,17 +531,15 @@ class DzikirScreen extends StatelessWidget {
                       Get.back();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.primaryColor,
-                      side: BorderSide(color: AppColor.primaryColor),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       'Simpan',
-                      style: pRegular14.copyWith(
-                        color: AppColor.backgroundColor,
-                      ),
+                      style: pRegular14.copyWith(color: Colors.white),
                     ),
                   ),
                 ),

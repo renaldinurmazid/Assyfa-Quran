@@ -4,7 +4,6 @@ import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/profile_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,14 +14,16 @@ class ProfileScreen extends StatelessWidget {
     final controller = Get.put(ProfileScreenController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Profil Saya',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(
+            color: context.theme.colorScheme.onSurface,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.backgroundColor,
+        backgroundColor: context.theme.appBarTheme.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
@@ -30,9 +31,9 @@ class ProfileScreen extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            Obx(() => _buildProfileHeader()),
+            Obx(() => _buildProfileHeader(context)),
             const SizedBox(height: 20),
-            _buildMenuSection(controller),
+            _buildMenuSection(context, controller),
             const SizedBox(height: 40),
           ],
         ),
@@ -40,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(BuildContext context) {
     final userData = AuthController.to.userData;
 
     return Container(
@@ -54,12 +55,12 @@ class ProfileScreen extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColor.primaryColor.withOpacity(0.2),
+                color: context.theme.colorScheme.primary.withOpacity(0.2),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColor.primaryColor.withOpacity(0.1),
+                  color: context.theme.colorScheme.primary.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -67,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.white,
+              backgroundColor: context.theme.colorScheme.surface,
               backgroundImage: userData['profile_picture'] != null
                   ? NetworkImage(userData['profile_picture']!)
                   : null,
@@ -75,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
                   ? Icon(
                       IconlyBold.profile,
                       size: 40,
-                      color: AppColor.primaryColor.withOpacity(0.3),
+                      color: context.theme.colorScheme.primary.withOpacity(0.3),
                     )
                   : null,
             ),
@@ -83,27 +84,31 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             userData['name'] ?? 'Sahabat Assyfa',
-            style: pBold20.copyWith(color: AppColor.primaryColor),
+            style: pBold20.copyWith(color: context.theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             userData['email'] ?? 'belum_login@mail.com',
-            style: pRegular14.copyWith(color: Colors.grey.shade600),
+            style: pRegular14.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 24),
           // Quote Card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColor.primaryColor.withOpacity(0.05),
+              color: context.theme.colorScheme.primary.withOpacity(0.05),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColor.primaryColor.withOpacity(0.1)),
+              border: Border.all(
+                color: context.theme.colorScheme.primary.withOpacity(0.1),
+              ),
             ),
             child: Row(
               children: [
                 Icon(
                   IconlyBold.info_square,
-                  color: AppColor.primaryColor,
+                  color: context.theme.colorScheme.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 14),
@@ -111,7 +116,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     '\"Sudahkah hatimu menyapa Al-Quran hari ini?\"',
                     style: pMedium12.copyWith(
-                      color: AppColor.primaryColor,
+                      color: context.theme.colorScheme.primary,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -124,7 +129,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuSection(ProfileScreenController controller) {
+  Widget _buildMenuSection(
+    BuildContext context,
+    ProfileScreenController controller,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -132,25 +140,27 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Pengaturan Akun',
-            style: pSemiBold14.copyWith(color: Colors.grey.shade400),
+            style: pSemiBold14.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(
+                0.7,
+              ),
+            ),
           ),
           const SizedBox(height: 16),
-          // _menuItem(
-          //   title: 'Notifikasi',
-          //   icon: IconlyLight.notification,
-          //   onTap: () => Get.toNamed(Routes.notification),
-          // ),
           _menuItem(
+            context,
             title: 'Ubah Profil',
             icon: IconlyLight.edit,
             onTap: () => Get.toNamed(Routes.changeProfile),
           ),
           _menuItem(
+            context,
             title: 'Aktivitas Infaq',
             icon: IconlyLight.chart,
             onTap: () => Get.toNamed(Routes.infaqActivity),
           ),
           _menuItem(
+            context,
             title: 'Aktivitas Doa',
             icon: Icons.handshake_outlined,
             onTap: () => Get.toNamed(Routes.listPrayer),
@@ -158,11 +168,16 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Lainnya',
-            style: pSemiBold14.copyWith(color: Colors.grey.shade400),
+            style: pSemiBold14.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(
+                0.7,
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Obx(
             () => _menuItem(
+              context,
               title: controller.isLoadingShare.value
                   ? 'Mempersiapkan...'
                   : 'Share Aplikasi',
@@ -176,6 +191,7 @@ class ProfileScreen extends StatelessWidget {
           //   onTap: () {},
           // ),
           _menuItem(
+            context,
             title: 'Keluar',
             icon: IconlyLight.logout,
             onTap: () => AuthController.to.handleSignOut(),
@@ -186,13 +202,16 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _menuItem({
+  Widget _menuItem(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required VoidCallback onTap,
     bool isDanger = false,
   }) {
-    final color = isDanger ? Colors.red.shade400 : AppColor.primaryColor;
+    final color = isDanger
+        ? Colors.red.shade400
+        : context.theme.colorScheme.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -202,16 +221,20 @@ class ProfileScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDanger ? Colors.red.withOpacity(0.02) : Colors.white,
+            color: isDanger
+                ? Colors.red.withOpacity(0.02)
+                : context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: isDanger
                   ? Colors.red.withOpacity(0.1)
+                  : context.isDarkMode
+                  ? Colors.grey.shade900
                   : Colors.grey.shade100,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withOpacity(0.015),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -234,13 +257,17 @@ class ProfileScreen extends StatelessWidget {
                 child: Text(
                   title,
                   style: pMedium14.copyWith(
-                    color: isDanger ? color : AppColor.textColor,
+                    color: isDanger
+                        ? color
+                        : context.theme.colorScheme.onSurface,
                   ),
                 ),
               ),
               Icon(
                 IconlyLight.arrow_right_2,
-                color: Colors.grey.shade400,
+                color: context.theme.colorScheme.onSurfaceVariant.withOpacity(
+                  0.5,
+                ),
                 size: 18,
               ),
             ],

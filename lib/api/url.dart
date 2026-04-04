@@ -1,6 +1,6 @@
 class Url {
   static const String baseUrl = 'https://quran.titiktolak.com';
-  // static const String baseUrl = 'http://127.0.0.1:8000';
+  // static const String baseUrl = 'http://10.0.2.2:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -41,15 +41,23 @@ class Url {
   static String blogDetail(String slug) => '/api/blogs/$slug';
   static String recordView(String slug) => '/api/blogs/$slug/view';
   static String toggleLike(int id) => '/api/blogs/$id/like';
+  static String blogShare(int id) => '/api/blogs/$id/share';
   static const String prayers = '/api/prayers';
   static const String myPrayers = '/api/my-prayers';
   static String prayerDetail(int id) => '/api/prayers/$id';
   static String amenPrayer(int id) => '/api/prayers/$id/amen';
   static const String prayerTimes = '/api/prayer-times';
+  static const String readingHistoryTotal = '/api/reading-history/total';
 
   // Popups
   static const String popups = '/api/popups';
   static String popupView(int id) => '/api/popups/$id/view';
   static String popupDismiss(int id) => '/api/popups/$id/dismiss';
   static String popupClick(int id) => '/api/popups/$id/click';
+
+  // Blog Comments
+  static String blogComments(int id) => '/api/blogs/$id/comments';
+  static const String blogCommentsStore = '/api/blog-comments';
+  static String blogCommentUpdate(int id) => '/api/blog-comments/$id';
+  static String blogCommentDelete(int id) => '/api/blog-comments/$id';
 }

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/group/group_search_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/theme/app_color.dart';
+
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -21,9 +21,9 @@ class GroupSearchScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColor.primaryColor,
+        backgroundColor: context.theme.colorScheme.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
@@ -79,11 +79,11 @@ class GroupSearchScreen extends StatelessWidget {
   Widget _buildGroupItem(dynamic group) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.context!.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Get.context!.theme.colorScheme.shadow.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, 10),
           ),
@@ -168,7 +168,8 @@ class GroupSearchScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColor.primaryColor.withOpacity(0.2),
+                            color: Get.context!.theme.colorScheme.primary
+                                .withOpacity(0.2),
                             width: 2,
                           ),
                         ),
@@ -181,10 +182,12 @@ class GroupSearchScreen extends StatelessWidget {
                                   fit: BoxFit.cover,
                                 )
                               : Container(
-                                  color: Colors.grey.shade200,
+                                  color: Get.context!.theme.colorScheme
+                                      .surfaceVariant,
                                   child: Icon(
                                     Icons.person,
-                                    color: Colors.grey.shade400,
+                                    color: Get.context!.theme.colorScheme
+                                        .onSurfaceVariant,
                                     size: 20,
                                   ),
                                 ),
@@ -198,7 +201,7 @@ class GroupSearchScreen extends StatelessWidget {
                             Text(
                               group.name,
                               style: pBold16.copyWith(
-                                color: Colors.grey.shade800,
+                                color: Get.context!.theme.colorScheme.onSurface,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -207,7 +210,8 @@ class GroupSearchScreen extends StatelessWidget {
                             Text(
                               'Dibuat oleh ${group.createdBy.name}',
                               style: pRegular12.copyWith(
-                                color: Colors.grey.shade500,
+                                color: Get
+                                    .context!.theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -215,7 +219,7 @@ class GroupSearchScreen extends StatelessWidget {
                       ),
                       Icon(
                         IconlyLight.arrow_right_2,
-                        color: Colors.grey.shade400,
+                        color: Get.context!.theme.colorScheme.onSurfaceVariant,
                         size: 18,
                       ),
                     ],
@@ -234,13 +238,13 @@ class GroupSearchScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: Get.context!.theme.colorScheme.surfaceVariant,
+        highlightColor: Get.context!.theme.colorScheme.surface,
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
           height: 220,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Get.context!.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
           ),
         ),
@@ -253,13 +257,20 @@ class GroupSearchScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.group_outlined, size: 64, color: Colors.grey[300]),
+          Icon(
+            Icons.group_outlined,
+            size: 64,
+            color: Get.context!.theme.colorScheme.onSurfaceVariant
+                .withOpacity(0.3),
+          ),
           const SizedBox(height: 16),
           Text(
             query.isEmpty
                 ? 'Cari Grup Ngaji'
                 : 'Tidak ditemukan grup untuk "$query"',
-            style: pMedium14.copyWith(color: Colors.grey),
+            style: pMedium14.copyWith(
+              color: Get.context!.theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

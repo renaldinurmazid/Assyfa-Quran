@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/charity/charity_payment_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 import 'package:flutter/services.dart' hide TextInput;
@@ -45,20 +44,20 @@ class CharityPaymentScreen extends StatelessWidget {
     final controller = Get.put(CharityPaymentController());
 
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Infaq Sekarang',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: context.theme.colorScheme.primary),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             IconlyLight.arrow_left_2,
-            color: AppColor.primaryColor,
+            color: context.theme.colorScheme.primary,
           ),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
@@ -68,12 +67,12 @@ class CharityPaymentScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('Nominal Infaq'),
+              _buildSectionHeader(context, 'Nominal Infaq'),
               const SizedBox(height: 12),
               TextField(
                 controller: controller.nominalController,
-                cursorColor: AppColor.primaryColor,
-                style: pSemiBold14.copyWith(color: AppColor.primaryColor),
+                cursorColor: context.theme.colorScheme.primary,
+                style: pSemiBold14.copyWith(color: context.theme.colorScheme.primary),
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.end,
                 inputFormatters: [
@@ -86,7 +85,9 @@ class CharityPaymentScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 16),
                     child: Text(
                       'Rp ',
-                      style: pSemiBold14.copyWith(color: AppColor.primaryColor),
+                      style: pSemiBold14.copyWith(
+                        color: context.theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                   prefixIconConstraints: const BoxConstraints(
@@ -94,23 +95,23 @@ class CharityPaymentScreen extends StatelessWidget {
                     minHeight: 0,
                   ),
                   hintStyle: pRegular12.copyWith(
-                    color: AppColor.primaryColor.withOpacity(0.2),
+                    color: context.theme.colorScheme.primary.withOpacity(0.2),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
-                      color: AppColor.primaryColor.withOpacity(0.2),
+                      color: context.theme.colorScheme.primary.withOpacity(0.2),
                     ),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
-                      color: AppColor.primaryColor.withOpacity(0.2),
+                      color: context.theme.colorScheme.primary.withOpacity(0.2),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColor.primaryColor),
+                    borderSide: BorderSide(color: context.theme.colorScheme.primary),
                   ),
                 ),
               ),
@@ -119,14 +120,14 @@ class CharityPaymentScreen extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  _buildFastInput(controller, 'Rp10.000', '10000'),
-                  _buildFastInput(controller, 'Rp25.000', '25000'),
-                  _buildFastInput(controller, 'Rp50.000', '50000'),
-                  _buildFastInput(controller, 'Rp100.000', '100000'),
+                  _buildFastInput(context, controller, 'Rp10.000', '10000'),
+                  _buildFastInput(context, controller, 'Rp25.000', '25000'),
+                  _buildFastInput(context, controller, 'Rp50.000', '50000'),
+                  _buildFastInput(context, controller, 'Rp100.000', '100000'),
                 ],
               ),
               const SizedBox(height: 24),
-              _buildSectionHeader('Data Diri'),
+              _buildSectionHeader(context, 'Data Diri'),
               const SizedBox(height: 18),
               TextInput(
                 controller: controller.nameController,
@@ -144,19 +145,24 @@ class CharityPaymentScreen extends StatelessWidget {
                         onChanged: (value) {
                           controller.isAnonymous.value = value!;
                         },
-                        activeColor: AppColor.primaryColor,
+                        activeColor: context.theme.colorScheme.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
                         side: BorderSide(
-                          color: AppColor.primaryColor.withOpacity(0.2),
+                          color: context.theme.colorScheme.primary.withOpacity(0.2),
                         ),
                         materialTapTargetSize: MaterialTapTargetSize.padded,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('Sembunyikan nama saya (Anonim)', style: pRegular12),
+                  Text(
+                    'Sembunyikan nama saya (Anonim)',
+                    style: pRegular12.copyWith(
+                      color: context.theme.colorScheme.onSurface,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 18),
@@ -170,10 +176,10 @@ class CharityPaymentScreen extends StatelessWidget {
                   ? Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.yellow.shade100.withOpacity(0.5),
+                        color: Colors.amber.withOpacity(context.isDarkMode ? 0.05 : 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.yellow.shade300,
+                          color: Colors.amber.withOpacity(0.3),
                           width: 1,
                         ),
                       ),
@@ -182,7 +188,7 @@ class CharityPaymentScreen extends StatelessWidget {
                         children: [
                           Icon(
                             IconlyLight.info_square,
-                            color: Colors.yellow.shade900,
+                            color: Colors.amber.shade900,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
@@ -190,7 +196,9 @@ class CharityPaymentScreen extends StatelessWidget {
                             child: Text(
                               'Lengkapi nomor telepon di profilmu yuk, supaya transaksi berikutnya jadi lebih praktis!',
                               style: pRegular12.copyWith(
-                                color: Colors.yellow.shade900,
+                                color: context.isDarkMode
+                                    ? Colors.amber.shade200
+                                    : Colors.amber.shade900,
                               ),
                             ),
                           ),
@@ -199,7 +207,7 @@ class CharityPaymentScreen extends StatelessWidget {
                     )
                   : const SizedBox.shrink(),
               const SizedBox(height: 24),
-              _buildSectionHeader('Pilih Metode Pembayaran'),
+              _buildSectionHeader(context, 'Pilih Metode Pembayaran'),
               const SizedBox(height: 12),
               Obx(() {
                 final selected = controller.selectedPaymentMethod.value;
@@ -209,12 +217,12 @@ class CharityPaymentScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: selected != null
-                            ? AppColor.primaryColor
-                            : Colors.grey.shade200,
+                            ? context.theme.colorScheme.primary
+                            : (context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200),
                         width: selected != null ? 2 : 1,
                       ),
                       boxShadow: [
@@ -232,7 +240,7 @@ class CharityPaymentScreen extends StatelessWidget {
                             width: 48,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: context.theme.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: selected.logo.isNotEmpty
@@ -260,7 +268,7 @@ class CharityPaymentScreen extends StatelessWidget {
                             child: Text(
                               selected.name,
                               style: pSemiBold14.copyWith(
-                                color: AppColor.primaryColor,
+                                color: context.theme.colorScheme.primary,
                               ),
                             ),
                           ),
@@ -274,7 +282,9 @@ class CharityPaymentScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'Pilih metode pembayaran',
-                              style: pRegular14.copyWith(color: Colors.grey),
+                              style: pRegular14.copyWith(
+                                color: context.theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],
@@ -296,7 +306,7 @@ class CharityPaymentScreen extends StatelessWidget {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -311,7 +321,7 @@ class CharityPaymentScreen extends StatelessWidget {
                 ? null
                 : controller.submitDonation,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.primaryColor,
+              backgroundColor: context.theme.colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -337,14 +347,17 @@ class CharityPaymentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Text(
       title,
-      style: pSemiBold14.copyWith(color: AppColor.textColor.withOpacity(0.8)),
+      style: pSemiBold14.copyWith(
+        color: context.theme.colorScheme.onSurface.withOpacity(0.8),
+      ),
     );
   }
 
   Widget _buildFastInput(
+    BuildContext context,
     CharityPaymentController controller,
     String label,
     String value,
@@ -366,15 +379,19 @@ class CharityPaymentScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColor.primaryColor : Colors.white,
+            color: isSelected
+                ? context.theme.colorScheme.primary
+                : context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? AppColor.primaryColor : Colors.grey.shade200,
+              color: isSelected
+                  ? context.theme.colorScheme.primary
+                  : (context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200),
             ),
             boxShadow: [
               if (isSelected)
                 BoxShadow(
-                  color: AppColor.primaryColor.withOpacity(0.2),
+                  color: context.theme.colorScheme.primary.withOpacity(0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -383,7 +400,9 @@ class CharityPaymentScreen extends StatelessWidget {
           child: Text(
             label,
             style: pSemiBold14.copyWith(
-              color: isSelected ? Colors.white : AppColor.primaryColor,
+              color: isSelected
+                  ? Colors.white
+                  : context.theme.colorScheme.primary,
             ),
           ),
         ),
@@ -397,7 +416,7 @@ class CharityPaymentScreen extends StatelessWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -430,14 +449,16 @@ class CharityPaymentScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Pilih Metode Pembayaran',
-                        style: pBold16.copyWith(color: AppColor.textColor),
+                        style: pBold16.copyWith(
+                          color: context.theme.colorScheme.onSurface,
+                        ),
                       ),
                       const Spacer(),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
-                          color: Colors.grey,
+                          color: context.theme.colorScheme.onSurfaceVariant,
                           size: 22,
                         ),
                       ),
@@ -448,9 +469,9 @@ class CharityPaymentScreen extends StatelessWidget {
                 Expanded(
                   child: Obx(() {
                     if (controller.isLoading.value) {
-                      return const Center(
+                      return Center(
                         child: CircularProgressIndicator(
-                          color: AppColor.primaryColor,
+                          color: context.theme.colorScheme.primary,
                         ),
                       );
                     }
@@ -473,11 +494,11 @@ class CharityPaymentScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: context.theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColor.primaryColor
+                                      ? context.theme.colorScheme.primary
                                       : Colors.transparent,
                                   width: 2,
                                 ),
@@ -495,7 +516,7 @@ class CharityPaymentScreen extends StatelessWidget {
                                     width: 48,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[100],
+                                      color: context.theme.colorScheme.surfaceContainerHighest,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: method.logo.isNotEmpty
@@ -535,15 +556,15 @@ class CharityPaymentScreen extends StatelessWidget {
                                       method.name,
                                       style: pSemiBold14.copyWith(
                                         color: isSelected
-                                            ? AppColor.primaryColor
-                                            : AppColor.textColor,
+                                            ? context.theme.colorScheme.primary
+                                            : context.theme.colorScheme.onSurface,
                                       ),
                                     ),
                                   ),
                                   if (isSelected)
-                                    const Icon(
+                                    Icon(
                                       IconlyBold.tick_square,
-                                      color: AppColor.primaryColor,
+                                      color: context.theme.colorScheme.primary,
                                       size: 24,
                                     ),
                                 ],

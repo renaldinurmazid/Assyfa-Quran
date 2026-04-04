@@ -20,7 +20,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
     final controller = Get.put(MosqueCharityShowController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.theme.colorScheme.surface,
       body: Obx(() {
         if (controller.isLoading.value && controller.mosque.value == null) {
           return _buildLoadingState();
@@ -88,9 +88,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
             onPressed: () => Get.back(),
           ),
           flexibleSpace: Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Container(color: Colors.white),
+            baseColor: Get.context!.theme.colorScheme.surfaceVariant,
+            highlightColor: Get.context!.theme.colorScheme.surface,
+            child: Container(color: Get.context!.theme.colorScheme.surface),
           ),
         ),
         SliverToBoxAdapter(
@@ -139,7 +139,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
-          backgroundColor: Colors.black26,
+          backgroundColor: Colors.black.withOpacity(0.2),
           child: IconButton(
             icon: const Icon(
               IconlyLight.arrow_left_2,
@@ -154,7 +154,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            backgroundColor: Colors.black26,
+            backgroundColor: Colors.black.withOpacity(0.2),
             child: IconButton(
               icon: const Icon(Icons.share, color: Colors.white, size: 20),
               onPressed: () {
@@ -210,28 +210,37 @@ class MosqueCharityShowScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColor.primaryColor.withOpacity(0.1),
+            color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
             mosque.city,
-            style: pBold12.copyWith(color: AppColor.primaryColor),
+            style: pBold12.copyWith(color: Get.context!.theme.colorScheme.primary),
           ),
         ),
         const SizedBox(height: 12),
         Text(
           mosque.name,
-          style: pBold24.copyWith(color: const Color(0xFF1A1A1A), height: 1.2),
+          style: pBold24.copyWith(
+            color: Get.context!.theme.colorScheme.onSurface,
+            height: 1.2,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
-            const Icon(IconlyLight.location, size: 16, color: Colors.black26),
+            Icon(
+              IconlyLight.location,
+              size: 16,
+              color: Get.context!.theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
                 mosque.address,
-                style: pMedium14.copyWith(color: Colors.black38),
+                style: pMedium14.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -247,9 +256,11 @@ class MosqueCharityShowScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
+        color: Get.context!.theme.colorScheme.primary.withOpacity(0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(
+          color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,12 +270,17 @@ class MosqueCharityShowScreen extends StatelessWidget {
             children: [
               Text(
                 'Dana Terkumpul',
-                style: pMedium12.copyWith(color: Colors.grey[600]),
+                style: pMedium12.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               if (mosque.targetAmount != null)
                 Text(
                   'Target: ${mosque.targetAmount}',
-                  style: pMedium10.copyWith(color: Colors.grey[500]),
+                  style: pMedium10.copyWith(
+                    color: Get.context!.theme.colorScheme.onSurfaceVariant
+                        .withOpacity(0.7),
+                  ),
                 ),
             ],
           ),
@@ -273,7 +289,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
             children: [
               Text(
                 mosque.collectedAmount,
-                style: pBold18.copyWith(color: AppColor.primaryColor),
+                style: pBold18.copyWith(
+                  color: Get.context!.theme.colorScheme.primary,
+                ),
               ),
               if (mosque.targetAmount != null) ...[
                 const SizedBox(width: 8),
@@ -302,12 +320,17 @@ class MosqueCharityShowScreen extends StatelessWidget {
             children: [
               Text(
                 '${mosque.percentage}% Terpenuhi',
-                style: pSemiBold12.copyWith(color: AppColor.primaryColor),
+                style: pSemiBold12.copyWith(
+                  color: Get.context!.theme.colorScheme.primary,
+                ),
               ),
               if (mosque.targetAmount != null)
                 Text(
                   'Bantu masjid ini',
-                  style: pMedium10.copyWith(color: Colors.grey[500]),
+                  style: pMedium10.copyWith(
+                    color: Get.context!.theme.colorScheme.onSurfaceVariant
+                        .withOpacity(0.7),
+                  ),
                 ),
             ],
           ),
@@ -328,10 +351,10 @@ class MosqueCharityShowScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColor.primaryColor.withOpacity(0.06),
+                color: Get.context!.theme.colorScheme.primary.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColor.primaryColor.withOpacity(0.12),
+                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.12),
                 ),
               ),
               child: Row(
@@ -339,12 +362,13 @@ class MosqueCharityShowScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColor.primaryColor.withOpacity(0.12),
+                      color: Get.context!.theme.colorScheme.primary
+                          .withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       IconlyBold.heart,
-                      color: AppColor.primaryColor,
+                      color: Get.context!.theme.colorScheme.primary,
                       size: 18,
                     ),
                   ),
@@ -355,11 +379,16 @@ class MosqueCharityShowScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${mosque.donaturCount}',
-                          style: pBold16.copyWith(color: AppColor.primaryColor),
+                          style: pBold16.copyWith(
+                            color: Get.context!.theme.colorScheme.primary,
+                          ),
                         ),
                         Text(
                           'Donatur',
-                          style: pRegular10.copyWith(color: Colors.grey[600]),
+                          style: pRegular10.copyWith(
+                            color:
+                                Get.context!.theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -437,10 +466,10 @@ class MosqueCharityShowScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.context!.theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(Get.context!.isDarkMode ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -451,11 +480,11 @@ class MosqueCharityShowScreen extends StatelessWidget {
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            color: AppColor.primaryColor,
+            color: Get.context!.theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColor.primaryColor.withOpacity(0.3),
+                color: Get.context!.theme.colorScheme.primary.withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -522,7 +551,7 @@ class MosqueCharityShowScreen extends StatelessWidget {
               border: Border(
                 bottom: BorderSide(
                   color: isSelected
-                      ? AppColor.primaryColor
+                      ? Get.context!.theme.colorScheme.primary
                       : Colors.transparent,
                   width: 2,
                 ),
@@ -534,8 +563,13 @@ class MosqueCharityShowScreen extends StatelessWidget {
                 Text(
                   label,
                   style: isSelected
-                      ? pBold14.copyWith(color: AppColor.primaryColor)
-                      : pMedium14.copyWith(color: Colors.grey[500]),
+                      ? pBold14.copyWith(
+                          color: Get.context!.theme.colorScheme.primary,
+                        )
+                      : pMedium14.copyWith(
+                          color:
+                              Get.context!.theme.colorScheme.onSurfaceVariant,
+                        ),
                 ),
                 if (showBadge &&
                     controller.mosque.value!.updates.isNotEmpty) ...[
@@ -547,8 +581,8 @@ class MosqueCharityShowScreen extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColor.primaryColor
-                          : Colors.grey[300],
+                          ? Get.context!.theme.colorScheme.primary
+                          : Get.context!.theme.colorScheme.surfaceVariant,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -571,7 +605,10 @@ class MosqueCharityShowScreen extends StatelessWidget {
       children: [
         HtmlWidget(
           mosque.description ?? 'Tidak ada deskripsi.',
-          textStyle: pRegular14.copyWith(height: 1.6, color: Colors.black87),
+          textStyle: pRegular14.copyWith(
+            height: 1.6,
+            color: Get.context!.theme.colorScheme.onSurface,
+          ),
         ),
       ],
     );
@@ -619,7 +656,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   update.createdAtFormatted,
-                  style: pBold12.copyWith(color: AppColor.primaryColor),
+                  style: pBold12.copyWith(
+                    color: Get.context!.theme.colorScheme.primary,
+                  ),
                 ),
               ],
             ),
@@ -627,23 +666,27 @@ class MosqueCharityShowScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FA),
+                color: Get.context!.theme.colorScheme.primary.withOpacity(0.04),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFEEEEEE)),
+                border: Border.all(
+                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     update.title,
-                    style: pBold14.copyWith(color: AppColor.textColor),
+                    style: pBold14.copyWith(
+                      color: Get.context!.theme.colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   HtmlWidget(
                     update.content,
                     textStyle: pRegular12.copyWith(
                       height: 1.5,
-                      color: Colors.grey[700],
+                      color: Get.context!.theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -662,18 +705,26 @@ class MosqueCharityShowScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Column(
             children: [
-              Icon(IconlyLight.star, size: 48, color: Colors.grey[300]),
+              Icon(
+                IconlyLight.star,
+                size: 48,
+                color: Get.context!.theme.colorScheme.onSurfaceVariant
+                    .withOpacity(0.3),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Belum ada fundraiser',
-                style: pMedium14.copyWith(color: Colors.grey[500]),
+                style: pMedium14.copyWith(
+                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Bagikan campaign ini dan jadilah\nfundraiser pertama!',
                 textAlign: TextAlign.center,
                 style: pRegular12.copyWith(
-                  color: Colors.grey[400],
+                  color: Get.context!.theme.colorScheme.onSurfaceVariant
+                      .withOpacity(0.6),
                   height: 1.5,
                 ),
               ),
@@ -695,13 +746,14 @@ class MosqueCharityShowScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: rank <= 3
-                ? const Color(0xFFFFF8E1).withOpacity(0.5)
-                : const Color(0xFFF8F9FA),
+                ? Colors.orange.withOpacity(Get.context!.isDarkMode ? 0.1 : 0.05)
+                : Get.context!.theme.colorScheme.surfaceVariant.withOpacity(0.3),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: rank <= 3
-                  ? Colors.orange.withOpacity(0.15)
-                  : const Color(0xFFEEEEEE),
+                  ? Colors.orange.withOpacity(0.2)
+                  : Get.context!.theme.colorScheme.onSurfaceVariant
+                      .withOpacity(0.1),
             ),
           ),
           child: Row(
@@ -717,14 +769,16 @@ class MosqueCharityShowScreen extends StatelessWidget {
                       ? Colors.grey[400]
                       : rank == 3
                       ? Colors.orange[300]
-                      : Colors.grey[200],
+                      : Get.context!.theme.colorScheme.surfaceVariant,
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   '$rank',
                   style: pBold12.copyWith(
-                    color: rank <= 3 ? Colors.white : Colors.grey[600],
+                    color: rank <= 3
+                        ? Colors.white
+                        : Get.context!.theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -738,7 +792,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
                   children: [
                     Text(
                       fundraiser.name,
-                      style: pSemiBold14.copyWith(color: AppColor.textColor),
+                      style: pSemiBold14.copyWith(
+                        color: Get.context!.theme.colorScheme.onSurface,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -748,13 +804,14 @@ class MosqueCharityShowScreen extends StatelessWidget {
                         Icon(
                           IconlyLight.user_1,
                           size: 13,
-                          color: Colors.grey[500],
+                          color: Get.context!.theme.colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${fundraiser.totalReferral} orang diajak',
                           style: pRegular10.copyWith(
-                            color: Colors.grey[500],
+                            color:
+                                Get.context!.theme.colorScheme.onSurfaceVariant,
                             fontSize: 11,
                           ),
                         ),

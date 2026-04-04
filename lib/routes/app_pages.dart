@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
+import 'package:quran_app/bindings/blog_comment_binding.dart';
+import 'package:quran_app/screen/blog/comment_screen.dart';
 import 'package:quran_app/screen/blog/show_blog_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
@@ -40,6 +42,7 @@ import 'package:quran_app/screen/charity/charity_payment_detail_screen.dart';
 import 'package:quran_app/screen/charity/infaq_activity_screen.dart';
 import 'package:quran_app/screen/charity/infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/splash_screen.dart';
+import 'package:quran_app/screen/theme/theme_screen.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -276,6 +279,19 @@ class AppPages {
     GetPage(
       name: Routes.notification,
       page: () => const NotificationScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.comment,
+      page: () => const CommentScreen(),
+      binding: BlogCommentBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.theme,
+      page: () => const ThemeScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

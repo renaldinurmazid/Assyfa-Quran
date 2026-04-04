@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/prayer/show_prayer_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/screen/home_screen.dart';
-import 'package:quran_app/theme/app_color.dart';
+
+
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -19,22 +21,22 @@ class ShowPrayerScreen extends StatelessWidget {
         : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFB),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.theme.colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.black87,
+            color: context.theme.colorScheme.onSurface,
             size: 20,
           ),
         ),
         title: Text(
           'Detail Doa',
-          style: pSemiBold16.copyWith(color: AppColor.primaryColor),
+          style: pSemiBold16.copyWith(color: context.theme.colorScheme.primary),
         ),
         centerTitle: true,
       ),
@@ -63,9 +65,9 @@ class ShowPrayerScreen extends StatelessWidget {
                           horizontal: 24,
                           vertical: 32,
                         ),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
+                        decoration: BoxDecoration(
+                          color: context.theme.colorScheme.surface,
+                          borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(32),
                             bottomRight: Radius.circular(32),
                           ),
@@ -77,13 +79,15 @@ class ShowPrayerScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColor.primaryColor.withOpacity(0.1),
+                                  color: context.theme.colorScheme.primary
+                                      .withOpacity(0.1),
                                   width: 1.5,
                                 ),
                               ),
                               child: CircleAvatar(
                                 radius: 40,
-                                backgroundColor: AppColor.primaryColor
+                                backgroundColor: context.theme.colorScheme
+                                    .primary
                                     .withOpacity(0.1),
                                 backgroundImage:
                                     (prayer.isAnonymous == false &&
@@ -100,7 +104,8 @@ class ShowPrayerScreen extends StatelessWidget {
                                                       .toUpperCase() ??
                                                   'U'),
                                         style: pBold24.copyWith(
-                                          color: AppColor.primaryColor,
+                                          color: context
+                                              .theme.colorScheme.primary,
                                         ),
                                       )
                                     : null,
@@ -113,12 +118,17 @@ class ShowPrayerScreen extends StatelessWidget {
                                   : (prayer.isMyPrayer == true
                                         ? 'Kamu'
                                         : prayer.userName ?? 'User'),
-                              style: pBold18.copyWith(color: Colors.black87),
+                              style: pBold18.copyWith(
+                                color: context.theme.colorScheme.onSurface,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               prayer.publishedAt ?? '-',
-                              style: pRegular12.copyWith(color: Colors.grey),
+                              style: pRegular12.copyWith(
+                                color:
+                                    context.theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ],
                         ),
@@ -137,11 +147,12 @@ class ShowPrayerScreen extends StatelessWidget {
                                 vertical: 40,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: context.theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(32),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColor.primaryColor.withOpacity(
+                                    color: context.theme.colorScheme.primary
+                                        .withOpacity(
                                       0.06,
                                     ),
                                     blurRadius: 20,
@@ -152,7 +163,7 @@ class ShowPrayerScreen extends StatelessWidget {
                               child: Text(
                                 prayer.content ?? '-',
                                 style: pMedium18.copyWith(
-                                  color: AppColor.primaryColor,
+                                  color: context.theme.colorScheme.primary,
                                   height: 1.8,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -166,11 +177,12 @@ class ShowPrayerScreen extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColor.primaryColor,
+                                  color: context.theme.colorScheme.primary,
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColor.primaryColor.withOpacity(
+                                      color: context.theme.colorScheme.primary
+                                          .withOpacity(
                                         0.3,
                                       ),
                                       blurRadius: 10,
@@ -178,9 +190,9 @@ class ShowPrayerScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.format_quote_rounded,
-                                  color: Colors.white,
+                                  color: Get.context!.theme.colorScheme.surface,
                                   size: 24,
                                 ),
                               ),
@@ -201,7 +213,7 @@ class ShowPrayerScreen extends StatelessWidget {
                                 Text(
                                   'Diaminkan Oleh',
                                   style: pBold16.copyWith(
-                                    color: Colors.black87,
+                                    color: context.theme.colorScheme.onSurface,
                                   ),
                                 ),
                                 Container(
@@ -210,15 +222,14 @@ class ShowPrayerScreen extends StatelessWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColor.primaryColor.withOpacity(
-                                      0.1,
-                                    ),
+                                    color: context.theme.colorScheme.primary
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(100),
                                   ),
                                   child: Text(
                                     '${prayer.amensCount ?? 0} Orang',
                                     style: pSemiBold12.copyWith(
-                                      color: AppColor.primaryColor,
+                                      color: context.theme.colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -238,17 +249,19 @@ class ShowPrayerScreen extends StatelessWidget {
                                   return Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: context.theme.colorScheme.surface,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: Colors.grey.shade100,
+                                        color: context.theme.colorScheme.outline
+                                            .withOpacity(0.1),
                                       ),
                                     ),
                                     child: Row(
                                       children: [
                                         CircleAvatar(
                                           radius: 16,
-                                          backgroundColor: AppColor.primaryColor
+                                          backgroundColor: context
+                                              .theme.colorScheme.primary
                                               .withOpacity(0.1),
                                           backgroundImage:
                                               amenUser.userProfile != null
@@ -262,8 +275,8 @@ class ShowPrayerScreen extends StatelessWidget {
                                                           .toUpperCase() ??
                                                       'A',
                                                   style: pBold12.copyWith(
-                                                    color:
-                                                        AppColor.primaryColor,
+                                                    color: context.theme
+                                                        .colorScheme.primary,
                                                   ),
                                                 )
                                               : null,
@@ -272,13 +285,15 @@ class ShowPrayerScreen extends StatelessWidget {
                                         Text(
                                           amenUser.userName ?? 'User',
                                           style: pSemiBold14.copyWith(
-                                            color: Colors.black87,
+                                            color: context
+                                                .theme.colorScheme.onSurface,
                                           ),
                                         ),
                                         const Spacer(),
-                                        const Icon(
+                                        Icon(
                                           Icons.check_circle,
-                                          color: Color(0xFF4CAF50),
+                                          color: context
+                                              .theme.colorScheme.secondary,
                                           size: 16,
                                         ),
                                       ],
@@ -291,24 +306,28 @@ class ShowPrayerScreen extends StatelessWidget {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(24),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: context.theme.colorScheme.surface,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: Colors.grey.shade100,
+                                    color: context.theme.colorScheme.outline
+                                        .withOpacity(0.1),
                                   ),
                                 ),
                                 child: Column(
                                   children: [
                                     Icon(
                                       Icons.favorite_border_rounded,
-                                      color: Colors.grey.shade300,
+                                      color: context
+                                          .theme.colorScheme.onSurfaceVariant
+                                          .withOpacity(0.3),
                                       size: 48,
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
                                       'Belum ada yang mengaminkan doa ini.',
                                       style: pRegular12.copyWith(
-                                        color: Colors.grey,
+                                        color: context.theme.colorScheme
+                                            .onSurfaceVariant,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -336,7 +355,7 @@ class ShowPrayerScreen extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -362,17 +381,17 @@ class ShowPrayerScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: prayer.isAmened == true
-                  ? Colors.grey.shade100
-                  : AppColor.primaryColor,
+                  ? context.theme.colorScheme.surfaceVariant
+                  : context.theme.colorScheme.primary,
               foregroundColor: prayer.isAmened == true
-                  ? Colors.grey
-                  : Colors.white,
+                  ? context.theme.colorScheme.onSurfaceVariant
+                  : context.theme.colorScheme.onPrimary,
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               elevation: prayer.isAmened == true ? 0 : 8,
-              shadowColor: AppColor.primaryColor.withOpacity(0.4),
+              shadowColor: context.theme.colorScheme.primary.withOpacity(0.4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -380,13 +399,17 @@ class ShowPrayerScreen extends StatelessWidget {
                 Icon(
                   prayer.isAmened == true ? Icons.check_circle : Icons.favorite,
                   size: 20,
-                  color: prayer.isAmened == true ? Colors.grey : Colors.white,
+                  color: prayer.isAmened == true
+                      ? context.theme.colorScheme.onSurfaceVariant
+                      : context.theme.colorScheme.onPrimary,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   prayer.isAmened == true ? 'Sudah Diaminkan' : 'Aamiin',
                   style: pBold16.copyWith(
-                    color: prayer.isAmened == true ? Colors.grey : Colors.white,
+                    color: prayer.isAmened == true
+                        ? context.theme.colorScheme.onSurfaceVariant
+                        : context.theme.colorScheme.onPrimary,
                   ),
                 ),
               ],
@@ -399,8 +422,8 @@ class ShowPrayerScreen extends StatelessWidget {
 
   Widget _buildLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: Get.context!.theme.colorScheme.surfaceVariant,
+      highlightColor: Get.context!.theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -413,9 +436,9 @@ class ShowPrayerScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(width: 120, height: 16, color: Colors.white),
+                    Container(width: 120, height: 16, color: Get.context!.theme.colorScheme.surface),
                     const SizedBox(height: 8),
-                    Container(width: 80, height: 12, color: Colors.white),
+                    Container(width: 80, height: 12, color: Get.context!.theme.colorScheme.surface),
                   ],
                 ),
               ],
@@ -425,12 +448,12 @@ class ShowPrayerScreen extends StatelessWidget {
               width: double.infinity,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Get.context!.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
             const SizedBox(height: 40),
-            Container(width: 150, height: 16, color: Colors.white),
+            Container(width: 150, height: 16, color: Get.context!.theme.colorScheme.surface),
             const SizedBox(height: 16),
             ...List.generate(
               3,
@@ -440,7 +463,7 @@ class ShowPrayerScreen extends StatelessWidget {
                   children: [
                     const CircleAvatar(radius: 14),
                     const SizedBox(width: 12),
-                    Container(width: 100, height: 12, color: Colors.white),
+                    Container(width: 100, height: 12, color: Get.context!.theme.colorScheme.surface),
                   ],
                 ),
               ),
