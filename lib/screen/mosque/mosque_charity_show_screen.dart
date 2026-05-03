@@ -16,184 +16,84 @@ class MosqueCharityShowScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Put the controller into the GetX system for this screen
     final controller = Get.put(MosqueCharityShowController());
 
     return Scaffold(
-      backgroundColor: context.theme.colorScheme.surface,
+      backgroundColor: context.isDarkMode
+          ? Colors.grey.shade900
+          : Colors.grey.shade50,
       body: Obx(() {
-        if (controller.isLoading.value && controller.mosque.value == null) {
-          return _buildLoadingState();
+        if (controller.isLoading.value) {
+          return _buildLoadingState(context);
         }
 
         final mosque = controller.mosque.value;
         if (mosque == null) {
-          return const Center(child: Text('Data tidak ditemukan'));
+          return const Center(child: Text('Masjid tidak ditemukan'));
         }
 
-        return RefreshIndicator(
-          onRefresh: () => controller.fetchMosqueDetail(),
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildSliverAppBar(mosque),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+        return Stack(
+          children: [
+            CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(context, mosque),
+                SliverToBoxAdapter(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeaderInfo(mosque),
-                      const SizedBox(height: 24),
-                      _buildProgressSection(mosque),
-                      const SizedBox(height: 24),
-                      _buildStatsSection(mosque),
-                      const Divider(
-                        height: 48,
-                        thickness: 1,
-                        color: Color(0xFFF1F1F1),
+                      Container(
+                        color: context.theme.colorScheme.surface,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTitleSection(context, mosque),
+                            const SizedBox(height: 20),
+                            _buildProgressSection(context, mosque),
+                            const SizedBox(height: 24),
+                            _buildHorizontalStats(context, mosque),
+                          ],
+                        ),
                       ),
-                      _buildTabSection(controller),
-                      const SizedBox(height: 24),
-                      Obx(() {
-                        final tab = controller.selectedTab.value;
-                        if (tab == 0) return _buildDescriptionSection(mosque);
-                        if (tab == 1) return _buildUpdatesSection(mosque);
-                        return _buildFundraiserSection(mosque);
-                      }),
+                      const SizedBox(height: 10),
+                      _buildStorySection(context, mosque),
                       const SizedBox(height: 120), // Space for bottom button
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+            _buildStickyBottomButtons(context, mosque),
+          ],
         );
       }),
-      bottomSheet: Obx(() {
-        final mosque = controller.mosque.value;
-        if (mosque == null) return const SizedBox();
-        return _buildBottomAction(mosque);
-      }),
     );
   }
 
-  Widget _buildLoadingState() {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 300,
-          leading: IconButton(
-            icon: const Icon(IconlyLight.arrow_left_2),
-            onPressed: () => Get.back(),
-          ),
-          flexibleSpace: Shimmer.fromColors(
-            baseColor: Get.context!.theme.colorScheme.surfaceVariant,
-            highlightColor: Get.context!.theme.colorScheme.surface,
-            child: Container(color: Get.context!.theme.colorScheme.surface),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(height: 20, width: 100, color: Colors.white),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 30,
-                    width: double.infinity,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(height: 15, width: 200, color: Colors.white),
-                  const SizedBox(height: 30),
-                  Container(
-                    height: 120,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSliverAppBar(MosqueCharityData mosque) {
+  Widget _buildSliverAppBar(BuildContext context, MosqueCharityData mosque) {
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: 250,
       pinned: true,
       elevation: 0,
-      backgroundColor: AppColor.primaryColor,
-      leadingWidth: 70,
-      leading: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.black.withOpacity(0.2),
-          child: IconButton(
-            icon: const Icon(
-              IconlyLight.arrow_left_2,
-              color: Colors.white,
-              size: 20,
-            ),
-            onPressed: () => Get.back(),
-          ),
-        ),
+      backgroundColor: context.theme.colorScheme.surface,
+      leading: IconButton(
+        icon: const Icon(IconlyLight.arrow_left, color: Colors.white),
+        onPressed: () => Get.back(),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundColor: Colors.black.withOpacity(0.2),
-            child: IconButton(
-              icon: const Icon(Icons.share, color: Colors.white, size: 20),
-              onPressed: () {
-                final shareUrl =
-                    mosque.shareUrl ?? '${Url.baseUrl}/api/m/${mosque.id}';
-                Share.share(
-                  'Yuk bantu pembangunan "${mosque.name}" di Quranuna! Klik link berikut: $shareUrl',
-                );
-              },
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
           children: [
             Hero(
               tag: 'mosque_${mosque.id}',
-              child: Image.network(
-                mosque.coverImage,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[200],
-                  child: const Icon(
-                    IconlyLight.image,
-                    color: Colors.black12,
-                    size: 50,
-                  ),
-                ),
-              ),
+              child: Image.network(mosque.coverImage, fit: BoxFit.cover),
             ),
-            const DecoratedBox(
+            Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black54, Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.3), Colors.transparent],
                 ),
               ),
             ),
@@ -203,670 +103,282 @@ class MosqueCharityShowScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderInfo(MosqueCharityData mosque) {
+  Widget _buildTitleSection(BuildContext context, MosqueCharityData mosque) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            mosque.city,
-            style: pBold12.copyWith(color: Get.context!.theme.colorScheme.primary),
-          ),
-        ),
-        const SizedBox(height: 12),
         Text(
           mosque.name,
-          style: pBold24.copyWith(
-            color: Get.context!.theme.colorScheme.onSurface,
-            height: 1.2,
+          style: pBold18.copyWith(
+            color: context.theme.colorScheme.onSurface,
+            height: 1.4,
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(
-              IconlyLight.location,
-              size: 16,
-              color: Get.context!.theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                mosque.address,
-                style: pMedium14.copyWith(
-                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
+        Text(
+          mosque.address,
+          style: pRegular12,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          mosque.collectedAmount,
+          style: pBold18.copyWith(color: AppColor.primaryColorDark),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Terkumpul dari ${mosque.targetAmount ?? 'Tanpa Target'}',
+          style: pRegular12.copyWith(color: Colors.grey.shade600),
         ),
       ],
     );
   }
 
-  Widget _buildProgressSection(MosqueCharityData mosque) {
-    double progress = mosque.percentage / 100;
-    if (progress > 1) progress = 1;
+  Widget _buildProgressSection(BuildContext context, MosqueCharityData mosque) {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: mosque.percentage / 100,
+            minHeight: 10,
+            backgroundColor: context.isDarkMode
+                ? Colors.grey.shade900
+                : Colors.grey.shade100,
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppColor.primaryColorDark,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildHorizontalStats(BuildContext context, MosqueCharityData mosque) {
+    return Row(
+      children: [
+        _buildStatItem(
+          Icons.favorite,
+          '${mosque.donaturCount}',
+          'Donasi',
+          AppColor.primaryColorDark,
+          onTap: () => Get.toNamed(
+            Routes.mosqueCharityTabs,
+            arguments: {'mosqueCharityId': mosque.id, 'initialTab': 0},
+          ),
+        ),
+        _buildVerticalDivider(),
+        _buildStatItem(
+          Icons.description,
+          '',
+          'Update',
+          AppColor.primaryColorDark,
+          showValue: false,
+          onTap: () => Get.toNamed(
+            Routes.mosqueCharityTabs,
+            arguments: {'mosqueCharityId': mosque.id, 'initialTab': 1},
+          ),
+        ),
+        _buildVerticalDivider(),
+        _buildStatItem(
+          Icons.account_balance_wallet,
+          '',
+          'Fundraiser',
+          AppColor.primaryColorDark,
+          showValue: false,
+          onTap: () => Get.toNamed(
+            Routes.mosqueCharityTabs,
+            arguments: {'mosqueCharityId': mosque.id, 'initialTab': 2},
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerticalDivider() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Get.context!.theme.colorScheme.primary.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
+      height: 30,
+      width: 1,
+      color: Get.context!.isDarkMode
+          ? Colors.grey.shade800
+          : Colors.grey.shade200,
+    );
+  }
+
+  Widget _buildStatItem(
+    IconData icon,
+    String value,
+    String label,
+    Color color, {
+    bool showValue = true,
+    VoidCallback? onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: color),
+                if (showValue) ...[
+                  const SizedBox(width: 8),
+                  Text(value, style: pBold14),
+                ],
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: pRegular12.copyWith(color: Colors.grey.shade600),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStorySection(BuildContext context, MosqueCharityData mosque) {
+    return Container(
+      color: context.theme.colorScheme.surface,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Dana Terkumpul',
-                style: pMedium12.copyWith(
-                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (mosque.targetAmount != null)
-                Text(
-                  'Target: ${mosque.targetAmount}',
-                  style: pMedium10.copyWith(
-                    color: Get.context!.theme.colorScheme.onSurfaceVariant
-                        .withOpacity(0.7),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                mosque.collectedAmount,
-                style: pBold18.copyWith(
-                  color: Get.context!.theme.colorScheme.primary,
-                ),
-              ),
-              if (mosque.targetAmount != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  'dari ${mosque.targetAmount}',
-                  style: pRegular12.copyWith(color: Colors.grey[600]),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                AppColor.primaryColor,
-              ),
-            ),
-          ),
+          Text("Tentang Masjid", style: pSemiBold14),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${mosque.percentage}% Terpenuhi',
-                style: pSemiBold12.copyWith(
-                  color: Get.context!.theme.colorScheme.primary,
-                ),
-              ),
-              if (mosque.targetAmount != null)
-                Text(
-                  'Bantu masjid ini',
-                  style: pMedium10.copyWith(
-                    color: Get.context!.theme.colorScheme.onSurfaceVariant
-                        .withOpacity(0.7),
-                  ),
-                ),
-            ],
+          HtmlWidget(
+            mosque.description!
+                .replaceAll('&nbsp;', ' ')
+                .replaceAll('\u00A0', ' ')
+                .replaceAll('word-break: break-all', 'word-break: normal')
+                .replaceAll('word-break: break-word', 'word-break: normal'),
+            textStyle: pRegular12.copyWith(height: 1.6),
+            customStylesBuilder: (element) {
+              return {'word-break': 'normal'};
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsSection(MosqueCharityData mosque) {
-    return Row(
-      children: [
-        Expanded(
-          child: InkWell(
-            onTap: () {
-              Get.toNamed(Routes.mosqueCharityDonatur, arguments: mosque.id);
-            },
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Get.context!.theme.colorScheme.primary.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Get.context!.theme.colorScheme.primary
-                          .withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      IconlyBold.heart,
-                      color: Get.context!.theme.colorScheme.primary,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${mosque.donaturCount}',
-                          style: pBold16.copyWith(
-                            color: Get.context!.theme.colorScheme.primary,
-                          ),
-                        ),
-                        Text(
-                          'Donatur',
-                          style: pRegular10.copyWith(
-                            color:
-                                Get.context!.theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    IconlyLight.arrow_right_2,
-                    size: 16,
-                    color: Colors.grey[400],
-                  ),
-                ],
-              ),
+  Widget _buildStickyBottomButtons(
+    BuildContext context,
+    MosqueCharityData mosque,
+  ) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(
+          color: context.theme.colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(context.isDarkMode ? 0.3 : 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
             ),
-          ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: InkWell(
-            onTap: () {
-              final controller = Get.find<MosqueCharityShowController>();
-              controller.selectedTab.value = 2;
-            },
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0).withOpacity(0.6),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.orange.withOpacity(0.15)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      IconlyBold.star,
-                      color: Colors.orange,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${mosque.fundraiserCount}',
-                          style: pBold16.copyWith(color: Colors.orange[800]),
-                        ),
-                        Text(
-                          'Fundraiser',
-                          style: pRegular10.copyWith(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    IconlyLight.arrow_right_2,
-                    size: 16,
-                    color: Colors.grey[400],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomAction(MosqueCharityData mosque) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Get.context!.theme.colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(Get.context!.isDarkMode ? 0.3 : 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Get.context!.theme.colorScheme.primary,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Get.context!.theme.colorScheme.primary.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () {
-              Get.toNamed(
-                Routes.mosqueCharityPayment,
-                arguments: {'id': mosque.id},
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              'Infaq Sekarang',
-              style: pSemiBold16.copyWith(color: Colors.white),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabSection(MosqueCharityShowController controller) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF1F1F1), width: 1)),
-      ),
-      child: Row(
-        children: [
-          _buildTabItem(label: 'Deskripsi', index: 0, controller: controller),
-          _buildTabItem(
-            label: 'Update',
-            index: 1,
-            controller: controller,
-            showBadge: true,
-          ),
-          _buildTabItem(label: 'Fundraiser', index: 2, controller: controller),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabItem({
-    required String label,
-    required int index,
-    required MosqueCharityShowController controller,
-    bool showBadge = false,
-  }) {
-    return Obx(() {
-      final isSelected = controller.selectedTab.value == index;
-      return Expanded(
-        child: GestureDetector(
-          onTap: () => controller.selectedTab.value = index,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isSelected
-                      ? Get.context!.theme.colorScheme.primary
-                      : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: isSelected
-                      ? pBold14.copyWith(
-                          color: Get.context!.theme.colorScheme.primary,
-                        )
-                      : pMedium14.copyWith(
-                          color:
-                              Get.context!.theme.colorScheme.onSurfaceVariant,
-                        ),
-                ),
-                if (showBadge &&
-                    controller.mosque.value!.updates.isNotEmpty) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Get.context!.theme.colorScheme.primary
-                          : Get.context!.theme.colorScheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${controller.mosque.value!.updates.length}',
-                      style: pBold10.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildDescriptionSection(MosqueCharityData mosque) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        HtmlWidget(
-          mosque.description ?? 'Tidak ada deskripsi.',
-          textStyle: pRegular14.copyWith(
-            height: 1.6,
-            color: Get.context!.theme.colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUpdatesSection(MosqueCharityData mosque) {
-    if (mosque.updates.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            children: [
-              Icon(IconlyLight.info_square, size: 48, color: Colors.grey[300]),
-              const SizedBox(height: 16),
-              Text(
-                'Belum ada update penyaluran',
-                style: pMedium14.copyWith(color: Colors.grey[500]),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: mosque.updates.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 24),
-      itemBuilder: (context, index) {
-        final update = mosque.updates[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
+            Expanded(
+              flex: 1,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final shareUrl =
+                      mosque.shareUrl ?? '${Url.baseUrl}/api/m/${mosque.id}';
+                  Share.share(
+                    'Yuk bantu pembangunan "${mosque.name}" di Quranuna! Klik link berikut: $shareUrl',
+                  );
+                },
+                icon: const Icon(Icons.share, size: 18),
+                label: const Text("Bagikan"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColor.primaryColorDark,
+                  side: const BorderSide(color: AppColor.primaryColorDark),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.toNamed(
+                    Routes.mosqueCharityPayment,
+                    arguments: {'id': mosque.id},
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primaryColorDark,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Infaq Sekarang',
+                  style: pSemiBold14.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: context.isDarkMode
+          ? Colors.grey.shade900
+          : Colors.grey.shade200,
+      highlightColor: context.isDarkMode
+          ? Colors.grey.shade800
+          : Colors.grey.shade100,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(height: 250, color: context.theme.colorScheme.surface),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColor.primaryColor,
-                    shape: BoxShape.circle,
-                  ),
+                  height: 20,
+                  width: double.infinity,
+                  color: context.theme.colorScheme.surface,
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  update.createdAtFormatted,
-                  style: pBold12.copyWith(
-                    color: Get.context!.theme.colorScheme.primary,
-                  ),
+                const SizedBox(height: 12),
+                Container(
+                  height: 20,
+                  width: 150,
+                  color: context.theme.colorScheme.surface,
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  height: 100,
+                  width: double.infinity,
+                  color: context.theme.colorScheme.surface,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Get.context!.theme.colorScheme.primary.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    update.title,
-                    style: pBold14.copyWith(
-                      color: Get.context!.theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  HtmlWidget(
-                    update.content,
-                    textStyle: pRegular12.copyWith(
-                      height: 1.5,
-                      color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildFundraiserSection(MosqueCharityData mosque) {
-    if (mosque.fundraisers.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            children: [
-              Icon(
-                IconlyLight.star,
-                size: 48,
-                color: Get.context!.theme.colorScheme.onSurfaceVariant
-                    .withOpacity(0.3),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Belum ada fundraiser',
-                style: pMedium14.copyWith(
-                  color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Bagikan campaign ini dan jadilah\nfundraiser pertama!',
-                textAlign: TextAlign.center,
-                style: pRegular12.copyWith(
-                  color: Get.context!.theme.colorScheme.onSurfaceVariant
-                      .withOpacity(0.6),
-                  height: 1.5,
-                ),
-              ),
-            ],
           ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: mosque.fundraisers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final fundraiser = mosque.fundraisers[index];
-        final rank = index + 1;
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: rank <= 3
-                ? Colors.orange.withOpacity(Get.context!.isDarkMode ? 0.1 : 0.05)
-                : Get.context!.theme.colorScheme.surfaceVariant.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: rank <= 3
-                  ? Colors.orange.withOpacity(0.2)
-                  : Get.context!.theme.colorScheme.onSurfaceVariant
-                      .withOpacity(0.1),
-            ),
-          ),
-          child: Row(
-            children: [
-              // Rank badge
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: rank == 1
-                      ? Colors.amber
-                      : rank == 2
-                      ? Colors.grey[400]
-                      : rank == 3
-                      ? Colors.orange[300]
-                      : Get.context!.theme.colorScheme.surfaceVariant,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '$rank',
-                  style: pBold12.copyWith(
-                    color: rank <= 3
-                        ? Colors.white
-                        : Get.context!.theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Avatar
-              _buildFundraiserAvatar(fundraiser.name),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fundraiser.name,
-                      style: pSemiBold14.copyWith(
-                        color: Get.context!.theme.colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          IconlyLight.user_1,
-                          size: 13,
-                          color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${fundraiser.totalReferral} orang diajak',
-                          style: pRegular10.copyWith(
-                            color:
-                                Get.context!.theme.colorScheme.onSurfaceVariant,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Amount collected
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  fundraiser.totalCollected,
-                  style: pSemiBold10.copyWith(color: Colors.orange[800]),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFundraiserAvatar(String name) {
-    final initials = name.isNotEmpty
-        ? name
-              .split(' ')
-              .take(2)
-              .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
-              .join()
-        : '?';
-
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.orange.withOpacity(0.7),
-            Colors.deepOrange.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
+        ],
       ),
-      alignment: Alignment.center,
-      child: Text(initials, style: pBold12.copyWith(color: Colors.white)),
     );
   }
 }

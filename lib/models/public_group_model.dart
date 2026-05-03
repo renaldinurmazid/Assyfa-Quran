@@ -4,7 +4,7 @@ PublicGroupModel publicGroupModelFromJson(String str) =>
     PublicGroupModel.fromJson(json.decode(str));
 
 class PublicGroupModel {
-  bool status;
+  String status;
   String message;
   PublicGroupData data;
 

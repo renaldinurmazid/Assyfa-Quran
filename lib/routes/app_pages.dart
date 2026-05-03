@@ -9,8 +9,13 @@ import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/leaderboard/leaderboard_screen.dart';
+import 'package:quran_app/screen/memorize_quran/level_detail_screen.dart';
+import 'package:quran_app/screen/memorize_quran/memorize_leaderboard_screen.dart';
+import 'package:quran_app/screen/memorize_quran/morize_quran_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_add_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_show_screen.dart';
+import 'package:quran_app/screen/mosque/mosque_campaign_tabs_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_payment_detail_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_payment_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_donatur_screen.dart';
@@ -19,10 +24,12 @@ import 'package:quran_app/screen/notification/notification_screen.dart';
 import 'package:quran_app/screen/prayer/create_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/list_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/show_prayer_screen.dart';
+import 'package:quran_app/bindings/mosque_add_binding.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
 import 'package:quran_app/screen/charity/charity_show_screen.dart';
+import 'package:quran_app/screen/charity/campaign_tabs_screen.dart';
 import 'package:quran_app/screen/charity/charity_search_screen.dart';
 import 'package:quran_app/screen/group/create_group_ngaji_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_screen.dart';
@@ -171,7 +178,7 @@ class AppPages {
     GetPage(
       name: Routes.charityPaymentDetail,
       page: () => const CharityPaymentDetailScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
@@ -183,7 +190,7 @@ class AppPages {
     GetPage(
       name: Routes.infaqActivityDetail,
       page: () => const InfaqActivityDetailScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
@@ -195,7 +202,7 @@ class AppPages {
     GetPage(
       name: Routes.mosqueCharityShow,
       page: () => const MosqueCharityShowScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
@@ -207,92 +214,129 @@ class AppPages {
     GetPage(
       name: Routes.mosqueCharityPayment,
       page: () => const MosqueCharityPaymentScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.mosqueCharityPaymentDetail,
       page: () => const MosqueCharityPaymentDetailScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.mosqueInfaqActivityDetail,
       page: () => const MosqueInfaqActivityDetailScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.leaderboard,
       page: () => const LeaderboardScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.appShareLeaderboard,
       page: () => const AppShareLeaderboardScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.charityDonatur,
       page: () => const CharityDonaturScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.mosqueCharityDonatur,
       page: () => const MosqueCharityDonaturScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.quranPageInfo,
       page: () => const QuranPageInfoScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.showBlog,
       page: () => const ShowBlogScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.createPrayer,
       page: () => const CreatePrayerScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.showPrayer,
       page: () => const ShowPrayerScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.listPrayer,
       page: () => const ListPrayerScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.notification,
       page: () => const NotificationScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.comment,
       page: () => const CommentScreen(),
       binding: BlogCommentBinding(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: Routes.theme,
       page: () => const ThemeScreen(),
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.memorizeQuran,
+      page: () => const MorizeQuranScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.levelDetail,
+      page: () => const LevelDetailScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.charityCampaignTabs,
+      page: () => const CampaignTabsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueCharityTabs,
+      page: () => const MosqueCampaignTabsScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.mosqueAdd,
+      page: () => const MosqueAddScreen(),
+      binding: MosqueAddBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.memorizeLeaderboard,
+      page: () => const MemorizeLeaderboardScreen(),
+      transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

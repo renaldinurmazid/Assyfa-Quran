@@ -15,7 +15,7 @@ class QuranOfflineService {
     return directory.path;
   }
 
-  Future<Directory> _getQuranDir(String type) async {
+  Future<Directory> getQuranDir(String type) async {
     final path = await _localPath;
     final dir = Directory(p.join(path, 'quran', type));
     if (!await dir.exists()) {
@@ -24,7 +24,7 @@ class QuranOfflineService {
     return dir;
   }
 
-  Future<Directory> _getImagesDir(String type) async {
+  Future<Directory> getImagesDir(String type) async {
     final path = await _localPath;
     final dir = Directory(p.join(path, 'quran', type, 'images'));
     if (!await dir.exists()) {
@@ -34,13 +34,13 @@ class QuranOfflineService {
   }
 
   Future<bool> isIndexDownloaded(String type) async {
-    final dir = await _getQuranDir(type);
+    final dir = await getQuranDir(type);
     final file = File(p.join(dir.path, 'index.json'));
     return await file.exists();
   }
 
   Future<dynamic> getIndex(String type) async {
-    final dir = await _getQuranDir(type);
+    final dir = await getQuranDir(type);
     final file = File(p.join(dir.path, 'index.json'));
     if (await file.exists()) {
       final content = await file.readAsString();
@@ -50,13 +50,13 @@ class QuranOfflineService {
   }
 
   Future<bool> isPageDownloaded(String type, int pageNumber) async {
-    final quranDir = await _getQuranDir(type);
+    final quranDir = await getQuranDir(type);
     final pageFile = File(p.join(quranDir.path, 'page_$pageNumber.json'));
     return await pageFile.exists();
   }
 
   Future<int> getDownloadedPagesCount(String type) async {
-    final dir = await _getQuranDir(type);
+    final dir = await getQuranDir(type);
     final files = dir.listSync();
     int count = 0;
     for (var file in files) {
@@ -70,7 +70,7 @@ class QuranOfflineService {
   }
 
   Future<int> downloadIndex(String type) async {
-    final quranDir = await _getQuranDir(type);
+    final quranDir = await getQuranDir(type);
     final indexUrl = '${Url.baseUrl}${Url.quranOfflineIndex}?qurantype=$type';
     final indexResponse = await dio.get(indexUrl);
 
@@ -96,8 +96,8 @@ class QuranOfflineService {
   }
 
   Future<void> downloadPage(String type, int i) async {
-    final quranDir = await _getQuranDir(type);
-    final imagesDir = await _getImagesDir(type);
+    final quranDir = await getQuranDir(type);
+    final imagesDir = await getImagesDir(type);
 
     final pageUrl = '${Url.baseUrl}${Url.quranOfflinePage}/$i?qurantype=$type';
     final pageResponse = await dio.get(pageUrl);
@@ -175,14 +175,14 @@ class QuranOfflineService {
   }
 
   Future<Datum?> getPageData(String type, int pageNumber) async {
-    final dir = await _getQuranDir(type);
+    final dir = await getQuranDir(type);
     final file = File(p.join(dir.path, 'page_$pageNumber.json'));
     if (await file.exists()) {
       final content = await file.readAsString();
       final Map<String, dynamic> data = json.decode(content);
 
       // Update image_path to local path
-      final imagesDir = await _getImagesDir(type);
+      final imagesDir = await getImagesDir(type);
       final String? originalPath = data['image_path'];
       String localImagePath = "";
 
@@ -248,7 +248,7 @@ class QuranOfflineService {
   }
 
   Future<String?> getLocalImagePath(String type, int pageNumber) async {
-    final imagesDir = await _getImagesDir(type);
+    final imagesDir = await getImagesDir(type);
     try {
       if (await imagesDir.exists()) {
         final files = imagesDir.listSync();

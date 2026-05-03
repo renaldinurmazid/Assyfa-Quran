@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ import 'package:quran_app/models/dropdown_juz_model.dart';
 import 'package:quran_app/models/dropdown_surah_model.dart';
 import 'package:quran_app/models/quran_page_model.dart';
 import 'package:quran_app/api/request.dart';
+import 'package:quran_app/services/connectivity_service.dart';
 import 'package:quran_app/services/quran_offline_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -59,6 +61,7 @@ class QuranPageScreenController extends GetxController {
   final downloadProgress = 0.obs;
   final totalPagesToDownload = 0.obs;
   final hasShownDownloadPrompt = false.obs;
+  final localImagePaths = <int, String>{}.obs;
 
   /* =======================
    * SEARCH / FILTER STATE
@@ -102,6 +105,11 @@ class QuranPageScreenController extends GetxController {
   final selectedReciter = '01'.obs;
   final isLandscape = false.obs;
 
+  // Audio Settings
+  final repeatCount = 1.obs; // x1, x2, x3, x5, x10
+  final delayBetweenAyahs = 0.obs; // 0-10 seconds
+  int currentAyahRepeatIndex = 0;
+
   /* =======================
    * BOOKMARKS
    * ======================= */
@@ -141,6 +149,11 @@ class QuranPageScreenController extends GetxController {
     searchAnchorController.addListener(() {
       _debouncedSurahSearch(searchAnchorController.text);
     });
+
+    // Sync pending history if online (via global ConnectivityService)
+    if (Get.isRegistered<ConnectivityService>()) {
+      ConnectivityService.to.syncPendingHistory();
+    }
   }
 
   @override
@@ -202,16 +215,35 @@ class QuranPageScreenController extends GetxController {
     }
   }
 
-  Future<void> _resolveLocalImages(List<Datum> items) async {
+  Future<void> _loadLocalImagePaths() async {
     final slug = currentSlug.value;
+    final imagesDir = await offlineService.getImagesDir(slug);
+    localImagePaths.clear();
+    try {
+      if (await imagesDir.exists()) {
+        final files = imagesDir.listSync();
+        for (var file in files) {
+          if (file is File) {
+            final name = p.basenameWithoutExtension(file.path);
+            if (name.startsWith('page_')) {
+              final pageNum = int.tryParse(name.replaceFirst('page_', ''));
+              if (pageNum != null) {
+                localImagePaths[pageNum] = file.path;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print("Error loading local image paths: $e");
+    }
+  }
+
+  Future<void> _resolveLocalImages(List<Datum> items) async {
     for (var item in items) {
       if (item.id < 0) continue; // Skip dummy pages
-      final localPath = await offlineService.getLocalImagePath(
-        slug,
-        item.pageNumber,
-      );
-      if (localPath != null && await File(localPath).exists()) {
-        item.imagePath = localPath;
+      if (localImagePaths.containsKey(item.pageNumber)) {
+        item.imagePath = localImagePaths[item.pageNumber]!;
       }
     }
   }
@@ -237,6 +269,10 @@ class QuranPageScreenController extends GetxController {
     final Map<String, dynamic>? args = Get.arguments;
     final slug = args?['slug'] ?? 'mushaf_standard';
     currentSlug.value = slug;
+
+    // Load existing local images into cache
+    await _loadLocalImagePaths();
+
     int? targetPage = pageNumber;
 
     // Sync class-level state if param is provided
@@ -339,6 +375,19 @@ class QuranPageScreenController extends GetxController {
       mode.value = QuranPaginationMode.page;
     }
 
+    // NEW: Local First Strategy - Try to show local data immediately
+    if (targetPage != null) {
+      final datum = await offlineService.getPageData(slug, targetPage);
+      if (datum != null) {
+        isOfflineMode.value = true; // Temporary state
+        _applyMetaOffline(targetPage);
+        _updateDataPageWithWindow([datum]);
+        _jumpToTargetPage();
+        isLoading.value = false;
+        // Don't return here, we still want to fetch from API in background if online
+      }
+    }
+
     if (isOnline) {
       if (!isOfflineAvailable &&
           !isDownloading.value &&
@@ -384,7 +433,9 @@ class QuranPageScreenController extends GetxController {
             }
           }
           _precacheNearbyPages(currentPageIndex.value);
-          _cacheOnlinePages(data.data); // Automatic background download for persistence
+          _cacheOnlinePages(
+            data.data,
+          ); // Automatic background download for persistence
           isLoading.value = false;
           return;
         }
@@ -400,11 +451,10 @@ class QuranPageScreenController extends GetxController {
     } else {
       isOfflineMode.value = false;
       if (!isOnline) {
-        Get.snackbar(
-          'Tidak ada internet',
-          'Silahkan aktifkan internet atau download data offline.',
-          backgroundColor: Colors.red.withOpacity(0.7),
-          colorText: Colors.white,
+        AppToast.error(
+          context: Get.context,
+          message: 'Silahkan aktifkan internet atau download data offline.',
+          title: 'Tidak ada internet',
         );
       }
     }
@@ -421,32 +471,64 @@ class QuranPageScreenController extends GetxController {
       return;
 
     isLoading.value = true;
-    page.value++;
-
     final Map<String, dynamic>? args = Get.arguments;
     final slug = args?['slug'] ?? 'mushaf_standard';
+    final isOnline = await _checkConnection();
 
-    try {
-      final response = await Request().get(
-        Url.quranPage,
-        queryParameters: {'qurantype': slug, 'page': page.value, 'per_page': 5},
-      );
-      if (response.statusCode == 200) {
-        final data = QuranPage.fromJson(response.data);
-        if (data.data.isEmpty) {
-          isLastPage.value = true;
-        } else {
-          // Resolve local images even in online mode if they exist
-          await _resolveLocalImages(data.data);
-          dataPage.addAll(data.data);
-          _cacheOnlinePages(data.data); // Automatic background download for persistence
-        }
-        _applyMeta(data);
+    // NEW: Local First Strategy for Browse Mode
+    // Calculate which pages would be next (assuming per_page=5)
+    final lastPageNum = dataPage.isEmpty ? 0 : dataPage.last.pageNumber;
+    final nextPages = <Datum>[];
+    for (int i = 1; i <= 5; i++) {
+      final pNum = lastPageNum + i;
+      if (pNum > 604) break;
+      final datum = await offlineService.getPageData(slug, pNum);
+      if (datum != null) {
+        nextPages.add(datum);
+      } else {
+        break; // Stop if we hit a missing page
       }
-    } catch (e) {
-      print("Error fetching browse next: $e");
-    } finally {
+    }
+
+    if (nextPages.isNotEmpty) {
+      dataPage.addAll(nextPages);
+      _applyMetaOffline(dataPage.last.pageNumber);
       isLoading.value = false;
+      // If offline, we are done
+      if (!isOnline) return;
+    }
+
+    if (isOnline) {
+      page.value++;
+
+      try {
+        final response = await Request().get(
+          Url.quranPage,
+          queryParameters: {
+            'qurantype': slug,
+            'page': page.value,
+            'per_page': 5,
+          },
+        );
+        if (response.statusCode == 200) {
+          final data = QuranPage.fromJson(response.data);
+          if (data.data.isEmpty) {
+            isLastPage.value = true;
+          } else {
+            // Resolve local images even in online mode if they exist
+            await _resolveLocalImages(data.data);
+            dataPage.addAll(data.data);
+            _cacheOnlinePages(
+              data.data,
+            ); // Automatic background download for persistence
+          }
+          _applyMeta(data);
+        }
+      } catch (e) {
+        print("Error fetching browse next: $e");
+      } finally {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -459,6 +541,18 @@ class QuranPageScreenController extends GetxController {
     isLoading.value = true;
     final slug = Get.arguments['slug'];
     final isOnline = await _checkConnection();
+
+    // NEW: Local First Strategy - Show local data immediately
+    final localDatum = await offlineService.getPageData(slug, pageNumber);
+    if (localDatum != null) {
+      isOfflineMode.value = true;
+      _applyMetaOffline(pageNumber);
+      _updateDataPageWithWindow([localDatum]);
+      _jumpToTargetPage();
+      isLoading.value = false;
+      // If we are offline, we are done
+      if (!isOnline) return;
+    }
 
     if (isOnline) {
       try {
@@ -475,7 +569,9 @@ class QuranPageScreenController extends GetxController {
 
           _updateDataPageWithWindow(data.data);
           _jumpToTargetPage();
-          _cacheOnlinePages(data.data); // Automatic background download for persistence
+          _cacheOnlinePages(
+            data.data,
+          ); // Automatic background download for persistence
           isOfflineMode.value = false;
           isLoading.value = false;
           return;
@@ -493,11 +589,10 @@ class QuranPageScreenController extends GetxController {
       _updateDataPageWithWindow([datum]);
       _jumpToTargetPage();
     } else if (!isOnline) {
-      Get.snackbar(
-        'Offline',
-        'Halaman ini belum diunduh dan tidak ada internet.',
-        backgroundColor: Colors.red.withOpacity(0.7),
-        colorText: Colors.white,
+      AppToast.error(
+        context: Get.context,
+        message: 'Halaman ini belum diunduh dan tidak ada internet.',
+        title: 'Offline',
       );
     }
 
@@ -567,7 +662,14 @@ class QuranPageScreenController extends GetxController {
     if (dataPage.isEmpty || index < 0 || index >= dataPage.length) return;
 
     // Precache current, next 3, and previous 2 pages for smoother browsing
-    final indicesToCache = [index, index + 1, index + 2, index + 3, index - 1, index - 2];
+    final indicesToCache = [
+      index,
+      index + 1,
+      index + 2,
+      index + 3,
+      index - 1,
+      index - 2,
+    ];
 
     for (var idx in indicesToCache) {
       if (idx >= 0 && idx < dataPage.length) {
@@ -589,23 +691,36 @@ class QuranPageScreenController extends GetxController {
     final slug = currentSlug.value;
     for (var item in items) {
       if (item.id < 0) continue; // Skip dummy pages
-      
+
       // If it's already local, no need to download
-      if (item.imagePath.isNotEmpty && !item.imagePath.startsWith('http')) continue;
+      if (item.imagePath.isNotEmpty && !item.imagePath.startsWith('http'))
+        continue;
 
       // Check if it's already downloaded in local storage
-      final exists = await offlineService.isPageDownloaded(slug, item.pageNumber);
+      final exists = await offlineService.isPageDownloaded(
+        slug,
+        item.pageNumber,
+      );
       if (!exists) {
         // Silently download in background
-        offlineService.downloadPage(slug, item.pageNumber).then((_) async {
-          // Once downloaded, update the in-memory path to the local one
-          final localPath = await offlineService.getLocalImagePath(slug, item.pageNumber);
-          if (localPath != null && await File(localPath).exists()) {
-            item.imagePath = localPath;
-          }
-        }).catchError((e) {
-          print("Background auto-cache failed for page ${item.pageNumber}: $e");
-        });
+        offlineService
+            .downloadPage(slug, item.pageNumber)
+            .then((_) async {
+              // Once downloaded, update the in-memory path and reactive map
+              final localPath = await offlineService.getLocalImagePath(
+                slug,
+                item.pageNumber,
+              );
+              if (localPath != null && await File(localPath).exists()) {
+                item.imagePath = localPath;
+                localImagePaths[item.pageNumber] = localPath;
+              }
+            })
+            .catchError((e) {
+              print(
+                "Background auto-cache failed for page ${item.pageNumber}: $e",
+              );
+            });
       }
     }
   }
@@ -613,11 +728,11 @@ class QuranPageScreenController extends GetxController {
   /// Cache nearby pages that haven't been downloaded yet
   void _cacheNearbyOnlinePages(int index) {
     if (dataPage.isEmpty || index < 0 || index >= dataPage.length) return;
-    
+
     final nearby = <Datum>[];
     // Cache current, next 2, and previous 1
     final indices = [index, index + 1, index + 2, index - 1];
-    for(var idx in indices) {
+    for (var idx in indices) {
       if (idx >= 0 && idx < dataPage.length) {
         nearby.add(dataPage[idx]);
       }
@@ -649,19 +764,23 @@ class QuranPageScreenController extends GetxController {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: AppColor.backgroundColor,
+            color: Get.theme.colorScheme.surface,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Download Quran Offline?',
-                style: pMedium18.copyWith(color: AppColor.primaryColor),
+                style: pMedium18.copyWith(
+                  color: Get.theme.colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Anda belum memiliki data offline untuk Quran ini. Apakah Anda ingin mengunduh semua halaman sekarang agar bisa dibaca tanpa internet?',
-                style: pRegular14,
+                style: pRegular14.copyWith(
+                  color: Get.theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -669,8 +788,16 @@ class QuranPageScreenController extends GetxController {
                 children: [
                   Expanded(
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Get.theme.colorScheme.outline),
+                      ),
                       onPressed: () => Get.back(),
-                      child: Text('Nanti Saja', style: pMedium14),
+                      child: Text(
+                        'Nanti Saja',
+                        style: pMedium14.copyWith(
+                          color: Get.theme.colorScheme.onSurface,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -682,11 +809,9 @@ class QuranPageScreenController extends GetxController {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primaryColor,
+                        foregroundColor: Colors.white,
                       ),
-                      child: Text(
-                        'Download',
-                        style: pMedium14.copyWith(color: Colors.white),
-                      ),
+                      child: Text('Download', style: pMedium14),
                     ),
                   ),
                 ],
@@ -720,6 +845,10 @@ class QuranPageScreenController extends GetxController {
         }
 
         await offlineService.downloadPage(type, i);
+        final localPath = await offlineService.getLocalImagePath(type, i);
+        if (localPath != null) {
+          localImagePaths[i] = localPath;
+        }
         downloadProgress.value = i;
       }
 
@@ -840,7 +969,7 @@ class QuranPageScreenController extends GetxController {
     }
   }
 
-  void _playNextAyah() {
+  void _playNextAyah() async {
     if (!isPlaying.value) return;
 
     final pageData = dataPage[currentPageIndex.value];
@@ -848,8 +977,33 @@ class QuranPageScreenController extends GetxController {
       (e) => e.ayah?.id == playingAyahId.value,
     );
 
-    if (idx != -1 && idx < pageData.ayahs.length - 1) {
-      playAyah(idx + 1);
+    if (idx != -1) {
+      // Handle repetition
+      if (currentAyahRepeatIndex < repeatCount.value - 1) {
+        currentAyahRepeatIndex++;
+
+        // Handle delay even during repeat if desired, but usually delay is between DIFFERENT ayahs.
+        // Let's apply delay here too if requested.
+        if (delayBetweenAyahs.value > 0) {
+          await Future.delayed(Duration(seconds: delayBetweenAyahs.value));
+        }
+
+        if (isPlaying.value) playAyah(idx);
+      } else {
+        // Reset repeat counter for the next ayah
+        currentAyahRepeatIndex = 0;
+
+        // Handle delay before next ayah
+        if (delayBetweenAyahs.value > 0) {
+          await Future.delayed(Duration(seconds: delayBetweenAyahs.value));
+        }
+
+        if (idx < pageData.ayahs.length - 1) {
+          if (isPlaying.value) playAyah(idx + 1);
+        } else {
+          stopAudio();
+        }
+      }
     } else {
       stopAudio();
     }
@@ -859,6 +1013,7 @@ class QuranPageScreenController extends GetxController {
     audioPlayer.stop();
     isPlaying.value = false;
     playingAyahId.value = 0;
+    currentAyahRepeatIndex = 0;
   }
 
   void changeReciter(String? code) {
@@ -893,11 +1048,19 @@ class QuranPageScreenController extends GetxController {
 
   void onJumpToAyah() {
     if (surahId.value == 0) {
-      Get.snackbar('Peringatan', 'Silahkan pilih surat terlebih dahulu');
+      AppToast.warning(
+        context: Get.context,
+        message: 'Silahkan pilih surat terlebih dahulu',
+        title: 'Peringatan',
+      );
       return;
     }
     if (searchAyahController.text.isEmpty) {
-      Get.snackbar('Peringatan', 'Silahkan masukkan nomor ayat');
+      AppToast.warning(
+        context: Get.context,
+        message: 'Silahkan masukkan nomor ayat',
+        title: 'Peringatan',
+      );
       return;
     }
     Get.back();
@@ -972,7 +1135,9 @@ class QuranPageScreenController extends GetxController {
       final String? bookmarksJson = prefs.getString('local_bookmarks');
       if (bookmarksJson != null) {
         final List<dynamic> data = jsonDecode(bookmarksJson);
-        bookmarks.value = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        bookmarks.value = data
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
       } else {
         bookmarks.clear();
       }
@@ -1101,22 +1266,25 @@ class QuranPageScreenController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       final String? bookmarksJson = prefs.getString('local_bookmarks');
       List<Map<String, dynamic>> localBookmarks = [];
-      
+
       if (bookmarksJson != null) {
-        localBookmarks = List<Map<String, dynamic>>.from(jsonDecode(bookmarksJson));
+        localBookmarks = List<Map<String, dynamic>>.from(
+          jsonDecode(bookmarksJson),
+        );
       }
 
       // Find if there's already a bookmark for this page or with the same marker design
       // Note: According to the logic in saveBookmark, if the marker design is in use, we're replacing it.
       // Or maybe we want to allow multiple bookmarks but one per "marker design"?
-      
+
       // Remove existing bookmark with the same marker design if we are "moving" it
       localBookmarks.removeWhere((b) => b['marker_id'] == selectedMarker['id']);
-      
+
       // Optionally also remove if there's already a bookmark on THIS page (common UX for Quran apps)
-      localBookmarks.removeWhere((b) => 
-        b['page_number'] == currentPage.pageNumber && 
-        b['quran_type_slug'] == currentSlug.value
+      localBookmarks.removeWhere(
+        (b) =>
+            b['page_number'] == currentPage.pageNumber &&
+            b['quran_type_slug'] == currentSlug.value,
       );
 
       // Get surah name for context
@@ -1137,12 +1305,12 @@ class QuranPageScreenController extends GetxController {
       });
 
       await prefs.setString('local_bookmarks', jsonEncode(localBookmarks));
-      
+
       AppToast.success(
         message: 'Halaman ${currentPage.pageNumber} ditandai.',
         title: 'Berhasil',
       );
-      
+
       await loadBookmarks(); // Refresh local list
       isBookmarkVisible.value = false; // Close UI
     } catch (e) {
@@ -1202,12 +1370,14 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchMarkers() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Load from cache first
       final String? markersCache = prefs.getString('local_markers_cache');
       if (markersCache != null) {
         final List<dynamic> cachedData = jsonDecode(markersCache);
-        apiMarkers.value = cachedData.map((e) => Map<String, dynamic>.from(e)).toList();
+        apiMarkers.value = cachedData
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
         _updateMarkersUsageStatus();
         initMarkerSelection();
       }
@@ -1217,11 +1387,13 @@ class QuranPageScreenController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data;
         final List<dynamic> markerList = data['data'];
-        
+
         // Save to cache
         await prefs.setString('local_markers_cache', jsonEncode(markerList));
-        
-        apiMarkers.value = markerList.map((e) => Map<String, dynamic>.from(e)).toList();
+
+        apiMarkers.value = markerList
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
         _updateMarkersUsageStatus();
         initMarkerSelection();
       }
@@ -1239,8 +1411,14 @@ class QuranPageScreenController extends GetxController {
   }
 
   Future<void> saveReadingHistory() async {
-    if (!AuthController.to.isLogin.value) return;
-    if (dataPage.isEmpty || currentPageIndex.value >= dataPage.length) return;
+    final bool isUserLogin = AuthController.to.isLogin.value;
+
+    if (dataPage.isEmpty || currentPageIndex.value >= dataPage.length) {
+      debugPrint(
+        "Save History Skipped: dataPage.length=${dataPage.length}, index=${currentPageIndex.value}, slug=${currentSlug.value}, mode=${mode.value}",
+      );
+      return;
+    }
 
     try {
       final currentPage = dataPage[currentPageIndex.value];
@@ -1253,63 +1431,101 @@ class QuranPageScreenController extends GetxController {
 
       final duration = DateTime.now().difference(readingStartTime).inSeconds;
 
-      // Proceed to show dialog and save if duration is reasonable (e.g. > 1s for testing)
-      if (duration <= 15) return;
+      // Proceed to save if duration is reasonable (e.g. > 2s for testing)
+      if (duration <= 15) {
+        debugPrint("Save History Skipped: Duration too short ($duration s)");
+        return;
+      }
 
       int? currentSurahId;
       if (currentPage.ayahs.isNotEmpty) {
         currentSurahId = currentPage.ayahs.first.ayah?.surahId;
       }
 
-      // Show Loading indicator
-      Get.dialog(
-        const Center(
-          child: CircularProgressIndicator(color: AppColor.primaryColor),
-        ),
-        barrierDismissible: false,
-      );
-
-      final prefs = await SharedPreferences.getInstance();
-      final String? historyJson = prefs.getString('local_history');
-      List<Map<String, dynamic>> localHistory = [];
-      
-      if (historyJson != null) {
-        localHistory = List<Map<String, dynamic>>.from(jsonDecode(historyJson));
-      }
-
-      final newHistory = {
+      final Map<String, dynamic> historyData = {
         'id': DateTime.now().millisecondsSinceEpoch,
         'surah_id': currentSurahId,
-        'surah_name': currentPage.ayahs.isNotEmpty ? currentPage.ayahs.first.ayah?.surah?.name : 'Unknown',
+        'surah_name': currentPage.ayahs.isNotEmpty
+            ? currentPage.ayahs.first.ayah?.surah?.name
+            : 'Unknown',
         'start_page': startPage,
         'end_page': endPage,
-        'page_number': currentNum, // Helpful for display
+        'page_number': currentNum,
         'quran_type_slug': currentSlug.value,
         'read_date': DateTime.now().toIso8601String().split('T')[0],
         'duration_seconds': duration,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'is_synced': false,
       };
 
-      localHistory.insert(0, newHistory); // Newest first
-      if (localHistory.length > 50) localHistory.removeLast(); // Limit history
+      // 1. Save locally to SharedPreferences first
+      final prefs = await SharedPreferences.getInstance();
+      final String? historyJson = prefs.getString('local_history');
+      List<Map<String, dynamic>> localHistory = [];
 
-      await prefs.setString('local_history', jsonEncode(localHistory));
+      if (historyJson != null) {
+        localHistory = List<Map<String, dynamic>>.from(jsonDecode(historyJson));
+      }
+
+      // Check for internet connectivity
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final bool isOnline = !connectivityResult.contains(
+        ConnectivityResult.none,
+      );
+
+      // Try to Sync to Server if logged in and online
+      bool syncedImmediately = false;
+      if (isUserLogin && isOnline) {
+        try {
+          final response = await Request().post(
+            Url.readingHistory,
+            data: {
+              'surah_id': currentSurahId,
+              'start_page': startPage,
+              'end_page': endPage,
+              'duration_seconds': duration,
+              'quran_type_slug': currentSlug.value,
+            },
+          );
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            syncedImmediately = true;
+          }
+        } catch (apiError) {
+          debugPrint("Immediate sync failed: $apiError");
+        }
+      }
+
+      // Only save locally if sync failed or offline — no need to keep synced data
+      if (!syncedImmediately) {
+        historyData['is_synced'] = false;
+        localHistory.insert(0, historyData);
+        if (localHistory.length > 50) localHistory.removeLast();
+        await prefs.setString('local_history', jsonEncode(localHistory));
+      }
 
       if (Get.isOverlaysOpen) {
         Get.back(); // Close Loading Dialog
       }
 
-      // Save last reading page to local storage (already done by _saveLastReadingPage but keeping here for consistency)
+      // If we have other unsynced items, try to sync them too while online
+      if (isOnline && isUserLogin && Get.isRegistered<ConnectivityService>()) {
+        ConnectivityService.to.syncPendingHistory();
+      }
+
+      // Save last reading page
       _saveLastReadingPage(currentNum);
-      
-      // Refresh Home stats if needed
+
+      // Refresh Home stats
       if (Get.isRegistered<HomeScreenController>()) {
         Get.find<HomeScreenController>().fetchWeeklyStats();
+        Get.find<HomeScreenController>().fetchReadingHistoryTotal();
       }
     } catch (e) {
       if (Get.isOverlaysOpen) {
-        Get.back(); // Close Loading Dialog if still open
+        Get.back();
       }
+      debugPrint("Error in saveReadingHistory: $e");
       AppToast.error(
         message: 'Gagal menyimpan sejarah pembacaan.',
         title: 'Gagal',

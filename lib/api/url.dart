@@ -1,15 +1,17 @@
 class Url {
   static const String baseUrl = 'https://quran.titiktolak.com';
-  // static const String baseUrl = 'http://10.0.2.2:8000';
+  // static const String baseUrl = 'http://127.0.0.1:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
   static const String loginGoogle = '/api/login/google';
+  static const String login = '/api/login';
   static const String changeProfile = '/api/change-profile';
   static const String groups = '/api/groups';
   static const String quranOfflineIndex = '/api/quran/offline/index';
   static const String quranOfflinePage = '/api/quran/offline/page';
   static const String campaigns = '/api/campaigns';
+  static const String campaignCategories = '/api/campaign-categories';
   static const String logout = '/api/logout';
   static const String listMarkers = '/api/list-markers';
   static const String saveMarkers = '/api/toggle-marker';
@@ -20,6 +22,7 @@ class Url {
 
   static const String paymentMethodes = '/api/payment-methodes';
   static const String notifications = '/api/notifications';
+  static const String notificationsCategories = '/api/notifications/categories';
   static String markAsRead(int id) => '/api/notifications/$id/read';
   static const String markAllAsRead = '/api/notifications/read-all';
 
@@ -60,4 +63,15 @@ class Url {
   static const String blogCommentsStore = '/api/blog-comments';
   static String blogCommentUpdate(int id) => '/api/blog-comments/$id';
   static String blogCommentDelete(int id) => '/api/blog-comments/$id';
+
+  // Memorization
+  static const String memorizationLevels = '/api/memorization/levels';
+  static String memorizationLevelDetail(int id) =>
+      '/api/memorization/levels/$id';
+  static String memorizationQuestionComplete(int id) =>
+      '/api/memorization/questions/$id/complete';
+  static const String memorizationStats = '/api/memorization/stats';
+  static const String memorizationLeaderboard = '/api/memorization/leaderboard';
+  static const String dzikirStats = '/api/dzikir/stats';
+  static const String dzikirView = '/api/dzikir/view';
 }

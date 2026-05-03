@@ -11,6 +11,7 @@ import 'package:quran_app/controller/quran/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/widgets/text_input.dart' as widget;
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -72,6 +73,7 @@ class HomeScreen extends StatelessWidget {
                             if (isLogin) {
                               Get.toNamed(Routes.createPrayer);
                             } else {
+                              controller.isEmailLogin.value = false;
                               Get.dialog(buildLoginDialog(controller));
                             }
                           },
@@ -627,7 +629,10 @@ class HomeScreen extends StatelessWidget {
     HomeScreenController controller,
   ) {
     return InkWell(
-      onTap: () => Get.dialog(buildLoginDialog(controller)),
+      onTap: () {
+        controller.isEmailLogin.value = false;
+        Get.dialog(buildLoginDialog(controller));
+      },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1117,9 +1122,9 @@ class HomeScreen extends StatelessWidget {
         'route': Routes.appShareLeaderboard,
       },
       {
-        'title': 'Hafalan Al-Quran',
+        'title': 'Bahasa Arab Quran',
         'icon': 'assets/images/png/hafalan.png',
-        'route': Routes.appShareLeaderboard,
+        'route': Routes.memorizeQuran,
       },
     ];
     return Container(
@@ -1149,6 +1154,7 @@ class HomeScreen extends StatelessWidget {
                 if (menu[index]['route'] == Routes.groupNgaji &&
                     !AuthController.to.isLogin.value) {
                   Get.back();
+                  controller.isEmailLogin.value = false;
                   Get.dialog(buildLoginDialog(controller));
                   return;
                 }
@@ -1190,70 +1196,190 @@ class HomeScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: Container(
         padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Login Sekarang',
-              style: pBold20.copyWith(color: Get.theme.colorScheme.primary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Simpan riwayat ngaji dan nikmati fitur lainnya',
-              style: pRegular12,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              height: 140,
-              child: PageView.builder(
-                controller: controller.bannerLoginController,
-                itemCount: controller.banner.length,
-                itemBuilder: (context, index) =>
-                    Image.asset(controller.banner[index]),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Obx(
-              () => ElevatedButton(
-                onPressed: AuthController.to.isLoading.value
-                    ? null
-                    : () => AuthController.to.handleSignIn(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Get.theme.colorScheme.primary,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Obx(
+                () => Text(
+                  controller.isEmailLogin.value ? 'Login Akun' : 'Login Sekarang',
+                  style: pSemiBold18.copyWith(
+                    color: Get.theme.colorScheme.primary,
                   ),
-                  elevation: 10,
-                  shadowColor: Get.theme.colorScheme.primary.withOpacity(0.4),
                 ),
-                child: AuthController.to.isLoading.value
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/png/google.png',
-                            width: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Login dengan Google',
-                            style: pBold14.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Obx(
+                () => Text(
+                  controller.isEmailLogin.value
+                      ? 'Masukkan email dan password akunmu'
+                      : 'Simpan riwayat ngaji dan nikmati fitur lainnya',
+                  style: pRegular12,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Obx(() {
+                if (controller.isEmailLogin.value) {
+                  return Column(
+                    children: [
+                      widget.TextInput(
+                        controller: controller.emailController,
+                        hintText: 'Email',
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 16),
+                      widget.TextInput(
+                        controller: controller.passwordController,
+                        hintText: 'Password',
+                        obscureText: !controller.isPasswordVisible.value,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            controller.isPasswordVisible.value
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () => controller.isPasswordVisible.toggle(),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: AuthController.to.isLoading.value
+                            ? null
+                            : () {
+                                AuthController.to.loginWithEmail(
+                                  controller.emailController.text,
+                                  controller.passwordController.text,
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Get.theme.colorScheme.primary,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                        ),
+                        child: AuthController.to.isLoading.value
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Masuk',
+                                style: pSemiBold14.copyWith(color: Colors.white),
+                              ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: 140,
+                        child: PageView.builder(
+                          controller: controller.bannerLoginController,
+                          itemCount: controller.banner.length,
+                          itemBuilder: (context, index) =>
+                              Image.asset(controller.banner[index]),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: AuthController.to.isLoading.value
+                            ? null
+                            : () => AuthController.to.handleSignIn(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Get.theme.colorScheme.primary,
+                          minimumSize: const Size(double.infinity, 42),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          elevation: 10,
+                        ),
+                        child: AuthController.to.isLoading.value
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/png/google.png',
+                                    width: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Login dengan Google',
+                                    style: pSemiBold14.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
+                  );
+                }
+              }),
+              Obx(
+                () => TextButton(
+                  onPressed: () => controller.isEmailLogin.toggle(),
+                  child: Text(
+                    controller.isEmailLogin.value
+                        ? 'Login dengan Google'
+                        : 'Login dengan akun lainnya',
+                    style: pMedium12.copyWith(
+                      color: Get.theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  text: 'Dengan login, kamu menyetujui ',
+                  style: pRegular10.copyWith(
+                    color: Get.theme.colorScheme.onSurface,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Syarat & Ketentuan',
+                      style: pMedium10.copyWith(
+                        color: Get.theme.colorScheme.primary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' serta ',
+                      style: pRegular10.copyWith(
+                        color: Get.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'Kebijakan Privasi',
+                      style: pMedium10.copyWith(
+                        color: Get.theme.colorScheme.primary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' yang berlaku di Aplikasi',
+                      style: pRegular10.copyWith(
+                        color: Get.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

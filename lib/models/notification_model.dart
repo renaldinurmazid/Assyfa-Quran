@@ -10,6 +10,7 @@ class NotificationModel {
   DateTime? readAt;
   DateTime? createdAt;
   DateTime? updatedAt;
+  String? formatedcreated;
   ScheduledNotification? scheduledNotification;
 
   NotificationModel({
@@ -24,6 +25,7 @@ class NotificationModel {
     this.readAt,
     this.createdAt,
     this.updatedAt,
+    this.formatedcreated,
     this.scheduledNotification,
   });
 
@@ -46,6 +48,7 @@ class NotificationModel {
         updatedAt: json["updated_at"] != null
             ? DateTime.parse(json["updated_at"])
             : null,
+        formatedcreated: json["formatedcreated"],
         scheduledNotification: json["scheduled_notification"] != null
             ? ScheduledNotification.fromJson(json["scheduled_notification"])
             : null,
@@ -55,10 +58,12 @@ class NotificationModel {
 class ScheduledNotification {
   int? id;
   int? categoryNotificationId;
+  String? action;
   CategoryNotification? categoryNotification;
 
   ScheduledNotification({
     this.id,
+    this.action,
     this.categoryNotificationId,
     this.categoryNotification,
   });
@@ -66,6 +71,7 @@ class ScheduledNotification {
   factory ScheduledNotification.fromJson(Map<String, dynamic> json) =>
       ScheduledNotification(
         id: json["id"],
+        action: json["action"],
         categoryNotificationId: json["category_notification_id"],
         categoryNotification: json["category_notification"] != null
             ? CategoryNotification.fromJson(json["category_notification"])

@@ -9,13 +9,22 @@ class NotificationController extends GetxController {
   static NotificationController get to => Get.find();
 
   RxList<NotificationModel> notifications = <NotificationModel>[].obs;
+  RxList<CategoryNotification> categories = <CategoryNotification>[].obs;
   RxBool isLoading = false.obs;
+  RxBool isMoreLoading = false.obs;
+  RxBool isCategoriesLoading = false.obs;
+
+  // Pagination state
+  int _currentPage = 1;
+  bool _hasMore = true;
+  int? _lastCategoryId;
 
   @override
   void onInit() {
     super.onInit();
     if (Get.isRegistered<AuthController>()) {
       if (AuthController.to.isLogin.value) {
+        fetchCategories();
         fetchNotifications();
       }
 
@@ -29,20 +38,79 @@ class NotificationController extends GetxController {
     }
   }
 
-  Future<void> fetchNotifications() async {
+  Future<void> fetchCategories() async {
+    try {
+      isCategoriesLoading.value = true;
+      final response = await Request().get(Url.notificationsCategories);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        categories.value =
+            data.map((e) => CategoryNotification.fromJson(e)).toList();
+      }
+    } catch (e) {
+      print("Error fetching categories: $e");
+    } finally {
+      isCategoriesLoading.value = false;
+    }
+  }
+
+  Future<void> fetchNotifications({int? categoryId, bool loadMore = false}) async {
     if (!Get.isRegistered<AuthController>() ||
         !AuthController.to.isLogin.value) {
       return;
     }
+
+    // If changing category, reset pagination
+    if (_lastCategoryId != categoryId) {
+      _lastCategoryId = categoryId;
+      _currentPage = 1;
+      _hasMore = true;
+      notifications.clear();
+    }
+
+    if (!loadMore) {
+      _currentPage = 1;
+      _hasMore = true;
+    } else {
+      if (!_hasMore || isMoreLoading.value) return;
+    }
+
     try {
-      isLoading.value = true;
-      final response = await Request().get(Url.notifications);
+      if (loadMore) {
+        isMoreLoading.value = true;
+      } else {
+        isLoading.value = true;
+      }
+
+      Map<String, dynamic> queryParams = {
+        'page': _currentPage,
+      };
+      if (categoryId != null) {
+        queryParams['category'] = categoryId;
+      }
+
+      final response = await Request().get(
+        Url.notifications,
+        queryParameters: queryParams,
+      );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data']['data'];
-        notifications.value = data
-            .map((e) => NotificationModel.fromJson(e))
-            .toList();
+        final Map<String, dynamic> paginatedData = response.data['data'];
+        final List<dynamic> data = paginatedData['data'];
+
+        final newNotifications =
+            data.map((e) => NotificationModel.fromJson(e)).toList();
+
+        if (loadMore) {
+          notifications.addAll(newNotifications);
+        } else {
+          notifications.value = newNotifications;
+        }
+
+        // Update pagination info
+        _currentPage = paginatedData['current_page'] + 1;
+        _hasMore = paginatedData['next_page_url'] != null;
       } else {
         AppToast.error(
           message: response.data['message'] ?? 'Gagal mengambil notifikasi',
@@ -53,6 +121,7 @@ class NotificationController extends GetxController {
       AppToast.error(message: 'Terjadi kesalahan koneksi');
     } finally {
       isLoading.value = false;
+      isMoreLoading.value = false;
     }
   }
 

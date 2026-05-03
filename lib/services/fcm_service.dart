@@ -80,8 +80,26 @@ class FcmService {
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
+      print('=== FCM FOREGROUND MESSAGE ===');
+      print('Message ID: ${message.messageId}');
+      print('From: ${message.from}');
+      print('Category: ${message.category}');
+      print('Collapse Key: ${message.collapseKey}');
+      print('Content Available: ${message.contentAvailable}');
+      print('Mutable Content: ${message.mutableContent}');
+      print('Sent Time: ${message.sentTime}');
+      print('TTL: ${message.ttl}');
+      print('--- Notification Payload ---');
+      print('Title: ${message.notification?.title}');
+      print('Body: ${message.notification?.body}');
+      print('Android Image: ${message.notification?.android?.imageUrl}');
+      print('Apple Image: ${message.notification?.apple?.imageUrl}');
+      print('--- Data Payload ---');
+      message.data.forEach((key, value) {
+        print('  $key: $value');
+      });
+      print('Raw data: ${message.data}');
+      print('=== END FCM FOREGROUND MESSAGE ===');
 
       RemoteNotification? notification = message.notification;
 
@@ -94,12 +112,7 @@ class FcmService {
           notification?.apple?.imageUrl;
 
       // Extract URL from custom data or click_action
-      String? urlPayload =
-          message.data['url'] ??
-          message.data['link'] ??
-          (message.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
-              ? message.data['click_action']
-              : null);
+      String? urlPayload = DeepLinkService.extractPayload(message.data);
 
       if (title != null || body != null) {
         print('Displaying foreground notification: $title');
@@ -162,13 +175,17 @@ class FcmService {
 
     // Handle app opened from notification
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-      print('A new onMessageOpenedApp event was published!');
-      String? urlPayload =
-          message.data['url'] ??
-          message.data['link'] ??
-          (message.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
-              ? message.data['click_action']
-              : null);
+      print('=== FCM MESSAGE OPENED APP ===');
+      print('Message ID: ${message.messageId}');
+      print('Notification Title: ${message.notification?.title}');
+      print('Notification Body: ${message.notification?.body}');
+      print('Data Payload:');
+      message.data.forEach((key, value) {
+        print('  $key: $value');
+      });
+      print('Raw data: ${message.data}');
+      print('=== END FCM MESSAGE OPENED APP ===');
+      String? urlPayload = DeepLinkService.extractPayload(message.data);
       if (urlPayload != null) {
         await DeepLinkService.handlePayload(urlPayload);
       }
@@ -178,12 +195,17 @@ class FcmService {
     RemoteMessage? initialMessage = await FirebaseMessaging.instance
         .getInitialMessage();
     if (initialMessage != null) {
-      String? urlPayload =
-          initialMessage.data['url'] ??
-          initialMessage.data['link'] ??
-          (initialMessage.data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
-              ? initialMessage.data['click_action']
-              : null);
+      print('=== FCM INITIAL MESSAGE (from terminated) ===');
+      print('Message ID: ${initialMessage.messageId}');
+      print('Notification Title: ${initialMessage.notification?.title}');
+      print('Notification Body: ${initialMessage.notification?.body}');
+      print('Data Payload:');
+      initialMessage.data.forEach((key, value) {
+        print('  $key: $value');
+      });
+      print('Raw data: ${initialMessage.data}');
+      print('=== END FCM INITIAL MESSAGE ===');
+      String? urlPayload = DeepLinkService.extractPayload(initialMessage.data);
       if (urlPayload != null) {
         Future.delayed(const Duration(seconds: 1), () {
           DeepLinkService.handlePayload(urlPayload);
@@ -322,5 +344,15 @@ class FcmService {
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
+  print('=== FCM BACKGROUND MESSAGE ===');
+  print('Message ID: ${message.messageId}');
+  print('From: ${message.from}');
+  print('Notification Title: ${message.notification?.title}');
+  print('Notification Body: ${message.notification?.body}');
+  print('Data Payload:');
+  message.data.forEach((key, value) {
+    print('  $key: $value');
+  });
+  print('Raw data: ${message.data}');
+  print('=== END FCM BACKGROUND MESSAGE ===');
 }

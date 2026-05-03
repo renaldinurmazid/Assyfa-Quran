@@ -111,6 +111,12 @@ class MosqueMapScreen extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        onPressed: () => Get.toNamed(Routes.mosqueAdd),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 
@@ -176,7 +182,7 @@ class MosqueMapScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Rp ${mosque.currentAmount.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
+                      mosque.currentAmount.toString(),
                       style: pBold16.copyWith(
                         color: Theme.of(context).primaryColor,
                       ),

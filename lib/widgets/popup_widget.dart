@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/popup_controller.dart';
 import 'package:quran_app/models/popup_model.dart';
+import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 class PopupWidget {
   static bool _isShowing = false;
@@ -115,7 +116,6 @@ class _PopupDialog extends StatelessWidget {
         if (popup.isDismissible)
           Positioned(top: 10, right: 10, child: _buildCloseButton()),
         // Type badge
-        Positioned(top: 10, left: 10, child: _buildTypeBadge()),
       ],
     );
   }
@@ -175,7 +175,6 @@ class _PopupDialog extends StatelessWidget {
         ),
         if (popup.isDismissible)
           Positioned(top: 10, right: 10, child: _buildCloseButton()),
-        Positioned(top: 10, left: 10, child: _buildTypeBadge()),
       ],
     );
   }
@@ -208,35 +207,35 @@ class _PopupDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildTypeBadge() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: _getTypeColor().withOpacity(0.85),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(_getTypeIcon(), color: Colors.white, size: 12),
-              const SizedBox(width: 4),
-              Text(
-                _getTypeLabel(),
-                style: pSemiBold10.copyWith(
-                  color: Colors.white,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildTypeBadge() {
+  //   return ClipRRect(
+  //     borderRadius: BorderRadius.circular(20),
+  //     child: BackdropFilter(
+  //       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+  //       child: Container(
+  //         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  //         decoration: BoxDecoration(
+  //           color: _getTypeColor().withOpacity(0.85),
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         child: Row(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Icon(_getTypeIcon(), color: Colors.white, size: 12),
+  //             const SizedBox(width: 4),
+  //             Text(
+  //               _getTypeLabel(),
+  //               style: pSemiBold10.copyWith(
+  //                 color: Colors.white,
+  //                 letterSpacing: 0.3,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildContent() {
     return Padding(
@@ -245,24 +244,21 @@ class _PopupDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // CTA Button
-          if (popup.actionUrl != null &&
-              popup.actionUrl!.isNotEmpty &&
-              popup.actionText != null &&
-              popup.actionText!.isNotEmpty) ...[
+          if (popup.actionText != null && popup.actionText!.isNotEmpty) ...[
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
                   PopupController.to.recordClick(popup.id);
-
-                  final url = Uri.tryParse(popup.actionUrl!);
-                  if (url != null && await canLaunchUrl(url)) {
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  }
+                  final actionUrl = popup.actionUrl ?? '';
 
                   PopupController.to.removePopup(popup.id);
-                  Get.back();
+                  Get.back(); // Close the popup dialog first
+
+                  if (actionUrl.isNotEmpty) {
+                    await DeepLinkService.handlePayload(actionUrl);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.primaryColor,
@@ -348,37 +344,37 @@ class _PopupDialog extends StatelessWidget {
     }
   }
 
-  Color _getTypeColor() {
-    switch (popup.type) {
-      case 'promo':
-        return const Color(0xFFE65100);
-      case 'announcement':
-        return const Color(0xFF1565C0);
-      case 'update':
-        return AppColor.primaryColor;
-      case 'event':
-        return const Color(0xFF6A1B9A);
-      case 'warning':
-        return const Color(0xFFEF6C00);
-      default:
-        return AppColor.primaryColor;
-    }
-  }
+  // Color _getTypeColor() {
+  //   switch (popup.type) {
+  //     case 'promo':
+  //       return const Color(0xFFE65100);
+  //     case 'announcement':
+  //       return const Color(0xFF1565C0);
+  //     case 'update':
+  //       return AppColor.primaryColor;
+  //     case 'event':
+  //       return const Color(0xFF6A1B9A);
+  //     case 'warning':
+  //       return const Color(0xFFEF6C00);
+  //     default:
+  //       return AppColor.primaryColor;
+  //   }
+  // }
 
-  String _getTypeLabel() {
-    switch (popup.type) {
-      case 'promo':
-        return 'Promo';
-      case 'announcement':
-        return 'Pengumuman';
-      case 'update':
-        return 'Update';
-      case 'event':
-        return 'Event';
-      case 'warning':
-        return 'Peringatan';
-      default:
-        return 'Info';
-    }
-  }
+  // String _getTypeLabel() {
+  //   switch (popup.type) {
+  //     case 'promo':
+  //       return 'Promo';
+  //     case 'announcement':
+  //       return 'Pengumuman';
+  //     case 'update':
+  //       return 'Update';
+  //     case 'event':
+  //       return 'Event';
+  //     case 'warning':
+  //       return 'Peringatan';
+  //     default:
+  //       return 'Info';
+  //   }
+  // }
 }

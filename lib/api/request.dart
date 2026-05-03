@@ -1,7 +1,9 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as get_ext;
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Request {
@@ -30,6 +32,22 @@ class Request {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // Global Connectivity Check
+          var connectivityResult = await (Connectivity().checkConnectivity());
+          if (connectivityResult.contains(ConnectivityResult.none)) {
+            AppToast.error(
+              message: 'Tidak ada koneksi internet. Silakan cek koneksi Anda.',
+              title: 'Koneksi Terputus',
+            );
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                type: DioExceptionType.connectionError,
+                message: 'No internet connection',
+              ),
+            );
+          }
+
           // If the request specifically asks not to use a token, skip it
           final bool useToken = options.extra['useToken'] ?? true;
 
@@ -51,6 +69,21 @@ class Request {
               }
             } catch (_) {}
           }
+
+          // Global No Internet / Connection Error Handling
+          if (e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.receiveTimeout) {
+            // Only show toast if it's not a "No internet" error we already handled in onRequest
+            if (e.message != 'No internet connection') {
+              AppToast.error(
+                message: 'Gagal terhubung ke server. Periksa koneksi internet Anda.',
+                title: 'Kesalahan Koneksi',
+              );
+            }
+          }
+
           return handler.next(e);
         },
       ),

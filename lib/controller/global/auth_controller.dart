@@ -109,6 +109,8 @@ class AuthController extends GetxController {
           userData.value = data['user'];
           isLogin.value = true;
 
+          print(token.value);
+
           // Reset FCM unauthorized flag for fresh session
           FcmService.resetUnauthorizedError();
           // Save FCM Token after successful login
@@ -130,6 +132,53 @@ class AuthController extends GetxController {
     } catch (e) {
       AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
       return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loginWithEmail(String email, String password) async {
+    try {
+      isLoading.value = true;
+
+      final response = await Request().post(
+        Url.login,
+        useToken: false,
+        data: {
+          'email': email,
+          'password': password,
+          if (referralCode.value.isNotEmpty)
+            'referral_code': referralCode.value,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', data['token']);
+        await prefs.setString('user_data', jsonEncode(data['user']));
+
+        token.value = data['token'];
+        userData.value = data['user'];
+        isLogin.value = true;
+
+        // Reset FCM unauthorized flag for fresh session
+        FcmService.resetUnauthorizedError();
+        // Save FCM Token after successful login
+        FcmService.saveToken();
+
+        // Clear referral code after success
+        referralCode.value = '';
+        final prefsClear = await SharedPreferences.getInstance();
+        await prefsClear.remove('referral_code_temp');
+
+        Get.back();
+        AppToast.success(message: response.data['message']);
+      } else {
+        AppToast.error(message: response.data['message']);
+      }
+    } catch (e) {
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;
     }

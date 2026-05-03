@@ -9,6 +9,7 @@ import 'package:quran_app/screen/profile/profile_screen.dart';
 import 'package:quran_app/screen/tilawahku_screen.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:upgrader/upgrader.dart';
 
 class MainController extends GetxController {
   var tabIndex = 0.obs;
@@ -36,56 +37,61 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final MainController controller = Get.put(MainController());
 
-    return Scaffold(
-      body: Obx(() {
-        return IndexedStack(
-          index: controller.tabIndex.value,
-          children: const [
-            HomeScreen(),
-            TilawahkuScreen(),
-            ChatScreen(),
-            ProfileScreen(),
-          ],
-        );
-      }),
-      bottomNavigationBar: Obx(() {
-        return BottomNavigationBar(
-          unselectedItemColor: Colors.grey.shade600,
-          selectedItemColor: context.theme.colorScheme.primary,
-          onTap: controller.changeTabIndex,
-          currentIndex: controller.tabIndex.value,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: context.theme.scaffoldBackgroundColor,
-          selectedLabelStyle: pMedium12.copyWith(color: AppColor.primaryColor),
-          unselectedLabelStyle: pRegular12.copyWith(
-            color: Colors.grey.shade600,
-          ),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(IconlyLight.home),
-              label: 'Home',
-              activeIcon: Icon(IconlyBold.home),
+    return UpgradeAlert(
+      upgrader: Upgrader(durationUntilAlertAgain: const Duration(days: 1)),
+      child: Scaffold(
+        body: Obx(() {
+          return IndexedStack(
+            index: controller.tabIndex.value,
+            children: const [
+              HomeScreen(),
+              TilawahkuScreen(),
+              ChatScreen(),
+              ProfileScreen(),
+            ],
+          );
+        }),
+        bottomNavigationBar: Obx(() {
+          return BottomNavigationBar(
+            unselectedItemColor: Colors.grey.shade600,
+            selectedItemColor: context.theme.colorScheme.primary,
+            onTap: controller.changeTabIndex,
+            currentIndex: controller.tabIndex.value,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: context.theme.scaffoldBackgroundColor,
+            selectedLabelStyle: pMedium12.copyWith(
+              color: AppColor.primaryColor,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(IconlyLight.bookmark),
-              label: 'Tilawahku',
-              activeIcon: Icon(IconlyBold.bookmark),
+            unselectedLabelStyle: pRegular12.copyWith(
+              color: Colors.grey.shade600,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(IconlyLight.notification),
-              label: 'Pesan',
-              activeIcon: Icon(IconlyBold.chat),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(IconlyLight.profile),
-              label: 'Profile',
-              activeIcon: Icon(IconlyBold.profile),
-            ),
-          ],
-        );
-      }),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(IconlyLight.home),
+                label: 'Home',
+                activeIcon: Icon(IconlyBold.home),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(IconlyLight.bookmark),
+                label: 'Tilawahku',
+                activeIcon: Icon(IconlyBold.bookmark),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.chat_outlined),
+                label: 'Pesan',
+                activeIcon: Icon(Icons.chat),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(IconlyLight.profile),
+                label: 'Profile',
+                activeIcon: Icon(IconlyBold.profile),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 }

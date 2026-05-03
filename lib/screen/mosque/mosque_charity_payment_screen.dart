@@ -47,22 +47,17 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Infaq Sekarang',
-          style: pSemiBold16.copyWith(
-            color: context.theme.colorScheme.primary,
-          ),
-        ),
+        title: Text('Infaq Sekarang', style: pSemiBold16),
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(
             IconlyLight.arrow_left_2,
-            color: context.theme.colorScheme.primary,
+            color: context.theme.colorScheme.onSurface,
           ),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: context.theme.colorScheme.surface,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -70,14 +65,12 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('Nominal Infaq'),
+              _buildSectionHeader(context, 'Nominal Infaq'),
               const SizedBox(height: 12),
               TextField(
                 controller: controller.nominalController,
                 cursorColor: context.theme.colorScheme.primary,
-                style: pSemiBold14.copyWith(
-                  color: context.theme.colorScheme.primary,
-                ),
+                style: pSemiBold14,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.end,
                 inputFormatters: [
@@ -88,38 +81,36 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                   hintText: '0',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.only(left: 16),
-                    child: Text(
-                      'Rp ',
-                      style: pSemiBold14.copyWith(
-                        color: context.theme.colorScheme.primary,
-                      ),
-                    ),
+                    child: Text('Rp ', style: pSemiBold14),
                   ),
                   prefixIconConstraints: const BoxConstraints(
                     minWidth: 0,
                     minHeight: 0,
                   ),
-                  hintStyle: pRegular12.copyWith(
-                    color: context.theme.colorScheme.primary.withOpacity(0.2),
-                  ),
+                  hintStyle: pMedium12,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
-                      color:
-                          context.theme.colorScheme.primary.withOpacity(0.2),
+                      color: context.isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade200,
                     ),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
-                      color:
-                          context.theme.colorScheme.primary.withOpacity(0.2),
+                      color: context.isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade200,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide:
-                        BorderSide(color: context.theme.colorScheme.primary),
+                    borderSide: BorderSide(
+                      color: context.isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade200,
+                    ),
                   ),
                 ),
               ),
@@ -128,14 +119,14 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  _buildFastInput(controller, 'Rp10.000', '10000'),
-                  _buildFastInput(controller, 'Rp25.000', '25000'),
-                  _buildFastInput(controller, 'Rp50.000', '50000'),
-                  _buildFastInput(controller, 'Rp100.000', '100000'),
+                  _buildFastInput(context, controller, 'Rp10.000', '10000'),
+                  _buildFastInput(context, controller, 'Rp25.000', '25000'),
+                  _buildFastInput(context, controller, 'Rp50.000', '50000'),
+                  _buildFastInput(context, controller, 'Rp100.000', '100000'),
                 ],
               ),
               const SizedBox(height: 24),
-              _buildSectionHeader('Data Diri'),
+              _buildSectionHeader(context, 'Data Diri'),
               const SizedBox(height: 18),
               TextInput(
                 controller: controller.nameController,
@@ -158,8 +149,9 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         side: BorderSide(
-                          color: context.theme.colorScheme.primary
-                              .withOpacity(0.2),
+                          color: context.theme.colorScheme.primary.withOpacity(
+                            0.2,
+                          ),
                         ),
                         materialTapTargetSize: MaterialTapTargetSize.padded,
                       ),
@@ -185,10 +177,12 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                   ? Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.yellow.shade100.withOpacity(0.5),
+                        color: Colors.amber.withOpacity(
+                          context.isDarkMode ? 0.05 : 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.yellow.shade300,
+                          color: Colors.amber.withOpacity(0.3),
                           width: 1,
                         ),
                       ),
@@ -197,7 +191,7 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                         children: [
                           Icon(
                             IconlyLight.info_square,
-                            color: Colors.yellow.shade900,
+                            color: Colors.amber.shade900,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
@@ -205,7 +199,9 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                             child: Text(
                               'Lengkapi nomor telepon di profilmu yuk, supaya transaksi berikutnya jadi lebih praktis!',
                               style: pRegular12.copyWith(
-                                color: Colors.yellow.shade900,
+                                color: context.isDarkMode
+                                    ? Colors.amber.shade200
+                                    : Colors.amber.shade900,
                               ),
                             ),
                           ),
@@ -214,7 +210,7 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                     )
                   : const SizedBox.shrink(),
               const SizedBox(height: 24),
-              _buildSectionHeader('Pilih Metode Pembayaran'),
+              _buildSectionHeader(context, 'Pilih Metode Pembayaran'),
               const SizedBox(height: 12),
               Obx(() {
                 final selected = controller.selectedPaymentMethod.value;
@@ -224,14 +220,16 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                    color: context.theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: selected != null
-                          ? context.theme.colorScheme.primary
-                          : context.theme.colorScheme.outline.withOpacity(0.2),
-                      width: selected != null ? 2 : 1,
-                    ),
+                      color: context.theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selected != null
+                            ? context.theme.colorScheme.primary
+                            : (context.isDarkMode
+                                  ? Colors.grey.shade900
+                                  : Colors.grey.shade200),
+                        width: selected != null ? 2 : 1,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.03),
@@ -247,7 +245,10 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                             width: 48,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: context
+                                  .theme
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: selected.logo.isNotEmpty
@@ -275,36 +276,63 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                             child: Text(
                               selected.name,
                               style: pSemiBold14.copyWith(
-                                color: Get.context!.theme.colorScheme.primary,
+                                color: context.theme.colorScheme.primary,
                               ),
                             ),
                           ),
                         ] else ...[
-                          Icon(
+                          const Icon(
                             IconlyLight.wallet,
                             size: 22,
-                            color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                            color: Colors.grey,
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(
                               'Pilih metode pembayaran',
                               style: pRegular14.copyWith(
-                                color: context.theme.colorScheme.onSurfaceVariant,
+                                color:
+                                    context.theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
                         ],
-                        Icon(
+                        const Icon(
                           IconlyLight.arrow_down_2,
                           size: 20,
-                          color: Get.context!.theme.colorScheme.onSurfaceVariant,
+                          color: Colors.grey,
                         ),
                       ],
                     ),
                   ),
                 );
               }),
+              const SizedBox(height: 24),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.05),
+                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 18,
+                      color: Colors.orange,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Dana donasi yang terhimpun di Quranuna bukan untuk tujuan pencucian uang, terorisme maupun tindak kejahatan lainnya.',
+                        style: pRegular12.copyWith(color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 48),
             ],
           ),
@@ -313,7 +341,7 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
+          color: context.theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -354,16 +382,17 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Text(
       title,
       style: pSemiBold14.copyWith(
-        color: Get.context!.theme.colorScheme.onSurface.withOpacity(0.8),
+        color: context.theme.colorScheme.onSurface.withOpacity(0.8),
       ),
     );
   }
 
   Widget _buildFastInput(
+    BuildContext context,
     MosqueCharityPaymentController controller,
     String label,
     String value,
@@ -384,18 +413,20 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? Get.context!.theme.colorScheme.primary
-                : Get.context!.theme.colorScheme.surface,
+                ? context.theme.colorScheme.primary
+                : context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? Get.context!.theme.colorScheme.primary
-                  : Get.context!.theme.colorScheme.outline.withOpacity(0.2),
+                  ? context.theme.colorScheme.primary
+                  : (context.isDarkMode
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade200),
             ),
             boxShadow: [
               if (isSelected)
                 BoxShadow(
-                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.2),
+                  color: context.theme.colorScheme.primary.withOpacity(0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -404,9 +435,7 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
           child: Text(
             label,
             style: pSemiBold14.copyWith(
-              color: isSelected
-                  ? Colors.white
-                  : Get.context!.theme.colorScheme.primary,
+              color: isSelected ? Colors.white : null,
             ),
           ),
         ),
@@ -440,7 +469,7 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: context.theme.colorScheme.outline.withOpacity(0.3),
+                    color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -498,14 +527,14 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                  color: context.theme.colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? context.theme.colorScheme.primary
-                                        : Colors.transparent,
-                                    width: 2,
-                                  ),
+                                color: context.theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? context.theme.colorScheme.primary
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.03),
@@ -520,7 +549,10 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                                     width: 48,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                     color: context.theme.colorScheme.surfaceVariant,
+                                      color: context
+                                          .theme
+                                          .colorScheme
+                                          .surfaceContainerHighest,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: method.logo.isNotEmpty
@@ -528,12 +560,10 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                                             method.logo,
                                             errorBuilder:
                                                 (context, error, stackTrace) {
-                                                  return Center(
+                                                  return const Center(
                                                     child: Icon(
                                                       IconlyLight.image,
-                                                      color: context.theme
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
+                                                      color: Colors.grey,
                                                       size: 16,
                                                     ),
                                                   );
@@ -550,11 +580,10 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                                                   ),
                                                 ),
                                           )
-                                        : Icon(
+                                        : const Icon(
                                             IconlyLight.wallet,
                                             size: 20,
-                                            color: context.theme
-                                                .colorScheme.onSurfaceVariant,
+                                            color: Colors.grey,
                                           ),
                                   ),
                                   const SizedBox(width: 16),
@@ -564,14 +593,17 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                                       style: pSemiBold14.copyWith(
                                         color: isSelected
                                             ? context.theme.colorScheme.primary
-                                            : context.theme.colorScheme.onSurface,
+                                            : context
+                                                  .theme
+                                                  .colorScheme
+                                                  .onSurface,
                                       ),
                                     ),
                                   ),
                                   if (isSelected)
                                     Icon(
                                       IconlyBold.tick_square,
-                                     color: context.theme.colorScheme.primary,
+                                      color: context.theme.colorScheme.primary,
                                       size: 24,
                                     ),
                                 ],

@@ -19,14 +19,10 @@ class DzikirScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Panduan Dzikir',
-          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
-        ),
+        title: Text('Panduan Dzikir', style: pSemiBold16),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -48,10 +44,12 @@ class DzikirScreen extends StatelessWidget {
     final data = [
       {
         'title': 'Dzikir Shalat Pendek',
+        'slug': 'dzikir-shalat-pendek',
         'data': 'assets/data/dzikir-pendek.json',
       },
       {
         'title': 'Dzikir Shalat Panjang',
+        'slug': 'dzikir-shalat-panjang',
         'data': 'assets/data/dzikir-panjang.json',
       },
     ];
@@ -80,6 +78,10 @@ class DzikirScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
+                  Get.find<DzikirScreenController>().recordDzikirView(
+                    data[index]['slug'] as String,
+                    data[index]['title'] as String,
+                  );
                   Get.toNamed(
                     Routes.dzikirShow,
                     arguments: {
@@ -97,7 +99,11 @@ class DzikirScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     border: Border(
-                      bottom: BorderSide(color: Theme.of(context).dividerColor),
+                      bottom: BorderSide(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade400,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -117,11 +123,30 @@ class DzikirScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        data[index]['title'] as String,
-                        style: pMedium14.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
+                      Expanded(
+                        child: Text(
+                          data[index]['title'] as String,
+                          style: pMedium14.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(IconlyBold.show, size: 18),
+                          const SizedBox(width: 4),
+                          Obx(() {
+                            final stats = Get.find<DzikirScreenController>()
+                                .dzikirStats;
+                            final slug = data[index]['slug'] as String;
+                            return Text(
+                              '${stats[slug] ?? 0}',
+                              style: pMedium10,
+                            );
+                          }),
+                        ],
                       ),
                     ],
                   ),
@@ -142,18 +167,22 @@ class DzikirScreen extends StatelessWidget {
     final data = [
       {
         'title': 'Al-Matsurat Sugro Pagi',
+        'slug': 'almasurat-sugro-pagi',
         'data': 'assets/data/sugro-pagi.json',
       },
       {
         'title': 'Al-Matsurat Sugro Petang',
+        'slug': 'almasurat-sugro-petang',
         'data': 'assets/data/sugro-petang.json',
       },
       {
         'title': 'Al-Matsurat Kubro Pagi',
+        'slug': 'almasurat-kubro-pagi',
         'data': 'assets/data/kubro-pagi.json',
       },
       {
         'title': 'Al-Matsurat Kubro Petang',
+        'slug': 'almasurat-kubro-petang',
         'data': 'assets/data/kubro-petang.json',
       },
     ];
@@ -182,6 +211,10 @@ class DzikirScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
+                  Get.find<DzikirScreenController>().recordDzikirView(
+                    data[index]['slug'] as String,
+                    data[index]['title'] as String,
+                  );
                   Get.toNamed(
                     Routes.dzikirShow,
                     arguments: {
@@ -199,7 +232,11 @@ class DzikirScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     border: Border(
-                      bottom: BorderSide(color: Theme.of(context).dividerColor),
+                      bottom: BorderSide(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade400,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -219,11 +256,30 @@ class DzikirScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        data[index]['title'] as String,
-                        style: pMedium14.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
+                      Expanded(
+                        child: Text(
+                          data[index]['title'] as String,
+                          style: pMedium14.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(IconlyBold.show, size: 18),
+                          const SizedBox(width: 4),
+                          Obx(() {
+                            final stats = Get.find<DzikirScreenController>()
+                                .dzikirStats;
+                            final slug = data[index]['slug'] as String;
+                            return Text(
+                              '${stats[slug] ?? 0}',
+                              style: pMedium10,
+                            );
+                          }),
+                        ],
                       ),
                     ],
                   ),

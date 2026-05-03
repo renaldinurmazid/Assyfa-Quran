@@ -23,34 +23,53 @@ class GroupSearchScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: context.theme.colorScheme.primary,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
+          icon: Icon(
+            IconlyLight.arrow_left_2,
+            color: context.theme.colorScheme.onSurface,
+          ),
           onPressed: () => Get.back(),
         ),
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: TextField(
-            controller: searchController,
-            autofocus: true,
-            style: pRegular14.copyWith(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Cari grup...',
-              hintStyle: pRegular14.copyWith(color: Colors.white70),
-              prefixIcon: const Icon(
-                IconlyLight.search,
-                color: Colors.white70,
-                size: 18,
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Container(
+            height: 42,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: context.isDarkMode
+                    ? Colors.grey.shade700
+                    : Colors.grey.shade300,
               ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              borderRadius: BorderRadius.circular(100),
+              color: context.isDarkMode
+                  ? context.theme.colorScheme.surface
+                  : Colors.white,
             ),
-            onSubmitted: (value) => controller.searchGroups(value),
+            child: TextField(
+              controller: searchController,
+              autofocus: true,
+              style: pRegular14.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Cari grup ngaji...',
+                hintStyle: pRegular14.copyWith(
+                  color: context.theme.colorScheme.onSurfaceVariant,
+                ),
+                prefixIcon: Icon(
+                  IconlyLight.search,
+                  color: context.theme.colorScheme.onSurfaceVariant,
+                  size: 20,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              onSubmitted: (value) => controller.searchGroups(value),
+            ),
           ),
         ),
       ),
@@ -64,170 +83,168 @@ class GroupSearchScreen extends StatelessWidget {
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           itemCount: controller.publicGroups.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final group = controller.publicGroups[index];
-            return _buildGroupItem(group);
+            return _buildGroupItem(context, group);
           },
         );
       }),
     );
   }
 
-  Widget _buildGroupItem(dynamic group) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Get.context!.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Get.context!.theme.colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 10),
+  Widget _buildGroupItem(BuildContext context, dynamic group) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(Routes.showGroup, arguments: group.id),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: context.isDarkMode
+                ? Colors.grey.shade800
+                : Colors.grey.shade100,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Get.toNamed(Routes.showGroup, arguments: group.id),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cover Image
+            Stack(
               children: [
-                Stack(
-                  children: [
-                    Container(
-                      height: 140,
-                      width: double.infinity,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  child: Container(
+                    height: 140,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: context.theme.colorScheme.surfaceContainerHighest,
+                      image: DecorationImage(
+                        image: group.coverImage != null
+                            ? NetworkImage(group.coverImage)
+                            : const AssetImage(
+                                    'assets/images/jpg/bg-group.jpg',
+                                  )
+                                  as ImageProvider,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: Container(
                       decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: group.coverImage != null
-                              ? NetworkImage(group.coverImage)
-                              : const AssetImage(
-                                      'assets/images/jpg/bg-group.jpg',
-                                    )
-                                    as ImageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.1),
-                              Colors.black.withOpacity(0.5),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.group,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${group.memberCount} Anggota',
-                              style: pMedium10.copyWith(color: Colors.white),
-                            ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.05),
+                            Colors.black.withOpacity(0.4),
                           ],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Get.context!.theme.colorScheme.primary
-                                .withOpacity(0.2),
-                            width: 2,
-                          ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.group, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${group.memberCount} Anggota',
+                          style: pMedium10.copyWith(color: Colors.white),
                         ),
-                        child: ClipOval(
-                          child:
-                              group.createdBy.profilePicture != null &&
-                                  group.createdBy.profilePicture!.isNotEmpty
-                              ? Image.network(
-                                  group.createdBy.profilePicture!,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  color: Get.context!.theme.colorScheme
-                                      .surfaceVariant,
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Get.context!.theme.colorScheme
-                                        .onSurfaceVariant,
-                                    size: 20,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              group.name,
-                              style: pBold16.copyWith(
-                                color: Get.context!.theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Dibuat oleh ${group.createdBy.name}',
-                              style: pRegular12.copyWith(
-                                color: Get
-                                    .context!.theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        IconlyLight.arrow_right_2,
-                        color: Get.context!.theme.colorScheme.onSurfaceVariant,
-                        size: 18,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
+            // Group Info
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: context.theme.primaryColor.withOpacity(0.2),
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: group.createdBy.profilePicture != null &&
+                              group.createdBy.profilePicture!.isNotEmpty
+                          ? Image.network(
+                              group.createdBy.profilePicture!,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              color: context.theme.dividerColor,
+                              child: Icon(
+                                Icons.person,
+                                color: context.theme.hintColor.withOpacity(0.5),
+                                size: 20,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          group.name,
+                          style: pSemiBold14.copyWith(
+                            color: context.theme.colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Oleh ${group.createdBy.name}',
+                          style: pRegular10.copyWith(
+                            color: context.theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: context.theme.colorScheme.onSurfaceVariant,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -235,16 +252,20 @@ class GroupSearchScreen extends StatelessWidget {
 
   Widget _buildLoadingState() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Get.context!.theme.colorScheme.surfaceVariant,
-        highlightColor: Get.context!.theme.colorScheme.surface,
+        baseColor: Get.context!.isDarkMode
+            ? Colors.grey.shade900
+            : Colors.grey.shade200,
+        highlightColor: Get.context!.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.grey.shade100,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 12),
           height: 220,
           decoration: BoxDecoration(
-            color: Get.context!.theme.colorScheme.surface,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
           ),
         ),

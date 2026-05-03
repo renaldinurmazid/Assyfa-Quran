@@ -4,11 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeController extends GetxController {
   static ThemeController get to => Get.find();
-  
-  final _isDarkMode = false.obs;
+
+  final _isDarkMode = true.obs;
   bool get isDarkMode => _isDarkMode.value;
 
-  ThemeMode get themeMode => _isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode =>
+      _isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
 
   @override
   void onInit() {
@@ -25,7 +26,7 @@ class ThemeController extends GetxController {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     _isDarkMode.value = prefs.getBool('isDarkMode') ?? false;
-    // We don't call Get.changeThemeMode here because the initial theme 
+    // We don't call Get.changeThemeMode here because the initial theme
     // is set in GetMaterialApp via ThemeController.to.themeMode
   }
 

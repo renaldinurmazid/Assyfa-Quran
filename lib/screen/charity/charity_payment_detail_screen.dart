@@ -31,17 +31,7 @@ class CharityPaymentDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Instruksi Pembayaran',
-          style: pBold18.copyWith(color: context.theme.colorScheme.primary),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left_2,
-            color: context.theme.colorScheme.primary,
-          ),
-          onPressed: () => Get.back(),
-        ),
+        title: Text('Instruksi Pembayaran', style: pSemiBold16),
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -150,14 +140,18 @@ class CharityPaymentDetailScreen extends StatelessWidget {
               ),
               Text(
                 '${payment.amount}',
-                style: pBold16.copyWith(color: context.theme.colorScheme.primary),
+                style: pBold16.copyWith(
+                  color: context.theme.colorScheme.primary,
+                ),
               ),
             ],
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Divider(
-              color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+              color: context.isDarkMode
+                  ? Colors.grey.shade900
+                  : Colors.grey.shade100,
             ),
           ),
           Row(
@@ -268,7 +262,10 @@ class CharityPaymentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructions(BuildContext context, List<Instruction> instructions) {
+  Widget _buildInstructions(
+    BuildContext context,
+    List<Instruction> instructions,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -325,7 +322,8 @@ class CharityPaymentDetailScreen extends StatelessWidget {
                               child: Text(
                                 entry.value,
                                 style: pRegular12.copyWith(
-                                  color: context.theme.colorScheme.onSurface.withOpacity(0.8),
+                                  color: context.theme.colorScheme.onSurface
+                                      .withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -346,7 +344,7 @@ class CharityPaymentDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),

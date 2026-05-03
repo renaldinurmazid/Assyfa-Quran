@@ -5,6 +5,7 @@ import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/controller/home_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/home_screen.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class GroupNgajiScreen extends StatelessWidget {
@@ -14,77 +15,62 @@ class GroupNgajiScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(GroupNgajiScreenController());
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        title: Text(
-          'Grup Ngaji',
-          style: pSemiBold16.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        title: Text('Grup Ngaji', style: pSemiBold16),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          _searchGroup(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                children: [
-                  _createGroupCard(context),
-                  _listGroup(context, controller),
-                ],
-              ),
-            ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _searchGroup(context),
+              const SizedBox(height: 12),
+              _createGroupCard(context),
+              const SizedBox(height: 24),
+              _listGroup(context, controller),
+              const SizedBox(height: 40),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _searchGroup(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.1 : 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return InkWell(
+      onTap: () => Get.toNamed(Routes.groupSearch),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: context.isDarkMode
+                  ? Colors.grey.shade600
+                  : Colors.grey.shade400,
             ),
-          ],
-        ),
-        child: TextField(
-          onSubmitted: (value) {
-            if (value.isNotEmpty) {
-              Get.toNamed(Routes.groupSearch, arguments: value);
-            }
-          },
-          cursorColor: Theme.of(context).primaryColor,
-          style: pRegular14.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
+            borderRadius: BorderRadius.circular(100),
           ),
-          decoration: InputDecoration(
-            prefixIcon: Icon(
-              Icons.search,
-              color: Theme.of(context).hintColor,
-              size: 22,
-            ),
-            hintText: 'Cari Grup Ngaji...',
-            hintStyle: pRegular14.copyWith(color: Theme.of(context).hintColor),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.search,
+                color: context.isDarkMode
+                    ? Colors.grey.shade600
+                    : Colors.grey.shade500,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Cari Grup Ngaji...',
+                style: pRegular14.copyWith(
+                  color: context.isDarkMode
+                      ? Colors.grey.shade600
+                      : Colors.grey.shade500,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -98,21 +84,21 @@ class GroupNgajiScreen extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
+            AppColor.primaryColorDark,
+            AppColor.primaryColor,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.25),
+            color: AppColor.primaryColor.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -138,6 +124,7 @@ class GroupNgajiScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () {
               if (AuthController.to.isLogin.value) {
@@ -148,11 +135,11 @@ class GroupNgajiScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: Theme.of(context).primaryColor,
+              foregroundColor: AppColor.primaryColorDark,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(100),
               ),
             ),
             child: Text('Buat Grup', style: pBold12),
@@ -169,18 +156,16 @@ class GroupNgajiScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
             'Grup Saya',
-            style: pSemiBold16.copyWith(
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
+            style: pSemiBold14.copyWith(
+              color: context.theme.colorScheme.onSurface,
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         _listViewMyGroup(context, controller),
       ],
     );
@@ -228,82 +213,84 @@ class GroupNgajiScreen extends StatelessWidget {
       return ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemCount: controller.myGroups.length,
         itemBuilder: (context, index) {
           final group = controller.myGroups[index];
-          return Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 0.15
-                        : 0.05,
-                  ),
-                  blurRadius: 15,
-                  offset: const Offset(0, 10),
+          return GestureDetector(
+            onTap: () => Get.toNamed(Routes.showGroup, arguments: group.id),
+            child: Container(
+              decoration: BoxDecoration(
+                color: context.theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: context.isDarkMode
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade100,
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () =>
-                      Get.toNamed(Routes.showGroup, arguments: group.id),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image
+                  Stack(
                     children: [
-                      Stack(
-                        children: [
-                          _buildGroupCover(group.coverImage),
-                          _buildMemberCount(group.memberCount),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            _buildCreatorAvatar(
-                              context,
-                              group.createdBy.profilePicture,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    group.name,
-                                    style: pBold16.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Dibuat oleh ${group.createdBy.name}',
-                                    style: pRegular12.copyWith(
-                                      color: Theme.of(context).hintColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _buildGroupCover(context, group.coverImage),
+                      _buildMemberCount(group.memberCount),
                     ],
                   ),
-                ),
+                  // Info
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        _buildCreatorAvatar(
+                          context,
+                          group.createdBy.profilePicture,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                group.name,
+                                style: pSemiBold14.copyWith(
+                                  color: context.theme.colorScheme.onSurface,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Oleh ${group.createdBy.name}',
+                                style: pRegular10.copyWith(
+                                  color: context
+                                      .theme
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: context.theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -312,28 +299,32 @@ class GroupNgajiScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildGroupCover(String? coverImage) {
-    return Container(
-      height: 160,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: coverImage != null
-              ? NetworkImage(coverImage)
-              : const AssetImage('assets/images/jpg/bg-group.jpg')
-                    as ImageProvider,
-          fit: BoxFit.cover,
-        ),
-      ),
+  Widget _buildGroupCover(BuildContext context, String? coverImage) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       child: Container(
+        height: 140,
+        width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withOpacity(0.1),
-              Colors.black.withOpacity(0.5),
-            ],
+          color: context.theme.colorScheme.surfaceContainerHighest,
+          image: DecorationImage(
+            image: coverImage != null
+                ? NetworkImage(coverImage)
+                : const AssetImage('assets/images/jpg/bg-group.jpg')
+                      as ImageProvider,
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.05),
+                Colors.black.withOpacity(0.4),
+              ],
+            ),
           ),
         ),
       ),

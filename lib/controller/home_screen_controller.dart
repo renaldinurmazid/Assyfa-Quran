@@ -11,6 +11,7 @@ import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/controller/popup_controller.dart';
 import 'package:quran_app/widgets/popup_widget.dart';
+import 'package:quran_app/services/connectivity_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:quran_app/models/banner_model.dart';
@@ -55,6 +56,11 @@ class HomeScreenController extends GetxController {
     'assets/images/png/login3.png',
   ];
 
+  final isEmailLogin = false.obs;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final isPasswordVisible = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -66,6 +72,26 @@ class HomeScreenController extends GetxController {
     _checkConnection();
     _listenToConnectivity();
     fetchReadingHistoryTotal();
+
+    // Listen to ConnectivityService for sync-aware refresh
+    if (Get.isRegistered<ConnectivityService>()) {
+      ever(ConnectivityService.to.isOnline, (bool online) {
+        isOfflineMode.value = !online;
+        if (online && AuthController.to.isLogin.value) {
+          // Trigger sync & refresh when back online
+          ConnectivityService.to.syncPendingHistory();
+        }
+      });
+
+      ever(ConnectivityService.to.isSyncing, (bool syncing) {
+        if (!syncing && AuthController.to.isLogin.value) {
+          // Sync just completed, refresh stats
+          fetchWeeklyStats();
+          fetchReadingHistoryTotal();
+        }
+      });
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (AuthController.to.isLogin.value) {
         fetchWeeklyStats();
@@ -438,14 +464,91 @@ class HomeScreenController extends GetxController {
     if (!AuthController.to.isLogin.value) return;
     isLoadingWeekly.value = true;
     try {
+      Map<String, dynamic> stats = {};
       final response = await Request().get(Url.readingHistoryWeekly);
       if (response.statusCode == 200) {
-        weeklyStats.value = response.data['data'];
+        stats = Map<String, dynamic>.from(response.data['data']);
+      } else {
+        // If failed, start with empty base
+        stats = {
+          'total_pages': 0,
+          'summary': _generateEmptyWeeklySummary(),
+        };
       }
+      
+      // Always merge with local unsynced data
+      await _mergeLocalStats(stats);
+      weeklyStats.value = stats;
     } catch (e) {
-      print(e);
+      debugPrint("Error fetching weekly stats: $e");
+      // Fallback to local only
+      final stats = {
+        'total_pages': 0,
+        'summary': _generateEmptyWeeklySummary(),
+      };
+      await _mergeLocalStats(stats);
+      weeklyStats.value = stats;
     } finally {
       isLoadingWeekly.value = false;
+    }
+  }
+
+  List<Map<String, dynamic>> _generateEmptyWeeklySummary() {
+    final now = DateTime.now();
+    final List<String> days = ['A', 'S', 'S', 'R', 'K', 'J', 'S'];
+    final List<Map<String, dynamic>> summary = [];
+
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      // In Indonesia, Monday is usually index 1, Sunday index 7
+      // DateTime.weekday: 1=Mon, 7=Sun
+      summary.add({
+        'day': days[date.weekday % 7],
+        'date': date.toIso8601String().split('T')[0],
+        'total_pages': 0,
+      });
+    }
+    
+    // Sort summary to always be Sunday to Saturday order
+    summary.sort((a, b) {
+      final dateA = DateTime.parse(a['date']);
+      final dateB = DateTime.parse(b['date']);
+      return (dateA.weekday % 7).compareTo(dateB.weekday % 7);
+    });
+    
+    return summary;
+  }
+
+  Future<void> _mergeLocalStats(Map<String, dynamic> stats) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? historyJson = prefs.getString('local_history');
+      if (historyJson == null) return;
+
+      final List<dynamic> localHistory = jsonDecode(historyJson);
+      final summary = stats['summary'] as List;
+      
+      int localTotalAdded = 0;
+
+      for (var entry in localHistory) {
+        // Only count unsynced entries within the range of stats summary
+        if (entry['is_synced'] == false || entry['is_synced'] == null) {
+          final readDate = entry['read_date'];
+          final pages = (entry['end_page'] - entry['start_page']).abs() + 1;
+
+          for (var dayItem in summary) {
+            if (dayItem['date'] == readDate) {
+              dayItem['total_pages'] = (dayItem['total_pages'] ?? 0) + pages;
+              localTotalAdded += pages as int;
+              break;
+            }
+          }
+        }
+      }
+      
+      stats['total_pages'] = (stats['total_pages'] ?? 0) + localTotalAdded;
+    } catch (e) {
+      debugPrint("Error merging local stats: $e");
     }
   }
 
@@ -527,13 +630,43 @@ class HomeScreenController extends GetxController {
 
   Future<void> fetchReadingHistoryTotal() async {
     try {
+      int total = 0;
       final response = await Request().get(Url.readingHistoryTotal);
       if (response.statusCode == 200) {
-        readingHistoryTotal.value = response.data['data']['total_pages'];
+        final rawTotal = response.data['data']['total_pages'];
+        total = int.tryParse(rawTotal?.toString() ?? '0') ?? 0;
       }
+      
+      // Add local unsynced total
+      final prefs = await SharedPreferences.getInstance();
+      final String? historyJson = prefs.getString('local_history');
+      if (historyJson != null) {
+        final List<dynamic> localHistory = jsonDecode(historyJson);
+        for (var entry in localHistory) {
+          if (entry['is_synced'] == false || entry['is_synced'] == null) {
+            final pages = (entry['end_page'] - entry['start_page']).abs() + 1;
+            total += pages as int;
+          }
+        }
+      }
+      
+      readingHistoryTotal.value = total;
     } catch (e) {
-      print(e);
-      AppToast.error(message: 'Gagal memuat total halaman yang dibaca');
+      debugPrint("Error fetching history total: $e");
+      // Fallback: try to calculate from local only if we have no total
+      if (readingHistoryTotal.value == 0) {
+         final prefs = await SharedPreferences.getInstance();
+         final historyJson = prefs.getString('local_history');
+         if (historyJson != null) {
+            final List<dynamic> localHistory = jsonDecode(historyJson);
+            int localOnly = 0;
+            for (var entry in localHistory) {
+              final pages = (entry['end_page'] - entry['start_page']).abs() + 1;
+              localOnly += pages as int;
+            }
+            readingHistoryTotal.value = localOnly;
+         }
+      }
     }
   }
 }

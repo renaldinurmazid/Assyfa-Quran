@@ -3,6 +3,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/blog_detail_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -248,6 +249,10 @@ class ShowBlogScreen extends StatelessWidget {
                   ).colorScheme.onSurface.withOpacity(0.8),
                   height: 1.6,
                 ),
+                onTapUrl: (url) async {
+                  await DeepLinkService.handlePayload(url);
+                  return true;
+                },
                 customStylesBuilder: (element) {
                   final styles = <String, String>{};
 

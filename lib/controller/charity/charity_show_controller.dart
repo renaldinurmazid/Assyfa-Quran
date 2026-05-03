@@ -28,6 +28,7 @@ class CharityShowController extends GetxController {
         AppToast.error(message: response.data['message']);
       }
     } catch (e) {
+      print(e);
       AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;

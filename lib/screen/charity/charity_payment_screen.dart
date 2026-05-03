@@ -46,17 +46,7 @@ class CharityPaymentScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Infaq Sekarang',
-          style: pSemiBold16.copyWith(color: context.theme.colorScheme.primary),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left_2,
-            color: context.theme.colorScheme.primary,
-          ),
-          onPressed: () => Get.back(),
-        ),
+        title: Text('Infaq Sekarang', style: pSemiBold16),
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -67,65 +57,77 @@ class CharityPaymentScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader(context, 'Nominal Infaq'),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller.nominalController,
-                cursorColor: context.theme.colorScheme.primary,
-                style: pSemiBold14.copyWith(color: context.theme.colorScheme.primary),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.end,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
-                ],
-                decoration: InputDecoration(
-                  hintText: '0',
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: Text(
-                      'Rp ',
-                      style: pSemiBold14.copyWith(
-                        color: context.theme.colorScheme.primary,
+              if (controller.formType == 'general') ...[
+                _buildSectionHeader(context, 'Nominal Infaq'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller.nominalController,
+                  cursorColor: context.theme.colorScheme.primary,
+                  style: pSemiBold14,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.end,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
+                  ],
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text('Rp ', style: pSemiBold14),
+                    ),
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 0,
+                      minHeight: 0,
+                    ),
+                    hintStyle: pMedium12,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
                       ),
                     ),
                   ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 0,
-                    minHeight: 0,
-                  ),
-                  hintStyle: pRegular12.copyWith(
-                    color: context.theme.colorScheme.primary.withOpacity(0.2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: context.theme.colorScheme.primary.withOpacity(0.2),
-                    ),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: context.theme.colorScheme.primary.withOpacity(0.2),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: context.theme.colorScheme.primary),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildFastInput(context, controller, 'Rp10.000', '10000'),
-                  _buildFastInput(context, controller, 'Rp25.000', '25000'),
-                  _buildFastInput(context, controller, 'Rp50.000', '50000'),
-                  _buildFastInput(context, controller, 'Rp100.000', '100000'),
-                ],
-              ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _buildFastInput(context, controller, 'Rp10.000', '10000'),
+                    _buildFastInput(context, controller, 'Rp25.000', '25000'),
+                    _buildFastInput(context, controller, 'Rp50.000', '50000'),
+                    _buildFastInput(context, controller, 'Rp100.000', '100000'),
+                    _buildFastInput(context, controller, 'Rp500.000', '500000'),
+                    _buildFastInput(
+                      context,
+                      controller,
+                      'Rp1.000.000',
+                      '1000000',
+                    ),
+                  ],
+                ),
+              ] else ...[
+                _buildQurbanSection(context, controller),
+              ],
               const SizedBox(height: 24),
               _buildSectionHeader(context, 'Data Diri'),
               const SizedBox(height: 18),
@@ -134,38 +136,41 @@ class CharityPaymentScreen extends StatelessWidget {
                 hintText: 'Nama Lengkap',
               ),
               const SizedBox(height: 18),
-              Row(
-                children: [
-                  Obx(
-                    () => SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Checkbox(
-                        value: controller.isAnonymous.value,
-                        onChanged: (value) {
-                          controller.isAnonymous.value = value!;
-                        },
-                        activeColor: context.theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+              if (controller.formType == 'general') ...[
+                Row(
+                  children: [
+                    Obx(
+                      () => SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: controller.isAnonymous.value,
+                          onChanged: (value) {
+                            controller.isAnonymous.value = value!;
+                          },
+                          activeColor: context.theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          side: BorderSide(
+                            color: context.theme.colorScheme.primary
+                                .withOpacity(0.2),
+                          ),
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
                         ),
-                        side: BorderSide(
-                          color: context.theme.colorScheme.primary.withOpacity(0.2),
-                        ),
-                        materialTapTargetSize: MaterialTapTargetSize.padded,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Sembunyikan nama saya (Anonim)',
-                    style: pRegular12.copyWith(
-                      color: context.theme.colorScheme.onSurface,
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sembunyikan nama saya (Anonim)',
+                      style: pRegular12.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
               TextInput(
                 controller: controller.phoneController,
                 hintText: 'Nomor WhatsApp',
@@ -176,7 +181,9 @@ class CharityPaymentScreen extends StatelessWidget {
                   ? Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(context.isDarkMode ? 0.05 : 0.1),
+                        color: Colors.amber.withOpacity(
+                          context.isDarkMode ? 0.05 : 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.amber.withOpacity(0.3),
@@ -222,7 +229,9 @@ class CharityPaymentScreen extends StatelessWidget {
                       border: Border.all(
                         color: selected != null
                             ? context.theme.colorScheme.primary
-                            : (context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200),
+                            : (context.isDarkMode
+                                  ? Colors.grey.shade900
+                                  : Colors.grey.shade200),
                         width: selected != null ? 2 : 1,
                       ),
                       boxShadow: [
@@ -240,7 +249,10 @@ class CharityPaymentScreen extends StatelessWidget {
                             width: 48,
                             height: 32,
                             decoration: BoxDecoration(
-                              color: context.theme.colorScheme.surfaceContainerHighest,
+                              color: context
+                                  .theme
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: selected.logo.isNotEmpty
@@ -283,7 +295,8 @@ class CharityPaymentScreen extends StatelessWidget {
                             child: Text(
                               'Pilih metode pembayaran',
                               style: pRegular14.copyWith(
-                                color: context.theme.colorScheme.onSurfaceVariant,
+                                color:
+                                    context.theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -298,6 +311,32 @@ class CharityPaymentScreen extends StatelessWidget {
                   ),
                 );
               }),
+              const SizedBox(height: 24),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.05),
+                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 18,
+                      color: Colors.orange,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Dana donasi yang terhimpun di Quranuna bukan untuk tujuan pencucian uang, terorisme maupun tindak kejahatan lainnya.',
+                        style: pRegular12.copyWith(color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 48),
             ],
           ),
@@ -377,7 +416,7 @@ class CharityPaymentScreen extends StatelessWidget {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
                 ? context.theme.colorScheme.primary
@@ -386,7 +425,9 @@ class CharityPaymentScreen extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? context.theme.colorScheme.primary
-                  : (context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200),
+                  : (context.isDarkMode
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade200),
             ),
             boxShadow: [
               if (isSelected)
@@ -400,9 +441,7 @@ class CharityPaymentScreen extends StatelessWidget {
           child: Text(
             label,
             style: pSemiBold14.copyWith(
-              color: isSelected
-                  ? Colors.white
-                  : context.theme.colorScheme.primary,
+              color: isSelected ? Colors.white : null,
             ),
           ),
         ),
@@ -410,177 +449,386 @@ class CharityPaymentScreen extends StatelessWidget {
     });
   }
 
-  void _showPaymentMethodBottomSheet(
+  Widget _buildQurbanSection(
     BuildContext context,
     CharityPaymentController controller,
   ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      isScrollControlled: true,
-      builder: (_) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.3,
-          maxChildSize: 0.85,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                // Drag handle
-                Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Pilih Metode Pembayaran',
-                        style: pBold16.copyWith(
-                          color: context.theme.colorScheme.onSurface,
+    final isSatuan = controller.formType == 'satuan';
+    final label = isSatuan ? 'Hewan' : 'Pekurban';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (controller.withOption == 1 &&
+            controller.campaignOptions != null) ...[
+          _buildSectionHeader(context, 'Pilih Paket $label'),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 90,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.campaignOptions!.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final option = controller.campaignOptions![index];
+                return Obx(() {
+                  final isSelected =
+                      controller.selectedOption.value?.id == option.id;
+                  return GestureDetector(
+                    onTap: () => controller.selectOption(option),
+                    child: Container(
+                      width: 160,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? context.theme.colorScheme.primary.withOpacity(
+                              0.05,
+                            )
+                            : context.theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? context.theme.colorScheme.primary
+                              : context.theme.dividerColor.withOpacity(0.1),
+                          width: isSelected ? 2 : 1,
                         ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Icon(
-                          Icons.close,
-                          color: context.theme.colorScheme.onSurfaceVariant,
-                          size: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: Obx(() {
-                    if (controller.isLoading.value) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: context.theme.colorScheme.primary,
-                        ),
-                      );
-                    }
-                    return ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.all(20),
-                      itemCount: controller.paymentMethods.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final method = controller.paymentMethods[index];
-                        return Obx(() {
-                          final isSelected =
-                              controller.selectedPaymentMethod.value?.id ==
-                              method.id;
-                          return GestureDetector(
-                            onTap: () {
-                              controller.selectPaymentMethod(method);
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: context.theme.colorScheme.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? context.theme.colorScheme.primary
-                                      : Colors.transparent,
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: context.theme.colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: method.logo.isNotEmpty
-                                        ? SvgPicture.network(
-                                            method.logo,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return const Center(
-                                                    child: Icon(
-                                                      IconlyLight.image,
-                                                      color: Colors.grey,
-                                                      size: 16,
-                                                    ),
-                                                  );
-                                                },
-                                            placeholderBuilder: (context) =>
-                                                const Center(
-                                                  child: SizedBox(
-                                                    width: 12,
-                                                    height: 12,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                        ),
-                                                  ),
-                                                ),
-                                          )
-                                        : const Icon(
-                                            IconlyLight.wallet,
-                                            size: 20,
-                                            color: Colors.grey,
-                                          ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      method.name,
-                                      style: pSemiBold14.copyWith(
-                                        color: isSelected
-                                            ? context.theme.colorScheme.primary
-                                            : context.theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      IconlyBold.tick_square,
-                                      color: context.theme.colorScheme.primary,
-                                      size: 24,
-                                    ),
-                                ],
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            option.name,
+                            style: pSemiBold14.copyWith(
+                              color: isSelected
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.onSurface,
                             ),
-                          );
-                        });
-                      },
-                    );
-                  }),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            option.price,
+                            style: pBold14.copyWith(
+                              color: isSelected
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Jumlah $label :',
+              style: pSemiBold14.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
+            ),
+            Row(
+              children: [
+                Obx(
+                  () => Text(
+                    '${controller.quantity.value} $label',
+                    style: pBold14.copyWith(
+                      color: context.theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: controller.incrementQuantity,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: context.theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.theme.colorScheme.primary.withOpacity(
+                            0.3,
+                          ),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: controller.decrementQuantity,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: context.isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.remove,
+                      color: context.isDarkMode
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader(context, 'Total Infaq'),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: context.isDarkMode
+                ? Colors.grey.shade900
+                : context.theme.colorScheme.primary.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: context.theme.colorScheme.primary.withOpacity(0.1),
+            ),
+          ),
+          child: Obx(() {
+            final total =
+                int.tryParse(
+                  controller.selectedNominal.value.replaceAll('.', ''),
+                ) ??
+                0;
+            final formatter = NumberFormat.decimalPattern('id');
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Subtotal',
+                  style: pMedium14.copyWith(
+                    color: context.theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  'Rp ${formatter.format(total)}',
+                  style: pBold18.copyWith(
+                    color: context.theme.colorScheme.primary,
+                  ),
                 ),
               ],
             );
-          },
-        );
-      },
+          }),
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader(context, 'Kurban atas nama...'),
+        const SizedBox(height: 12),
+        Obx(
+          () => ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: controller.qurbanNameControllers.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              return TextInput(
+                controller: controller.qurbanNameControllers[index],
+                hintText: 'Nama $label ${index + 1}',
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
+}
+
+void _showPaymentMethodBottomSheet(
+  BuildContext context,
+  CharityPaymentController controller,
+) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: context.theme.scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    isScrollControlled: true,
+    builder: (_) {
+      return DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              // Drag handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Pilih Metode Pembayaran',
+                      style: pBold16.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(
+                        Icons.close,
+                        color: context.theme.colorScheme.onSurfaceVariant,
+                        size: 22,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: context.theme.colorScheme.primary,
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: controller.paymentMethods.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final method = controller.paymentMethods[index];
+                      return Obx(() {
+                        final isSelected =
+                            controller.selectedPaymentMethod.value?.id ==
+                            method.id;
+                        return GestureDetector(
+                          onTap: () {
+                            controller.selectPaymentMethod(method);
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: context.theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? context.theme.colorScheme.primary
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: context
+                                        .theme
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: method.logo.isNotEmpty
+                                      ? SvgPicture.network(
+                                          method.logo,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Center(
+                                                  child: Icon(
+                                                    IconlyLight.image,
+                                                    color: Colors.grey,
+                                                    size: 16,
+                                                  ),
+                                                );
+                                              },
+                                          placeholderBuilder: (context) =>
+                                              const Center(
+                                                child: SizedBox(
+                                                  width: 12,
+                                                  height: 12,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              ),
+                                        )
+                                      : const Icon(
+                                          IconlyLight.wallet,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    method.name,
+                                    style: pSemiBold14.copyWith(
+                                      color: isSelected
+                                          ? context.theme.colorScheme.primary
+                                          : context.theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Icon(
+                                    IconlyBold.tick_square,
+                                    color: context.theme.colorScheme.primary,
+                                    size: 24,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                    },
+                  );
+                }),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
 }

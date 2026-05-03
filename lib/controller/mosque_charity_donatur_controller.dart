@@ -5,7 +5,7 @@ import 'package:quran_app/models/campaign_donatur_model.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 
 class MosqueCharityDonaturController extends GetxController {
-  final int mosqueCharityId = Get.arguments;
+  final int mosqueCharityId = Get.arguments is Map ? Get.arguments['mosqueCharityId'] : Get.arguments;
   var isLoading = true.obs;
   var isLoadingMore = false.obs;
   var donaturList = <DonaturItem>[].obs;

@@ -35,6 +35,8 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
+                const SizedBox(height: 12),
+                _buildFilterTabs(context, controller),
                 const SizedBox(height: 20),
                 Expanded(
                   child: Obx(() {
@@ -241,8 +243,10 @@ class AppShareLeaderboardScreen extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: controller.otherUsers.length,
-        separatorBuilder: (context, index) =>
-            Divider(height: 1, color: Theme.of(context).dividerColor),
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          color: !context.isDarkMode ? Colors.grey[300] : Colors.grey[700],
+        ),
         itemBuilder: (context, index) {
           final user = controller.otherUsers[index];
           return _buildListTile(context, user);
@@ -271,7 +275,10 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                 ? NetworkImage(user.profilePicture!)
                 : null,
             child: user.profilePicture == null
-                ? Icon(IconlyBold.profile, color: Theme.of(context).disabledColor)
+                ? Icon(
+                    IconlyBold.profile,
+                    color: Theme.of(context).disabledColor,
+                  )
                 : null,
           ),
           const SizedBox(width: 16),
@@ -290,7 +297,9 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'KODE: ${user.referralCode}',
-                  style: pRegular12.copyWith(color: Theme.of(context).hintColor),
+                  style: pRegular12.copyWith(
+                    color: Theme.of(context).hintColor,
+                  ),
                 ),
               ],
             ),
@@ -346,7 +355,10 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                   ? NetworkImage(me.profilePicture!)
                   : null,
               child: me.profilePicture == null
-                  ? Icon(IconlyBold.profile, color: Theme.of(context).disabledColor)
+                  ? Icon(
+                      IconlyBold.profile,
+                      color: Theme.of(context).disabledColor,
+                    )
                   : null,
             ),
             const SizedBox(width: 16),
@@ -362,13 +374,77 @@ class AppShareLeaderboardScreen extends StatelessWidget {
                   ),
                   Text(
                     'Anda telah mengajak ${me.totalReferral} teman',
-                    style: pRegular12.copyWith(color: Theme.of(context).hintColor),
+                    style: pRegular12.copyWith(
+                      color: Theme.of(context).hintColor,
+                    ),
                   ),
                 ],
               ),
             ),
             Icon(IconlyLight.send, color: Theme.of(context).primaryColor),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs(
+    BuildContext context,
+    AppShareLeaderboardController controller,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Obx(
+        () => Row(
+          children: [
+            _buildTabItem(context, controller, 0, 'Mingguan'),
+            _buildTabItem(context, controller, 1, 'Bulanan'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabItem(
+    BuildContext context,
+    AppShareLeaderboardController controller,
+    int index,
+    String label,
+  ) {
+    final isActive = controller.filterIndex.value == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => controller.changeFilter(index),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: (isActive ? pBold12 : pMedium12).copyWith(
+                color: isActive ? Theme.of(context).primaryColor : Colors.white70,
+              ),
+            ),
+          ),
         ),
       ),
     );

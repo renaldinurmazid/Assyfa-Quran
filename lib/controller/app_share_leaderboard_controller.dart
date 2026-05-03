@@ -6,11 +6,12 @@ import 'package:quran_app/widgets/app_toast.dart';
 
 class AppShareLeaderboardController extends GetxController {
   final isLoading = false.obs;
+  final filterIndex = 0.obs; // 0: Weekly, 1: Monthly
   final leaderboard = <LeaderboardEntry>[].obs;
   final myStats = Rxn<LeaderboardEntry>();
   final errorMessage = ''.obs;
 
-  @override 
+  @override
   void onInit() {
     super.onInit();
     fetchLeaderboard();
@@ -21,7 +22,10 @@ class AppShareLeaderboardController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final response = await Request().get(Url.appShareLeaderboard);
+      final type = filterIndex.value == 0 ? 'weekly' : 'monthly';
+      final response = await Request().get(
+        '${Url.appShareLeaderboard}?filter=$type',
+      );
 
       if (response.statusCode == 200) {
         final data = Data.fromJson(response.data['data']);
@@ -34,6 +38,13 @@ class AppShareLeaderboardController extends GetxController {
       AppToast.error(message: 'Terjadi kesalahan saat mengambil data');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void changeFilter(int index) {
+    if (filterIndex.value != index) {
+      filterIndex.value = index;
+      fetchLeaderboard();
     }
   }
 

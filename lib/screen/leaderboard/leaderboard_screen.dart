@@ -314,8 +314,10 @@ class LeaderboardScreen extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: controller.otherUsers.length,
-          separatorBuilder: (context, index) =>
-              Divider(height: 1, color: Theme.of(context).dividerColor),
+          separatorBuilder: (context, index) => Divider(
+            height: 1,
+            color: !context.isDarkMode ? Colors.grey[300] : Colors.grey[700],
+          ),
           itemBuilder: (context, index) {
             final user = controller.otherUsers[index];
             return _buildListTile(context, user);

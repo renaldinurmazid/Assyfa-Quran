@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:quran_app/models/campaign_category_model.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/controller/charity/charity_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
@@ -14,436 +16,93 @@ class CharityScreen extends StatelessWidget {
     final controller = Get.put(CharityScreenController());
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () => controller.fetchCharityList(),
-        color: context.theme.colorScheme.primary,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildAppBar(context),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                child: Column(
-                  children: [
-                    _buildSearchBar(context),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(context, 'Infaq Pilihan', () {}),
-                    const SizedBox(height: 16),
-                    _buildFeaturedSection(context, controller),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(context, 'Infaq Lainnya', () {}),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            _buildOtherCharitySection(context, controller),
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 180,
-      pinned: true,
-      stretch: true,
-      backgroundColor: context.theme.colorScheme.primary,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
-        onPressed: () => Get.back(),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
+      appBar: AppBar(
+        title: Text('Infaq', style: pSemiBold16),
         centerTitle: true,
-        title: Text(
-          'Infaq & Sedekah',
-          style: pBold18.copyWith(color: Colors.white),
-        ),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Using a placeholder or existing image for background
-            Image.asset(
-              'assets/images/png/bg-palestine.png', // Reusing this for theme consistency
-              fit: BoxFit.cover,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.3),
-                    context.theme.colorScheme.primary.withOpacity(0.8),
-                    context.theme.colorScheme.primary,
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: TextField(
-        onSubmitted: (value) {
-          if (value.isNotEmpty) {
-            Get.toNamed(Routes.charitySearch, arguments: value);
-          }
-        },
-        decoration: InputDecoration(
-          hintText: 'Cari program kebaikan...',
-          hintStyle: pRegular14.copyWith(
-            color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
-          ),
-          prefixIcon: Icon(
-            IconlyLight.search,
-            color: context.theme.colorScheme.primary,
-            size: 20,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 15,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title, VoidCallback onTap) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: pSemiBold18.copyWith(
-            color: context.theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeaturedSection(
-    BuildContext context,
-    CharityScreenController controller,
-  ) {
-    return SizedBox(
-      height: 280,
-      child: Obx(() {
-        if (controller.isLoading.value) {
-          return _buildFeaturedShimmer(context);
-        }
-        return ListView.separated(
-          itemCount: controller.charityList.length,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            final charity = controller.charityList[index];
-            return GestureDetector(
-              onTap: () => Get.toNamed(
-                Routes.charityShow,
-                arguments: {'id': charity.id},
-              ),
-              child: Container(
-                width: 260,
-                decoration: BoxDecoration(
-                  color: context.theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          controller: controller.scrollController,
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () => Get.toNamed(Routes.charitySearch),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 5,
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 160,
-                            width: double.infinity,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(24),
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(24),
-                              ),
-                              child: Image.network(
-                                charity.coverImage,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: context.theme.colorScheme.surfaceContainerHighest,
-                                    child: Icon(
-                                      IconlyLight.image,
-                                      color: context.theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 12,
-                            right: 12,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: context.theme.colorScheme.surface.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    IconlyBold.star,
-                                    color: Colors.orange,
-                                    size: 12,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Pilihan',
-                                    style: pBold10.copyWith(
-                                      color: context.theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade600
+                            : Colors.grey.shade500,
                       ),
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                    Expanded(
-                      flex: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              charity.title,
-                              style: pBold14.copyWith(
-                                color: context.theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Spacer(),
-                            _buildProgressBar(
-                              context,
-                              charity.percentage.toDouble(),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Terkumpul',
-                                      style: pRegular10.copyWith(
-                                        color: context.theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                    Text(
-                                      charity.collectedAmount,
-                                      style: pBold12.copyWith(
-                                        color: context.theme.colorScheme.primary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: context.theme.colorScheme.primary.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    '${charity.percentage}%',
-                                    style: pBold10.copyWith(
-                                      color: context.theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                    child: Row(
+                      children: [
+                        Icon(
+                          IconlyLight.search,
+                          color: context.isDarkMode
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade500,
                         ),
-                      ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Cari program kebaikan...',
+                          style: pRegular14.copyWith(
+                            color: context.isDarkMode
+                                ? Colors.grey.shade600
+                                : Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-          separatorBuilder: (context, index) => const SizedBox(width: 16),
-        );
-      }),
-    );
-  }
-
-  Widget _buildOtherCharitySection(
-    BuildContext context,
-    CharityScreenController controller,
-  ) {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return _buildListShimmer(context);
-      }
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final charity = controller.charityList[index];
-            return GestureDetector(
-              onTap: () => Get.toNamed(
-                Routes.charityShow,
-                arguments: {'id': charity.id},
-              ),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: context.theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
                   ),
                 ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      height: 85,
-                      width: 85,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          charity.coverImage,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: context.theme.colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                IconlyLight.image,
-                                color: context.theme.colorScheme.onSurfaceVariant,
-                                size: 20,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            charity.title,
-                            style: pSemiBold12.copyWith(
-                              color: context.theme.colorScheme.onSurface,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildProgressBar(
-                            context,
-                            charity.percentage.toDouble(),
-                            height: 4,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                charity.collectedAmount,
-                                style: pBold12.copyWith(
-                                  color: context.theme.colorScheme.primary,
-                                ),
-                              ),
-                              Text(
-                                charity.endDate ?? '-',
-                                style: pMedium10.copyWith(
-                                  color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    Text("Program Terbaru", style: pSemiBold14),
+                    InkWell(
+                      onTap: () {
+                        _showFilterBottomSheet(context, controller);
+                      },
+                      child: Icon(
+                        Icons.filter_alt,
+                        color: context.isDarkMode
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade800,
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          }, childCount: controller.charityList.length),
-        ),
-      );
-    });
-  }
-
-  Widget _buildProgressBar(
-    BuildContext context,
-    double percentage, {
-    double height = 6,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(height),
-      child: LinearProgressIndicator(
-        value: percentage / 100,
-        minHeight: height,
-        backgroundColor: context.theme.colorScheme.surfaceContainerHighest,
-        valueColor: AlwaysStoppedAnimation<Color>(
-          context.theme.colorScheme.primary,
+              // list program terbaru
+              const SizedBox(height: 12),
+              _buildLatestProgramList(controller),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Program Lainnya", style: pSemiBold14),
+                ),
+              ),
+              // list program lainnya
+              const SizedBox(height: 12),
+              _buildOtherProgramList(controller),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -455,8 +114,12 @@ class CharityScreen extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: EdgeInsets.zero,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-        highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+        baseColor: context.isDarkMode
+            ? Colors.grey.shade900
+            : Colors.grey.shade200,
+        highlightColor: context.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.grey.shade100,
         child: Container(
           width: 260,
           margin: const EdgeInsets.only(right: 16),
@@ -469,24 +132,522 @@ class CharityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListShimmer(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => Shimmer.fromColors(
-            baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-            highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
-            child: Container(
-              height: 110,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: context.theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
+  Widget _buildLatestProgramList(CharityScreenController controller) {
+    return SizedBox(
+      height: 260,
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return _buildFeaturedShimmer(Get.context!);
+        }
+        return ListView.separated(
+          itemCount: controller.latestCharityList.length,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          physics: const BouncingScrollPhysics(),
+          separatorBuilder: (context, index) => const SizedBox(width: 12),
+          itemBuilder: (context, index) {
+            final charity = controller.latestCharityList[index];
+            return GestureDetector(
+              onTap: () => Get.toNamed(
+                Routes.charityShow,
+                arguments: {'id': charity.id},
+              ),
+              child: Container(
+                width: 180,
+                decoration: BoxDecoration(
+                  color: context.theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: context.isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade100,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image with top rounded corners
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                      child: Image.network(
+                        charity.coverImage,
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            color: context
+                                .theme
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            child: Icon(
+                              IconlyLight.image,
+                              color: context.theme.colorScheme.onSurfaceVariant,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                charity.category?.name ?? "Program Kebaikan",
+                                style: pRegular10.copyWith(
+                                  color: context
+                                      .theme
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.verified,
+                                color: Colors.blue.shade500,
+                                size: 12,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            height: 30,
+                            child: Text(
+                              charity.title,
+                              style: pSemiBold12.copyWith(
+                                color: context.theme.colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              value: charity.percentage / 100,
+                              minHeight: 6,
+                              backgroundColor: context.isDarkMode
+                                  ? Colors.grey.shade900
+                                  : Colors.grey.shade100,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColor.primaryColorDark,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Terkumpul', style: pRegular10),
+                                  Text(
+                                    charity.collectedAmount,
+                                    style: pSemiBold12,
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text('Sisa hari', style: pRegular10),
+                                  charity.endDate.toString() == 'Infinity'
+                                      ? const Icon(
+                                          Icons.all_inclusive,
+                                          size: 16,
+                                        )
+                                      : Text(
+                                          charity.endDate.toString(),
+                                          style: pSemiBold12,
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildOtherProgramList(CharityScreenController controller) {
+    return Column(
+      children: [
+        Obx(() {
+          if (controller.isLoading.value) {
+            return _buildVerticalListShimmer(Get.context!);
+          }
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: controller.charityList.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 32,
+              color: context.isDarkMode
+                  ? Colors.grey.shade900
+                  : Colors.grey.shade200,
+            ),
+            itemBuilder: (context, index) {
+              final charity = controller.charityList[index];
+              return GestureDetector(
+                onTap: () => Get.toNamed(Routes.charityShow,
+                    arguments: {'id': charity.id}),
+                child: Container(
+                  color: Colors.transparent,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          charity.coverImage,
+                          width: 130,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            width: 130,
+                            height: 100,
+                            color: context.theme.colorScheme.surfaceVariant,
+                            child: const Icon(IconlyLight.image),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            Text(
+                              charity.title,
+                              style: pSemiBold12.copyWith(
+                                color: context.theme.colorScheme.onSurface,
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            // Organizer + Verified + ORG
+                            Row(
+                              children: [
+                                Text(
+                                  charity.category?.name ?? "Program Kebaikan",
+                                  style: pRegular10.copyWith(
+                                    color: context
+                                        .theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.verified,
+                                  color: Colors.blue.shade500,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // Progress Bar
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: LinearProgressIndicator(
+                                value: charity.percentage / 100,
+                                minHeight: 4,
+                                backgroundColor: context.isDarkMode
+                                    ? Colors.grey.shade900
+                                    : Colors.grey.shade100,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  AppColor.primaryColorDark,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Bottom Info
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Terkumpul",
+                                      style: pRegular10.copyWith(
+                                        color: context.theme.colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Text(
+                                      charity.collectedAmount,
+                                      style: pSemiBold12,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "Sisa hari",
+                                      style: pRegular10.copyWith(
+                                        color: context.theme.colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                    charity.endDate.toString() == 'Infinity'
+                                        ? const Icon(Icons.all_inclusive,
+                                            size: 16)
+                                        : Text(
+                                            charity.endDate.toString(),
+                                            style: pSemiBold12,
+                                          ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+        Obx(() {
+          if (controller.isLoadingMore.value) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColor.primaryColorDark,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+          if (!controller.hasMoreData.value && controller.charityList.isNotEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Sudah menampilkan semua program',
+                style: pRegular12.copyWith(color: Colors.grey.shade500),
+              ),
+            );
+          }
+          return const SizedBox(height: 20);
+        }),
+      ],
+    );
+  }
+
+  void _showFilterBottomSheet(
+    BuildContext context,
+    CharityScreenController controller,
+  ) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: context.theme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Filter Kategori',
+                  style: pSemiBold18.copyWith(
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    controller.filterByCategory(null);
+                    Get.back();
+                  },
+                  child: Text(
+                    'Reset',
+                    style: pRegular14.copyWith(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Obx(() {
+              if (controller.isLoadingCategory.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (controller.campaignCategories.isEmpty) {
+                return const Center(child: Text("Tidak ada kategori"));
+              }
+
+              return Wrap(
+                spacing: 8,
+                runSpacing: 10,
+                children: controller.campaignCategories.map((category) {
+                  return _buildCategoryChip(context, controller, category);
+                }).toList(),
+              );
+            }),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _buildCategoryChip(
+    BuildContext context,
+    CharityScreenController controller,
+    CategoryDatum category,
+  ) {
+    return Obx(() {
+      final isSelected = controller.selectedCategoryId.value == category.id;
+      return InkWell(
+        onTap: () {
+          controller.filterByCategory(category.id);
+          Get.back();
+        },
+        borderRadius: BorderRadius.circular(100),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColor.primaryColorDark
+                : context.isDarkMode
+                    ? Colors.grey.shade900
+                    : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: isSelected
+                  ? AppColor.primaryColorDark
+                  : context.isDarkMode
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade300,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColor.primaryColorDark.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-          childCount: 5,
+          child: Text(
+            category.name,
+            style: pMedium14.copyWith(
+              color: isSelected
+                  ? Colors.white
+                  : context.theme.colorScheme.onSurface,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildVerticalListShimmer(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 5,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      itemBuilder: (context, index) => Shimmer.fromColors(
+        baseColor: context.isDarkMode
+            ? Colors.grey.shade900
+            : Colors.grey.shade200,
+        highlightColor: context.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.grey.shade100,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 130,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(height: 16, color: Colors.white),
+                    const SizedBox(height: 8),
+                    Container(height: 12, width: 100, color: Colors.white),
+                    const SizedBox(height: 16),
+                    Container(height: 6, color: Colors.white),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(height: 12, width: 60, color: Colors.white),
+                        Container(height: 12, width: 40, color: Colors.white),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

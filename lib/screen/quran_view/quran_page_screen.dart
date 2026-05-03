@@ -96,7 +96,7 @@ class QuranPageScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () => Get.back(result: true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
+                                backgroundColor: AppColor.primaryColorDark,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
@@ -124,8 +124,11 @@ class QuranPageScreen extends StatelessWidget {
         );
 
         if (shouldPop == true) {
+          // Always close the screen after attempting to save history
           await controller.saveReadingHistory();
-          Get.back();
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
         }
       },
       child: Scaffold(
@@ -367,12 +370,11 @@ class QuranPageScreen extends StatelessWidget {
                         Widget buildPageContent() {
                           return Obx(() {
                             if (controller.viewportWidth.value == 0) {
-                              final isLocal = !page.imagePath.startsWith(
-                                'http',
-                              );
-                              return isLocal
+                              final localPath = controller
+                                  .localImagePaths[page.pageNumber];
+                              return localPath != null
                                   ? Image.file(
-                                      File(page.imagePath),
+                                      File(localPath),
                                       fit: isLandscape
                                           ? BoxFit.fitWidth
                                           : BoxFit.contain,
@@ -424,41 +426,46 @@ class QuranPageScreen extends StatelessWidget {
                                     height: displayHeight,
                                     child: Stack(
                                       children: [
-                                        if (!page.imagePath.startsWith('http'))
-                                          Image.file(
-                                            File(page.imagePath),
-                                            width: displayWidth,
-                                            height: displayHeight,
-                                            fit: BoxFit.fill,
-                                            gaplessPlayback: true,
-                                            filterQuality: FilterQuality.medium,
-                                          )
-                                        else
-                                          CachedNetworkImage(
-                                            imageUrl: page.imagePath,
-                                            width: displayWidth,
-                                            height: displayHeight,
-                                            fit: BoxFit.fill,
-                                            filterQuality: FilterQuality.medium,
-                                            placeholder: (context, url) =>
-                                                Center(
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                        color: Theme.of(
-                                                          context,
-                                                        ).primaryColor,
+                                        () {
+                                          final localPath = controller
+                                              .localImagePaths[page.pageNumber];
+                                          return localPath != null
+                                              ? Image.file(
+                                                  File(localPath),
+                                                  width: displayWidth,
+                                                  height: displayHeight,
+                                                  fit: BoxFit.fill,
+                                                  gaplessPlayback: true,
+                                                  filterQuality:
+                                                      FilterQuality.medium,
+                                                )
+                                              : CachedNetworkImage(
+                                                  imageUrl: page.imagePath,
+                                                  width: displayWidth,
+                                                  height: displayHeight,
+                                                  fit: BoxFit.fill,
+                                                  filterQuality:
+                                                      FilterQuality.medium,
+                                                  placeholder:
+                                                      (context, url) => Center(
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              color: Theme.of(
+                                                                context,
+                                                              ).primaryColor,
+                                                            ),
                                                       ),
-                                                ),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    const Center(
-                                                      child: Icon(
-                                                        Icons.error,
-                                                        color: Colors.red,
-                                                        size: 40,
-                                                      ),
-                                                    ),
-                                          ),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          const Center(
+                                                            child: Icon(
+                                                              Icons.error,
+                                                              color: Colors.red,
+                                                              size: 40,
+                                                            ),
+                                                          ),
+                                                );
+                                        }(),
                                         Obx(
                                           () => controller.isPlaying.value
                                               ? Stack(
@@ -787,9 +794,7 @@ class QuranPageScreen extends StatelessWidget {
                                         Icon(
                                           IconlyBold.bookmark,
                                           size: 22,
-                                          color: Theme.of(
-                                            context,
-                                          ).primaryColor,
+                                          color: Theme.of(context).primaryColor,
                                         ),
                                         const SizedBox(width: 12),
                                         Text(
@@ -828,11 +833,9 @@ class QuranPageScreen extends StatelessWidget {
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).primaryColor.withOpacity(
-                                                    0.3,
-                                                  ),
+                                                  color: Theme.of(context)
+                                                      .primaryColor
+                                                      .withOpacity(0.3),
                                                   blurRadius: 10,
                                                   offset: const Offset(0, 4),
                                                 ),
@@ -840,8 +843,9 @@ class QuranPageScreen extends StatelessWidget {
                                             ),
                                             child: Icon(
                                               controller.isPlaying.value
-                                                  ? IconlyBold.voice
-                                                  : IconlyBold.play,
+                                                  ? Icons
+                                                        .pause_circle_outline_rounded
+                                                  : Icons.play_arrow_rounded,
                                               color: Colors.white,
                                               size: 24,
                                             ),
@@ -898,6 +902,30 @@ class QuranPageScreen extends StatelessWidget {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () => _showAudioSettings(
+                                          context,
+                                          controller,
+                                        ),
+                                        child: Container(
+                                          height: 48,
+                                          width: 48,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor.withOpacity(0.05),
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.settings,
+                                            color: AppColor.primaryColor,
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -907,6 +935,7 @@ class QuranPageScreen extends StatelessWidget {
                         ),
                       ),
               ),
+
               Obx(() {
                 if (!controller.isBookmarkVisible.value) {
                   return const SizedBox.shrink();
@@ -1263,6 +1292,154 @@ class QuranPageScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showAudioSettings(
+    BuildContext context,
+    QuranPageScreenController controller,
+  ) {
+    final colorScheme = context.theme.colorScheme;
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text("Pengaturan Audio", style: pSemiBold18),
+            const SizedBox(height: 8),
+            Text(
+              "Sesuaikan pengalaman mendengarkan murottal Anda",
+              style: pRegular12.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+
+            // Repeat Dropdown
+            _buildSettingRow(
+              context,
+              label: "Pengulangan per Ayat",
+              icon: Icons.repeat_rounded,
+              child: Obx(
+                () => DropdownButton<int>(
+                  value: controller.repeatCount.value,
+                  underline: const SizedBox(),
+                  dropdownColor: colorScheme.surface,
+                  items: [1, 2, 3, 5, 10].map((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text("x$value", style: pMedium14),
+                    );
+                  }).toList(),
+                  onChanged: (val) => controller.repeatCount.value = val ?? 1,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Delay Dropdown
+            _buildSettingRow(
+              context,
+              label: "Jeda antar Ayat",
+              icon: Icons.timer_outlined,
+              child: Obx(
+                () => DropdownButton<int>(
+                  value: controller.delayBetweenAyahs.value,
+                  underline: const SizedBox(),
+                  dropdownColor: colorScheme.surface,
+                  items: List.generate(11, (index) => index).map((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text("$value dtk", style: pMedium14),
+                    );
+                  }).toList(),
+                  onChanged: (val) =>
+                      controller.delayBetweenAyahs.value = val ?? 0,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Play/Stop Button
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: Obx(
+                () => ElevatedButton.icon(
+                  onPressed: () {
+                    Get.back();
+                    controller.toggleAudio();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: Icon(
+                    controller.isPlaying.value
+                        ? Icons.stop_rounded
+                        : Icons.play_arrow_rounded,
+                  ),
+                  label: Text(
+                    controller.isPlaying.value
+                        ? "Hentikan Murottal"
+                        : "Putar Murottal",
+                    style: pSemiBold16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _buildSettingRow(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Widget child,
+  }) {
+    final colorScheme = context.theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColor.primaryColor),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label, style: pMedium14)),
+          child,
+        ],
       ),
     );
   }

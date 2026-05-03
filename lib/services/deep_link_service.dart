@@ -368,6 +368,25 @@ class DeepLinkService {
   }
 
   static Future<void> handlePayload(String payload) async {
+    if (payload.isEmpty) return;
+
+    // Handle internal relative paths
+    if (payload.startsWith('/')) {
+      if (payload == '/quran_page' || payload == '/quran_list') {
+        Get.toNamed(payload, arguments: {'slug': 'id'});
+      } else if (payload.contains('?')) {
+        final uri = Uri.tryParse(payload);
+        if (uri != null) {
+          Get.toNamed(uri.path, arguments: uri.queryParameters);
+        } else {
+          Get.toNamed(payload);
+        }
+      } else {
+        Get.toNamed(payload);
+      }
+      return;
+    }
+
     final uri = Uri.tryParse(payload);
     if (uri == null) return;
 
@@ -383,5 +402,13 @@ class DeepLinkService {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     }
+  }
+
+  static String? extractPayload(Map<String, dynamic> data) {
+    return data['url'] ??
+        data['link'] ??
+        (data['click_action'] != 'FLUTTER_NOTIFICATION_CLICK'
+            ? data['click_action']
+            : null);
   }
 }

@@ -27,6 +27,7 @@ class GroupSearchController extends GetxController {
         publicGroups.clear();
       }
     } catch (e) {
+      print(e);
       AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
       publicGroups.clear();
     } finally {
