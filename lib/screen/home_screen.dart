@@ -1364,44 +1364,44 @@ class HomeScreen extends StatelessWidget {
                                 ],
                               ),
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: AuthController.to.isLoadingAppleLogin.value
-                            ? null
-                            : () => AuthController.to.handleAppleSignIn(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                        ),
-                        child: AuthController.to.isLoadingAppleLogin.value
-                            ? SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Get.theme.colorScheme.primary,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/png/apple.png',
-                                    width: 24,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Login dengan Apple',
-                                    style: pMedium14.copyWith(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
+                      // const SizedBox(height: 16),
+                      // ElevatedButton(
+                      //   onPressed: AuthController.to.isLoadingAppleLogin.value
+                      //       ? null
+                      //       : () => AuthController.to.handleAppleSignIn(),
+                      //   style: ElevatedButton.styleFrom(
+                      //     backgroundColor: Colors.white,
+                      //     minimumSize: const Size(double.infinity, 48),
+                      //     shape: RoundedRectangleBorder(
+                      //       borderRadius: BorderRadius.circular(100),
+                      //     ),
+                      //   ),
+                      //   child: AuthController.to.isLoadingAppleLogin.value
+                      //       ? SizedBox(
+                      //           height: 24,
+                      //           width: 24,
+                      //           child: CircularProgressIndicator(
+                      //             color: Get.theme.colorScheme.primary,
+                      //             strokeWidth: 2,
+                      //           ),
+                      //         )
+                      //       : Row(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             Image.asset(
+                      //               'assets/images/png/apple.png',
+                      //               width: 24,
+                      //             ),
+                      //             const SizedBox(width: 12),
+                      //             Text(
+                      //               'Login dengan Apple',
+                      //               style: pMedium14.copyWith(
+                      //                 color: Colors.black,
+                      //               ),
+                      //             ),
+                      //           ],
+                      //         ),
+                      // ),
                     ],
                   );
                 }
