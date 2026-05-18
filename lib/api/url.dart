@@ -4,7 +4,9 @@ class Url {
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
+  static const String dropdownPage = '/api/quran/dropdown-page';
   static const String loginGoogle = '/api/login/google';
+  static const String loginApple = '/api/login/apple';
   static const String login = '/api/login';
   static const String changeProfile = '/api/change-profile';
   static const String groups = '/api/groups';
@@ -74,4 +76,6 @@ class Url {
   static const String memorizationLeaderboard = '/api/memorization/leaderboard';
   static const String dzikirStats = '/api/dzikir/stats';
   static const String dzikirView = '/api/dzikir/view';
+
+  static const String deleteAccount = '/api/delete-account';
 }

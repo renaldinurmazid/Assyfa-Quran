@@ -83,7 +83,7 @@ class QuranPageScreenController extends GetxController {
   final tabIsSurat = true.obs;
   final searchAyahPageController = PageController();
   final searchSuratPageController = PageController();
-  final listPages = <int>[].obs;
+  final listPages = List.generate(604, (index) => index + 1).obs;
   Timer? _searchTimer;
 
   /* =======================
@@ -108,6 +108,15 @@ class QuranPageScreenController extends GetxController {
   // Audio Settings
   final repeatCount = 1.obs; // x1, x2, x3, x5, x10
   final delayBetweenAyahs = 0.obs; // 0-10 seconds
+
+  // Audio Range Settings
+  final fromSurahId = 0.obs;
+  final fromAyahNumber = 1.obs;
+  final toSurahId = 0.obs;
+  final toAyahNumber = 1.obs;
+  final isAutoAudioTransition = false.obs;
+  final isRangePlayback = false.obs;
+  final _suppressAudioStop = false.obs; // prevents changePage from stopping audio during fetchByPageNumber
   int currentAyahRepeatIndex = 0;
 
   /* =======================
@@ -138,6 +147,7 @@ class QuranPageScreenController extends GetxController {
     ]);
 
     await fetchInitial();
+    fetchListPages();
     await fetchMarkers();
     await loadBookmarks();
     audioPlayer.playerStateStream.listen((state) {
@@ -188,11 +198,25 @@ class QuranPageScreenController extends GetxController {
     return !connectivityResult.contains(ConnectivityResult.none);
   }
 
-  void fetchListPages() {
-    if (listPages.isEmpty) {
-      for (int i = 1; i <= 604; i++) {
-        listPages.add(i);
+  Future<void> fetchListPages() async {
+    isDialogLoading.value = true;
+    try {
+      final response = await Request().get(Url.dropdownPage);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        final List<int> pages = data
+            .map((e) => int.tryParse(e.toString()) ?? 0)
+            .where((p) => p > 0)
+            .toList();
+
+        if (pages.isNotEmpty) {
+          listPages.assignAll(pages);
+        }
       }
+    } catch (e) {
+      print("Error fetching dropdown page: $e");
+    } finally {
+      isDialogLoading.value = false;
     }
   }
 
@@ -213,6 +237,25 @@ class QuranPageScreenController extends GetxController {
         }
       }
     }
+  }
+
+  void initAudioRange() {
+    if (dataPage.isNotEmpty && currentPageIndex.value < dataPage.length) {
+      final currentPage = dataPage[currentPageIndex.value];
+      if (currentPage.ayahs.isNotEmpty) {
+        final ayah = currentPage.ayahs.first.ayah;
+        if (ayah != null) {
+          fromSurahId.value = ayah.surahId;
+          fromAyahNumber.value = ayah.ayahNumber;
+          toSurahId.value = ayah.surahId;
+          toAyahNumber.value = ayah.ayahNumber;
+          return;
+        }
+      }
+    }
+    // Default fallback if no page data
+    if (fromSurahId.value == 0) fromSurahId.value = 1;
+    if (toSurahId.value == 0) toSurahId.value = 1;
   }
 
   Future<void> _loadLocalImagePaths() async {
@@ -538,6 +581,13 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchByPageNumber(int pageNumber) async {
     if (isLoading.value) return;
 
+    // Capture audio transition state and take ownership of resumption
+    final shouldResumeAudio = isAutoAudioTransition.value;
+    if (shouldResumeAudio) {
+      isAutoAudioTransition.value = false; // We handle it from here
+      _suppressAudioStop.value = true;     // Prevent any changePage from stopping audio
+    }
+
     isLoading.value = true;
     final slug = Get.arguments['slug'];
     final isOnline = await _checkConnection();
@@ -550,8 +600,13 @@ class QuranPageScreenController extends GetxController {
       _updateDataPageWithWindow([localDatum]);
       _jumpToTargetPage();
       isLoading.value = false;
-      // If we are offline, we are done
-      if (!isOnline) return;
+
+      // If we are offline, resume audio on local data and return
+      if (!isOnline) {
+        if (shouldResumeAudio) _resumeAudioAfterTransition();
+        return;
+      }
+      // If online, DON'T resume audio yet — API data will replace this
     }
 
     if (isOnline) {
@@ -574,6 +629,9 @@ class QuranPageScreenController extends GetxController {
           ); // Automatic background download for persistence
           isOfflineMode.value = false;
           isLoading.value = false;
+
+          // Resume audio on final API data
+          if (shouldResumeAudio) _resumeAudioAfterTransition();
           return;
         }
       } catch (e) {
@@ -581,7 +639,7 @@ class QuranPageScreenController extends GetxController {
       }
     }
 
-    // Try offline
+    // Try offline fallback
     final datum = await offlineService.getPageData(slug, pageNumber);
     if (datum != null) {
       isOfflineMode.value = true;
@@ -597,6 +655,9 @@ class QuranPageScreenController extends GetxController {
     }
 
     isLoading.value = false;
+
+    // Resume audio on fallback data
+    if (shouldResumeAudio) _resumeAudioAfterTransition();
   }
 
   void _updateDataPageWithWindow(List<Datum> currentData) {
@@ -635,12 +696,29 @@ class QuranPageScreenController extends GetxController {
     currentPageIndex.value = index;
     final selectedDatum = dataPage[index];
 
-    if (isPlaying.value) stopAudio();
+    // Don't stop audio if we're in the middle of an audio-driven page transition
+    if (isPlaying.value &&
+        !isAutoAudioTransition.value &&
+        !_suppressAudioStop.value) {
+      stopAudio();
+    }
 
-    // Check if we hit a dummy page
+    // Check if we hit a dummy page — fetchByPageNumber handles audio resumption
     if (selectedDatum.id < 0) {
       fetchByPageNumber(selectedDatum.pageNumber);
       return;
+    }
+
+    // If this is an auto audio transition to an already-loaded (non-dummy) page,
+    // continue playing from the first ayah directly
+    if (isAutoAudioTransition.value) {
+      isAutoAudioTransition.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (pageController.hasClients) {
+          pageController.jumpToPage(index);
+        }
+        playAyah(0);
+      });
     }
 
     // Attempt to cache current and nearby pages in background
@@ -922,6 +1000,18 @@ class QuranPageScreenController extends GetxController {
     });
   }
 
+  /// Resume audio playback after a page transition completes.
+  /// Scheduled as a post-frame callback so it runs AFTER _jumpToTargetPage's
+  /// jumpToPage has settled.
+  void _resumeAudioAfterTransition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _suppressAudioStop.value = false;
+      if (isPlaying.value) {
+        playAyah(0);
+      }
+    });
+  }
+
   /* =======================
    * AUDIO
    * ======================= */
@@ -929,7 +1019,38 @@ class QuranPageScreenController extends GetxController {
     if (isPlaying.value) {
       stopAudio();
     } else {
+      isRangePlayback.value = false;
       playAyah(0);
+    }
+  }
+
+  /// Play audio from a specific range (Dari - Sampai) as configured in settings.
+  void playAudioRange() async {
+    if (isPlaying.value) {
+      stopAudio();
+      return;
+    }
+
+    isRangePlayback.value = true;
+
+    // Jump to the selected 'from' position first
+    await fetchInitial(
+      surahId: fromSurahId.value,
+      ayah: fromAyahNumber.value,
+    );
+
+    // Find the index of the target ayah in the newly loaded page
+    if (dataPage.isNotEmpty) {
+      final pageData = dataPage[currentPageIndex.value];
+      int index = pageData.ayahs.indexWhere((element) =>
+          element.ayah?.ayahNumber == fromAyahNumber.value &&
+          element.ayah?.surahId == fromSurahId.value);
+
+      if (index != -1) {
+        playAyah(index);
+      } else {
+        playAyah(0);
+      }
     }
   }
 
@@ -964,7 +1085,6 @@ class QuranPageScreenController extends GetxController {
       await audioPlayer.setUrl(audio.audioPath);
       audioPlayer.play();
     } catch (e) {
-      print("Error playing audio: $e");
       _playNextAyah();
     }
   }
@@ -998,10 +1118,34 @@ class QuranPageScreenController extends GetxController {
           await Future.delayed(Duration(seconds: delayBetweenAyahs.value));
         }
 
+        // Check if we reached the end of the selected range (only for range playback)
+        if (isRangePlayback.value) {
+          final currentAyah = pageData.ayahs[idx].ayah;
+          if (currentAyah != null &&
+              currentAyah.surahId == toSurahId.value &&
+              currentAyah.ayahNumber == toAyahNumber.value) {
+            stopAudio();
+            return;
+          }
+        }
+
         if (idx < pageData.ayahs.length - 1) {
           if (isPlaying.value) playAyah(idx + 1);
         } else {
-          stopAudio();
+          // Check if there's a next page to continue playback
+          if (nextPageNumber.value != null && isPlaying.value) {
+            // Find if next page exists as a dummy or real page in dataPage
+            int nextIdx = dataPage
+                .indexWhere((e) => e.pageNumber == nextPageNumber.value);
+            if (nextIdx != -1) {
+              isAutoAudioTransition.value = true;
+              changePage(nextIdx);
+            } else {
+              stopAudio();
+            }
+          } else {
+            stopAudio();
+          }
         }
       }
     } else {
@@ -1014,6 +1158,9 @@ class QuranPageScreenController extends GetxController {
     isPlaying.value = false;
     playingAyahId.value = 0;
     currentAyahRepeatIndex = 0;
+    isRangePlayback.value = false;
+    isAutoAudioTransition.value = false;
+    _suppressAudioStop.value = false;
   }
 
   void changeReciter(String? code) {
@@ -1034,10 +1181,10 @@ class QuranPageScreenController extends GetxController {
   /* =======================
    * SEARCH HANDLERS
    * ======================= */
-  void onSelectSurah(int id) {
+  void onSelectSurah(int id, {int? ayah}) {
     Get.back();
     isFocus.value = true;
-    fetchInitial(surahId: id);
+    fetchInitial(surahId: id, ayah: ayah);
   }
 
   void onSelectJuz(int id) {
@@ -1055,7 +1202,9 @@ class QuranPageScreenController extends GetxController {
       );
       return;
     }
-    if (searchAyahController.text.isEmpty) {
+
+    final String inputVal = searchAyahController.text;
+    if (inputVal.isEmpty) {
       AppToast.warning(
         context: Get.context,
         message: 'Silahkan masukkan nomor ayat',
@@ -1063,11 +1212,35 @@ class QuranPageScreenController extends GetxController {
       );
       return;
     }
+
+    final int? ayahNum = int.tryParse(inputVal);
+    if (ayahNum == null || ayahNum <= 0) {
+      AppToast.warning(
+        context: Get.context,
+        message: 'Nomor ayat tidak valid',
+        title: 'Peringatan',
+      );
+      return;
+    }
+
+    // Validate against total ayah
+    final selectedSurah =
+        dropdownSurah.firstWhereOrNull((s) => s.id == surahId.value);
+    if (selectedSurah != null && ayahNum > selectedSurah.totalAyah) {
+      AppToast.info(
+        context: Get.context,
+        message:
+            'Surah ${selectedSurah.name} hanya memiliki ${selectedSurah.totalAyah} ayat.',
+        title: 'Informasi',
+      );
+      return;
+    }
+
     Get.back();
     isFocus.value = true;
     fetchInitial(
       surahId: surahId.value,
-      ayah: int.tryParse(searchAyahController.text),
+      ayah: ayahNum,
     );
   }
 
@@ -1091,20 +1264,35 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchDropdownSurah(String search) async {
     isDialogLoading.value = true;
     try {
-      final String response = await rootBundle.loadString(
-        'assets/data/ddl-surah.json',
+      final response = await Request().get(
+        Url.dropdownSurah,
+        queryParameters: {
+          'search': search,
+          'per_page':
+              114, // Fetch all surahs if possible, or at least enough for the list
+        },
       );
-      final List<DropdownSurah> allSurahs = dropdownSurahFromJson(response);
 
-      if (search.isEmpty) {
-        dropdownSurah.value = allSurahs;
-      } else {
-        dropdownSurah.value = allSurahs
-            .where((s) => s.name.toLowerCase().contains(search.toLowerCase()))
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        dropdownSurah.value = data
+            .map((e) => DropdownSurah.fromJson(e))
             .toList();
       }
     } catch (e) {
-      print("Error loading surah assets: $e");
+      print("Error fetching dropdown surah: $e");
+      // final String response = await rootBundle.loadString(
+      //   'assets/data/ddl-surah.json',
+      // );
+      // final List<DropdownSurah> allSurahs = dropdownSurahFromJson(response);
+
+      // if (search.isEmpty) {
+      //   dropdownSurah.value = allSurahs;
+      // } else {
+      //   dropdownSurah.value = allSurahs
+      //       .where((s) => s.name.toLowerCase().contains(search.toLowerCase()))
+      //       .toList();
+      // }
     } finally {
       isDialogLoading.value = false;
     }
@@ -1113,14 +1301,13 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchDropdownJuz() async {
     isDialogLoading.value = true;
     try {
-      // Create Juz items with a loop (1-30)
-      final List<DropdownJuz> allJuz = [];
-      for (int i = 1; i <= 30; i++) {
-        allJuz.add(DropdownJuz(juzNomor: i, surah: []));
+      final response = await Request().get(Url.dropdownJuz);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        dropdownJuz.value = data.map((e) => DropdownJuz.fromJson(e)).toList();
       }
-      dropdownJuz.value = allJuz;
     } catch (e) {
-      print("Error generating juz items: $e");
+      print("Error fetching dropdown juz: $e");
     } finally {
       isDialogLoading.value = false;
     }

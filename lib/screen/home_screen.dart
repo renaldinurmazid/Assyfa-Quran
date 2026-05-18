@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -134,10 +135,36 @@ class HomeScreen extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              'assets/images/png/bg-palestine.png',
-              fit: BoxFit.cover,
-            ),
+            Obx(() {
+              final auth = AuthController.to;
+              final bgUrl = auth.userData['selected_background_path_url'];
+
+              if (!auth.isLogin.value || bgUrl == null || bgUrl.isEmpty) {
+                return Image.asset(
+                  'assets/images/png/bg-palestine.png',
+                  fit: BoxFit.cover,
+                );
+              }
+
+              return Image.network(
+                bgUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(color: Colors.white),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/png/bg-palestine.png',
+                    fit: BoxFit.cover,
+                  );
+                },
+              );
+            }),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -509,8 +536,7 @@ class HomeScreen extends StatelessWidget {
                           text: TextSpan(
                             children: [
                               TextSpan(
-                                text: controller.readingHistoryTotal.value
-                                    .toString(),
+                                text: controller.formattedReadingHistoryTotal,
                                 style: pSemiBold14.copyWith(
                                   color: context.theme.colorScheme.primary,
                                   fontWeight: FontWeight.w800,
@@ -575,7 +601,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '$totalPages Halaman',
+                '${NumberFormat.decimalPattern('id').format(totalPages)} Halaman',
                 style: pBold12.copyWith(
                   color: context.theme.colorScheme.onSurface,
                 ),
@@ -985,7 +1011,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 18),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('Pilih Mushaf', style: pBold18),
+              child: Text('Pilih Mushaf', style: pSemiBold16),
             ),
             const SizedBox(height: 18),
             GridView.builder(
@@ -1062,13 +1088,6 @@ class HomeScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: context.theme.colorScheme.primary.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
           ),
           child: Row(
             children: [
@@ -1126,6 +1145,11 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/hafalan.png',
         'route': Routes.memorizeQuran,
       },
+      {
+        'title': 'Kalkulator Zakat',
+        'icon': 'assets/images/png/giving-zakat.png',
+        'route': Routes.calculatorZakat,
+      },
     ];
     return Container(
       decoration: BoxDecoration(
@@ -1137,7 +1161,7 @@ class HomeScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Layanan Lainnya', style: pBold18),
+          Text('Layanan Lainnya', style: pSemiBold18),
           const SizedBox(height: 18),
           GridView.builder(
             shrinkWrap: true,
@@ -1152,6 +1176,14 @@ class HomeScreen extends StatelessWidget {
             itemBuilder: (context, index) => InkWell(
               onTap: () {
                 if (menu[index]['route'] == Routes.groupNgaji &&
+                    !AuthController.to.isLogin.value) {
+                  Get.back();
+                  controller.isEmailLogin.value = false;
+                  Get.dialog(buildLoginDialog(controller));
+                  return;
+                }
+
+                if (menu[index]['route'] == Routes.memorizeQuran &&
                     !AuthController.to.isLogin.value) {
                   Get.back();
                   controller.isEmailLogin.value = false;
@@ -1192,8 +1224,9 @@ class HomeScreen extends StatelessWidget {
 
   Widget buildLoginDialog(HomeScreenController controller) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
       backgroundColor: Get.context!.theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Container(
         padding: const EdgeInsets.all(28),
         child: SingleChildScrollView(
@@ -1202,7 +1235,9 @@ class HomeScreen extends StatelessWidget {
             children: [
               Obx(
                 () => Text(
-                  controller.isEmailLogin.value ? 'Login Akun' : 'Login Sekarang',
+                  controller.isEmailLogin.value
+                      ? 'Login Akun'
+                      : 'Login Sekarang',
                   style: pSemiBold18.copyWith(
                     color: Get.theme.colorScheme.primary,
                   ),
@@ -1240,7 +1275,8 @@ class HomeScreen extends StatelessWidget {
                                 : Icons.visibility_off,
                             color: Colors.grey,
                           ),
-                          onPressed: () => controller.isPasswordVisible.toggle(),
+                          onPressed: () =>
+                              controller.isPasswordVisible.toggle(),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -1271,7 +1307,9 @@ class HomeScreen extends StatelessWidget {
                               )
                             : Text(
                                 'Masuk',
-                                style: pSemiBold14.copyWith(color: Colors.white),
+                                style: pSemiBold14.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
                       ),
                     ],
@@ -1295,11 +1333,10 @@ class HomeScreen extends StatelessWidget {
                             : () => AuthController.to.handleSignIn(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Get.theme.colorScheme.primary,
-                          minimumSize: const Size(double.infinity, 42),
+                          minimumSize: const Size(double.infinity, 48),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),
-                          elevation: 10,
                         ),
                         child: AuthController.to.isLoading.value
                             ? const SizedBox(
@@ -1320,8 +1357,46 @@ class HomeScreen extends StatelessWidget {
                                   const SizedBox(width: 12),
                                   Text(
                                     'Login dengan Google',
-                                    style: pSemiBold14.copyWith(
+                                    style: pMedium14.copyWith(
                                       color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: AuthController.to.isLoadingAppleLogin.value
+                            ? null
+                            : () => AuthController.to.handleAppleSignIn(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                        ),
+                        child: AuthController.to.isLoadingAppleLogin.value
+                            ? SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Get.theme.colorScheme.primary,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/png/apple.png',
+                                    width: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Login dengan Apple',
+                                    style: pMedium14.copyWith(
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ],

@@ -68,7 +68,10 @@ class _ChatScreenState extends State<ChatScreen> {
         // ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => controller.fetchNotifications(),
+        onRefresh: () async {
+          await controller.fetchNotifications();
+          await controller.fetchCategories();
+        },
         color: context.theme.colorScheme.primary,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,14 +200,14 @@ class _ChatScreenState extends State<ChatScreen> {
         if (today.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(top: 16, bottom: 8),
-            child: Text('Today,', style: pBold16.copyWith(fontSize: 18)),
+            child: Text('Hari Ini,', style: pMedium14),
           ),
           ...today.map((n) => _buildNotificationTile(context, n, controller)),
         ],
         if (earlier.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(top: 24, bottom: 8),
-            child: Text('Earlier', style: pBold16.copyWith(fontSize: 18)),
+            child: Text('Sebelumnya', style: pMedium14),
           ),
           ...earlier.map((n) => _buildNotificationTile(context, n, controller)),
         ],

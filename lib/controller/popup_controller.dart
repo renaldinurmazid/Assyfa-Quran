@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
@@ -10,6 +13,26 @@ class PopupController extends GetxController {
   final popups = <PopupData>[].obs;
   final isLoading = false.obs;
   final _shownPopupIds = <int>{};
+  String? _cachedDeviceId;
+
+  Future<String?> _getDeviceId() async {
+    if (_cachedDeviceId != null) return _cachedDeviceId;
+
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        _cachedDeviceId = androidInfo.id; // Usually a unique hardware ID
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        _cachedDeviceId = iosInfo.identifierForVendor;
+      }
+    } catch (e) {
+      debugPrint('Error getting device info: $e');
+    }
+
+    return _cachedDeviceId;
+  }
 
   /// Fetch active popups from API.
   /// If user is logged in, server automatically filters show_once popups.
@@ -25,7 +48,7 @@ class PopupController extends GetxController {
       }
     } catch (e) {
       // Silently fail — popup is non-critical
-      print('Error fetching popups: $e');
+      debugPrint('Error fetching popups: $e');
     } finally {
       isLoading.value = false;
     }
@@ -35,9 +58,14 @@ class PopupController extends GetxController {
   Future<void> recordView(int popupId) async {
     if (!AuthController.to.isLogin.value) return;
     try {
-      await Request().post(Url.popupView(popupId), data: {}, useToken: true);
+      final deviceId = await _getDeviceId();
+      await Request().post(
+        Url.popupView(popupId),
+        data: {'device_id': deviceId},
+        useToken: true,
+      );
     } catch (e) {
-      print('Error recording popup view: $e');
+      debugPrint('Error recording popup view: $e');
     }
   }
 
@@ -45,9 +73,14 @@ class PopupController extends GetxController {
   Future<void> recordDismiss(int popupId) async {
     if (!AuthController.to.isLogin.value) return;
     try {
-      await Request().post(Url.popupDismiss(popupId), data: {}, useToken: true);
+      final deviceId = await _getDeviceId();
+      await Request().post(
+        Url.popupDismiss(popupId),
+        data: {'device_id': deviceId},
+        useToken: true,
+      );
     } catch (e) {
-      print('Error recording popup dismiss: $e');
+      debugPrint('Error recording popup dismiss: $e');
     }
   }
 
@@ -55,9 +88,14 @@ class PopupController extends GetxController {
   Future<void> recordClick(int popupId) async {
     if (!AuthController.to.isLogin.value) return;
     try {
-      await Request().post(Url.popupClick(popupId), data: {}, useToken: true);
+      final deviceId = await _getDeviceId();
+      await Request().post(
+        Url.popupClick(popupId),
+        data: {'device_id': deviceId},
+        useToken: true,
+      );
     } catch (e) {
-      print('Error recording popup click: $e');
+      debugPrint('Error recording popup click: $e');
     }
   }
 

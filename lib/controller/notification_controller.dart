@@ -31,8 +31,10 @@ class NotificationController extends GetxController {
       ever(AuthController.to.isLogin, (bool loggedIn) {
         if (loggedIn) {
           fetchNotifications();
+          fetchCategories();
         } else {
           notifications.clear();
+          categories.clear();
         }
       });
     }
@@ -45,8 +47,9 @@ class NotificationController extends GetxController {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
-        categories.value =
-            data.map((e) => CategoryNotification.fromJson(e)).toList();
+        categories.value = data
+            .map((e) => CategoryNotification.fromJson(e))
+            .toList();
       }
     } catch (e) {
       print("Error fetching categories: $e");
@@ -55,7 +58,10 @@ class NotificationController extends GetxController {
     }
   }
 
-  Future<void> fetchNotifications({int? categoryId, bool loadMore = false}) async {
+  Future<void> fetchNotifications({
+    int? categoryId,
+    bool loadMore = false,
+  }) async {
     if (!Get.isRegistered<AuthController>() ||
         !AuthController.to.isLogin.value) {
       return;
@@ -83,9 +89,7 @@ class NotificationController extends GetxController {
         isLoading.value = true;
       }
 
-      Map<String, dynamic> queryParams = {
-        'page': _currentPage,
-      };
+      Map<String, dynamic> queryParams = {'page': _currentPage};
       if (categoryId != null) {
         queryParams['category'] = categoryId;
       }
@@ -99,8 +103,9 @@ class NotificationController extends GetxController {
         final Map<String, dynamic> paginatedData = response.data['data'];
         final List<dynamic> data = paginatedData['data'];
 
-        final newNotifications =
-            data.map((e) => NotificationModel.fromJson(e)).toList();
+        final newNotifications = data
+            .map((e) => NotificationModel.fromJson(e))
+            .toList();
 
         if (loadMore) {
           notifications.addAll(newNotifications);

@@ -17,17 +17,8 @@ class InfaqActivityScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Aktivitas Infaq',
-          style: pSemiBold16.copyWith(color: context.theme.colorScheme.onSurface),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left_2,
-            color: context.theme.colorScheme.primary,
-          ),
-          onPressed: () => Get.back(),
-        ),
+        title: Text('Aktivitas Infaq', style: pSemiBold16),
+        centerTitle: true,
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -51,21 +42,11 @@ class InfaqActivityScreen extends StatelessWidget {
 
   Widget _buildTabs(BuildContext context, InfaqActivityController controller) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      padding: const EdgeInsets.all(6),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Obx(
         () => Row(
@@ -78,7 +59,7 @@ class InfaqActivityScreen extends StatelessWidget {
                 onTap: () => controller.changeTab(0),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             Expanded(
               child: _buildTabItem(
                 context,
@@ -102,17 +83,22 @@ class InfaqActivityScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? context.theme.colorScheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? context.theme.colorScheme.primary
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Center(
           child: Text(
             label,
-            style: pBold14.copyWith(
-              color: isSelected ? Colors.white : context.theme.colorScheme.onSurfaceVariant,
+            style: pSemiBold14.copyWith(
+              color: isSelected
+                  ? Colors.white
+                  : context.theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -120,7 +106,10 @@ class InfaqActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfaqList(BuildContext context, InfaqActivityController controller) {
+  Widget _buildInfaqList(
+    BuildContext context,
+    InfaqActivityController controller,
+  ) {
     return Obx(() {
       if (controller.isLoading.value && controller.donations.isEmpty) {
         return _buildLoadingState(context);
@@ -135,17 +124,24 @@ class InfaqActivityScreen extends StatelessWidget {
         color: context.theme.colorScheme.primary,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount:
               controller.donations.length +
               (controller.hasNextPage.value ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == controller.donations.length) {
               controller.loadMore();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: context.theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               );
             }
@@ -188,17 +184,24 @@ class InfaqActivityScreen extends StatelessWidget {
         color: context.theme.colorScheme.primary,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount:
               controller.mosqueDonations.length +
               (controller.mosqueHasNextPage.value ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == controller.mosqueDonations.length) {
               controller.loadMore();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: context.theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               );
             }
@@ -212,12 +215,10 @@ class InfaqActivityScreen extends StatelessWidget {
               amount: donation.formattedAmount,
               status: donation.status,
               date: donation.createdAt,
-              onTap: () {
-                Get.toNamed(
-                  Routes.mosqueInfaqActivityDetail,
-                  arguments: donation.id,
-                );
-              },
+              onTap: () => Get.toNamed(
+                Routes.mosqueInfaqActivityDetail,
+                arguments: donation.id,
+              ),
             );
           },
         ),
@@ -254,116 +255,109 @@ class InfaqActivityScreen extends StatelessWidget {
         statusText = status;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    image,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 60,
-                      height: 60,
-                      color: context.theme.colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        IconlyLight.image,
-                        color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
-                      ),
-                    ),
+          border: Border.all(
+            color: context.isDarkMode
+                ? Colors.grey.shade800
+                : Colors.grey.shade100,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                image,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: context.theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    IconlyLight.image,
+                    color: Colors.grey,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title + Status Badge
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: pBold14.copyWith(
-                                color: context.theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: pSemiBold12.copyWith(
+                            color: context.theme.colorScheme.onSurface,
+                            height: 1.3,
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              statusText,
-                              style: pBold10.copyWith(color: statusColor),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        orderId,
-                        style: pMedium10.copyWith(
-                          color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            amount,
-                            style: pBold14.copyWith(
-                              color: context.theme.colorScheme.primary,
-                            ),
-                          ),
-                          Text(
-                            formattedDate,
-                            style: pRegular10.copyWith(
-                              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: pBold10.copyWith(color: statusColor),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+
+                  // Amount + Date
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        amount,
+                        style: pBold14.copyWith(
+                          color: context.theme.colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        formattedDate,
+                        style: pRegular10.copyWith(
+                          color: context.theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -377,24 +371,24 @@ class InfaqActivityScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: context.theme.colorScheme.primary.withOpacity(0.1),
+              color: context.theme.colorScheme.primary.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
             child: Icon(
               IconlyLight.chart,
-              size: 64,
+              size: 48,
               color: context.theme.colorScheme.primary,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Text(
             'Belum Ada Riwayat',
-            style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+            style: pBold16.copyWith(color: context.theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Text(
             'Infaq yang Anda berikan akan muncul di sini',
-            style: pRegular14.copyWith(
+            style: pRegular12.copyWith(
               color: context.theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -405,16 +399,18 @@ class InfaqActivityScreen extends StatelessWidget {
 
   Widget _buildLoadingState(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor:
-            context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-        highlightColor:
-            context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+        baseColor: context.isDarkMode
+            ? Colors.grey.shade900
+            : Colors.grey.shade200,
+        highlightColor: context.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.grey.shade100,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          height: 100,
+          margin: const EdgeInsets.only(bottom: 12),
+          height: 84,
           decoration: BoxDecoration(
             color: context.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(20),

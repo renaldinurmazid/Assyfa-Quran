@@ -11,11 +11,14 @@ import 'package:flutter/material.dart';
 import 'package:quran_app/services/fcm_service.dart';
 import 'package:quran_app/services/referrer_service.dart';
 
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
 class AuthController extends GetxController {
   static AuthController get to => Get.find<AuthController>();
 
   RxBool isLogin = false.obs;
   RxBool isLoading = false.obs;
+  RxBool isLoadingAppleLogin = false.obs;
   RxString token = ''.obs;
   RxMap userData = {}.obs;
   RxString referralCode = ''.obs;
@@ -134,6 +137,81 @@ class AuthController extends GetxController {
       return null;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<User?> handleAppleSignIn() async {
+    try {
+      isLoadingAppleLogin.value = true;
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final OAuthCredential credential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final user = userCredential.user;
+
+      // Get Firebase ID Token and send to backend
+      final String? firebaseToken = await user?.getIdToken();
+
+      if (firebaseToken != null) {
+        final response = await Request().post(
+          Url.loginApple,
+          useToken: false,
+          data: {
+            'firebase_token': firebaseToken,
+            if (referralCode.value.isNotEmpty)
+              'referral_code': referralCode.value,
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = response.data;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('access_token', data['token']);
+          await prefs.setString('user_data', jsonEncode(data['user']));
+
+          token.value = data['token'];
+          userData.value = data['user'];
+          isLogin.value = true;
+
+          // Reset FCM unauthorized flag for fresh session
+          FcmService.resetUnauthorizedError();
+          // Save FCM Token after successful login
+          FcmService.saveToken();
+
+          // Clear referral code after success
+          referralCode.value = '';
+          final prefsClear = await SharedPreferences.getInstance();
+          await prefsClear.remove('referral_code_temp');
+
+          Get.back();
+          AppToast.success(message: response.data['message']);
+        } else {
+          AppToast.error(message: response.data['message']);
+        }
+      }
+
+      return user;
+    } catch (e) {
+      if (e is SignInWithAppleAuthorizationException &&
+          e.code == AuthorizationErrorCode.canceled) {
+        return null;
+      }
+      AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
+      return null;
+    } finally {
+      isLoadingAppleLogin.value = false;
     }
   }
 
@@ -317,7 +395,12 @@ class AuthController extends GetxController {
     }
   }
 
-  void forceSignOut() async {
+  Future<void> forceSignOut() async {
+    try {
+      await GoogleSignIn.instance.signOut();
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
     await prefs.remove('user_data');
@@ -325,8 +408,5 @@ class AuthController extends GetxController {
     token.value = '';
     userData.value = {};
     isLogin.value = false;
-
-    // Optional: Back to initial screen if needed
-    // Get.offAllNamed(Routes.initial);
   }
 }

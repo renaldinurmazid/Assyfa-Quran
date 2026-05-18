@@ -2,9 +2,12 @@ import 'package:get/get.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
 import 'package:quran_app/bindings/blog_comment_binding.dart';
+import 'package:quran_app/bindings/delete_account_binding.dart';
 import 'package:quran_app/screen/blog/comment_screen.dart';
 import 'package:quran_app/screen/blog/show_blog_screen.dart';
+import 'package:quran_app/screen/calculator-zakat/calculator_zakat_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
+import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
@@ -336,6 +339,19 @@ class AppPages {
     GetPage(
       name: Routes.memorizeLeaderboard,
       page: () => const MemorizeLeaderboardScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.calculatorZakat,
+      page: () => const CalculatorZakatScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.deleteAccount,
+      page: () => const DeleteAccountScreen(),
+      binding: DeleteAccountBinding(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

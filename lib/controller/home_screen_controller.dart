@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:flutter/material.dart';
@@ -26,6 +27,8 @@ class HomeScreenController extends GetxController {
   final jadwalToday = <String, dynamic>{}.obs;
   final isOfflineMode = false.obs;
   final readingHistoryTotal = 0.obs;
+  String get formattedReadingHistoryTotal =>
+      NumberFormat.decimalPattern('id').format(readingHistoryTotal.value);
 
   final prayers = <PrayerItem>[].obs;
   final isLoadingPrayers = false.obs;
@@ -424,6 +427,7 @@ class HomeScreenController extends GetxController {
         );
       }
     } catch (e) {
+      debugPrint('Error fetching prayer times: $e');
       AppToast.error(message: 'Gagal mengambil waktu sholat');
     } finally {
       isLoadingPrayerTime.value = false;
@@ -470,12 +474,9 @@ class HomeScreenController extends GetxController {
         stats = Map<String, dynamic>.from(response.data['data']);
       } else {
         // If failed, start with empty base
-        stats = {
-          'total_pages': 0,
-          'summary': _generateEmptyWeeklySummary(),
-        };
+        stats = {'total_pages': 0, 'summary': _generateEmptyWeeklySummary()};
       }
-      
+
       // Always merge with local unsynced data
       await _mergeLocalStats(stats);
       weeklyStats.value = stats;
@@ -508,14 +509,14 @@ class HomeScreenController extends GetxController {
         'total_pages': 0,
       });
     }
-    
+
     // Sort summary to always be Sunday to Saturday order
     summary.sort((a, b) {
       final dateA = DateTime.parse(a['date']);
       final dateB = DateTime.parse(b['date']);
       return (dateA.weekday % 7).compareTo(dateB.weekday % 7);
     });
-    
+
     return summary;
   }
 
@@ -527,7 +528,7 @@ class HomeScreenController extends GetxController {
 
       final List<dynamic> localHistory = jsonDecode(historyJson);
       final summary = stats['summary'] as List;
-      
+
       int localTotalAdded = 0;
 
       for (var entry in localHistory) {
@@ -545,7 +546,7 @@ class HomeScreenController extends GetxController {
           }
         }
       }
-      
+
       stats['total_pages'] = (stats['total_pages'] ?? 0) + localTotalAdded;
     } catch (e) {
       debugPrint("Error merging local stats: $e");
@@ -633,10 +634,13 @@ class HomeScreenController extends GetxController {
       int total = 0;
       final response = await Request().get(Url.readingHistoryTotal);
       if (response.statusCode == 200) {
-        final rawTotal = response.data['data']['total_pages'];
-        total = int.tryParse(rawTotal?.toString() ?? '0') ?? 0;
+        final rawTotal =
+            response.data['data']['total_pages']?.toString() ?? '0';
+        // Hapus titik (separator ribuan) sebelum parsing
+        final sanitizedTotal = rawTotal.replaceAll('.', '');
+        total = int.tryParse(sanitizedTotal) ?? 0;
       }
-      
+
       // Add local unsynced total
       final prefs = await SharedPreferences.getInstance();
       final String? historyJson = prefs.getString('local_history');
@@ -649,23 +653,21 @@ class HomeScreenController extends GetxController {
           }
         }
       }
-      
+
       readingHistoryTotal.value = total;
     } catch (e) {
-      debugPrint("Error fetching history total: $e");
-      // Fallback: try to calculate from local only if we have no total
       if (readingHistoryTotal.value == 0) {
-         final prefs = await SharedPreferences.getInstance();
-         final historyJson = prefs.getString('local_history');
-         if (historyJson != null) {
-            final List<dynamic> localHistory = jsonDecode(historyJson);
-            int localOnly = 0;
-            for (var entry in localHistory) {
-              final pages = (entry['end_page'] - entry['start_page']).abs() + 1;
-              localOnly += pages as int;
-            }
-            readingHistoryTotal.value = localOnly;
-         }
+        final prefs = await SharedPreferences.getInstance();
+        final historyJson = prefs.getString('local_history');
+        if (historyJson != null) {
+          final List<dynamic> localHistory = jsonDecode(historyJson);
+          int localOnly = 0;
+          for (var entry in localHistory) {
+            final pages = (entry['end_page'] - entry['start_page']).abs() + 1;
+            localOnly += pages as int;
+          }
+          readingHistoryTotal.value = localOnly;
+        }
       }
     }
   }

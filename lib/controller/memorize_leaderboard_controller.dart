@@ -19,8 +19,11 @@ class MemorizeLeaderboardController extends GetxController {
     isLoading.value = true;
     try {
       final response = await Request().get(Url.memorizationLeaderboard);
+      print(response);
       if (response.statusCode == 200 && response.data['data'] != null) {
-        leaderboardData.value = MemorizeLeaderboard.fromJson(response.data['data']);
+        leaderboardData.value = MemorizeLeaderboard.fromJson(
+          response.data['data'],
+        );
       } else if (response.statusCode == 200) {
         // Handle case where status is 200 but data is null
         debugPrint('[MemorizeLeaderboardController] Response data is null');

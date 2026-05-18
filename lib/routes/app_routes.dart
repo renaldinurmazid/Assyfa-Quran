@@ -46,4 +46,6 @@ abstract class Routes {
   static const mosqueCharityTabs = '/mosque_charity_tabs';
   static const mosqueAdd = '/mosque_add';
   static const memorizeLeaderboard = '/memorize_leaderboard';
+  static const calculatorZakat = '/calculator_zakat';
+  static const deleteAccount = '/delete_account';
 }

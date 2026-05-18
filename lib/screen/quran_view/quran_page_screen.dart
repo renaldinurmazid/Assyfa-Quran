@@ -96,7 +96,9 @@ class QuranPageScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () => Get.back(result: true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColor.primaryColorDark,
+                                backgroundColor: context.isDarkMode
+                                    ? AppColor.primaryColorDark
+                                    : AppColor.primaryColor,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
@@ -161,6 +163,7 @@ class QuranPageScreen extends StatelessWidget {
                       onTap: () {
                         controller.fetchDropdownSurah('');
                         controller.fetchDropdownJuz();
+                        controller.tabIsSurat.value = true;
                         Get.dialog(_buildSearchSurah(context, controller));
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -209,6 +212,7 @@ class QuranPageScreen extends StatelessWidget {
                       onPressed: () {
                         controller.fetchListPages();
                         controller.initGoToDefaults();
+                        controller.tabIsAyah.value = true;
                         Get.dialog(_buildSearchAyah(context, controller));
                       },
                       icon: Icon(
@@ -370,8 +374,8 @@ class QuranPageScreen extends StatelessWidget {
                         Widget buildPageContent() {
                           return Obx(() {
                             if (controller.viewportWidth.value == 0) {
-                              final localPath = controller
-                                  .localImagePaths[page.pageNumber];
+                              final localPath =
+                                  controller.localImagePaths[page.pageNumber];
                               return localPath != null
                                   ? Image.file(
                                       File(localPath),
@@ -446,8 +450,8 @@ class QuranPageScreen extends StatelessWidget {
                                                   fit: BoxFit.fill,
                                                   filterQuality:
                                                       FilterQuality.medium,
-                                                  placeholder:
-                                                      (context, url) => Center(
+                                                  placeholder: (context, url) =>
+                                                      Center(
                                                         child:
                                                             CircularProgressIndicator(
                                                               color: Theme.of(
@@ -813,7 +817,9 @@ class QuranPageScreen extends StatelessWidget {
                                 ),
                                 Container(
                                   height: 1,
-                                  color: Colors.grey.shade100,
+                                  color: context.isDarkMode
+                                      ? Colors.grey.shade800
+                                      : Colors.grey.shade100,
                                 ),
                                 // Audio Player Row
                                 Padding(
@@ -904,10 +910,16 @@ class QuranPageScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       GestureDetector(
-                                        onTap: () => _showAudioSettings(
-                                          context,
-                                          controller,
-                                        ),
+                                        onTap: () {
+                                          if (controller.dropdownSurah.isEmpty) {
+                                            controller.fetchDropdownSurah('');
+                                          }
+                                          controller.initAudioRange();
+                                          _showAudioSettings(
+                                            context,
+                                            controller,
+                                          );
+                                        },
                                         child: Container(
                                           height: 48,
                                           width: 48,
@@ -921,7 +933,9 @@ class QuranPageScreen extends StatelessWidget {
                                           ),
                                           child: Icon(
                                             Icons.settings,
-                                            color: AppColor.primaryColor,
+                                            color: context.isDarkMode
+                                                ? AppColor.primaryColorDark
+                                                : AppColor.primaryColor,
                                             size: 24,
                                           ),
                                         ),
@@ -1304,7 +1318,7 @@ class QuranPageScreen extends StatelessWidget {
 
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -1331,6 +1345,224 @@ class QuranPageScreen extends StatelessWidget {
               style: pRegular12.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
+            Obx(() => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dari', style: pMedium12),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        // From Surah
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color:
+                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: controller.fromSurahId.value,
+                                isExpanded: true,
+                                dropdownColor: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                items: controller.dropdownSurah.isEmpty
+                                    ? [
+                                        DropdownMenuItem<int>(
+                                          value: controller.fromSurahId.value,
+                                          child: const Text('Loading...'),
+                                        )
+                                      ]
+                                    : controller.dropdownSurah.map((surah) {
+                                        return DropdownMenuItem<int>(
+                                          value: surah.id,
+                                          child: Text(
+                                            surah.name,
+                                            style: pMedium14,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    controller.fromSurahId.value = val;
+                                    controller.fromAyahNumber.value = 1;
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // From Ayah
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color:
+                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: controller.fromAyahNumber.value,
+                                isExpanded: true,
+                                dropdownColor: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                items: () {
+                                  final surah = controller.dropdownSurah
+                                      .firstWhereOrNull(
+                                    (s) =>
+                                        s.id == controller.fromSurahId.value,
+                                  );
+                                  int total = surah?.totalAyah ?? 0;
+                                  if (total == 0) {
+                                    return [
+                                      DropdownMenuItem<int>(
+                                        value: controller.fromAyahNumber.value,
+                                        child: Text(
+                                          controller.fromAyahNumber.value
+                                              .toString(),
+                                        ),
+                                      )
+                                    ];
+                                  }
+                                  return List.generate(total, (i) => i + 1)
+                                      .map((ayah) {
+                                    return DropdownMenuItem<int>(
+                                      value: ayah,
+                                      child: Text(
+                                        ayah.toString(),
+                                        style: pMedium14,
+                                      ),
+                                    );
+                                  }).toList();
+                                }(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    controller.fromAyahNumber.value = val;
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )),
+            const SizedBox(height: 16),
+            Obx(() => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Sampai', style: pMedium12),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        // To Surah
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color:
+                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: controller.toSurahId.value,
+                                isExpanded: true,
+                                dropdownColor: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                items: controller.dropdownSurah.isEmpty
+                                    ? [
+                                        DropdownMenuItem<int>(
+                                          value: controller.toSurahId.value,
+                                          child: const Text('Loading...'),
+                                        )
+                                      ]
+                                    : controller.dropdownSurah.map((surah) {
+                                        return DropdownMenuItem<int>(
+                                          value: surah.id,
+                                          child: Text(
+                                            surah.name,
+                                            style: pMedium14,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    controller.toSurahId.value = val;
+                                    controller.toAyahNumber.value = 1;
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // To Ayah
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color:
+                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: controller.toAyahNumber.value,
+                                isExpanded: true,
+                                dropdownColor: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                items: () {
+                                  final surah = controller.dropdownSurah
+                                      .firstWhereOrNull(
+                                    (s) => s.id == controller.toSurahId.value,
+                                  );
+                                  int total = surah?.totalAyah ?? 0;
+                                  if (total == 0) {
+                                    return [
+                                      DropdownMenuItem<int>(
+                                        value: controller.toAyahNumber.value,
+                                        child: Text(
+                                          controller.toAyahNumber.value
+                                              .toString(),
+                                        ),
+                                      )
+                                    ];
+                                  }
+                                  return List.generate(total, (i) => i + 1)
+                                      .map((ayah) {
+                                    return DropdownMenuItem<int>(
+                                      value: ayah,
+                                      child: Text(
+                                        ayah.toString(),
+                                        style: pMedium14,
+                                      ),
+                                    );
+                                  }).toList();
+                                }(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    controller.toAyahNumber.value = val;
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )),
 
             // Repeat Dropdown
             _buildSettingRow(
@@ -1387,7 +1619,7 @@ class QuranPageScreen extends StatelessWidget {
                 () => ElevatedButton.icon(
                   onPressed: () {
                     Get.back();
-                    controller.toggleAudio();
+                    controller.playAudioRange();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.primaryColor,
@@ -1428,7 +1660,7 @@ class QuranPageScreen extends StatelessWidget {
     final colorScheme = context.theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
@@ -1462,7 +1694,9 @@ class QuranPageScreen extends StatelessWidget {
             children: [
               Text(
                 'Pergi Ke',
-                style: pBold18.copyWith(color: Theme.of(context).primaryColor),
+                style: pSemiBold16.copyWith(
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
               const SizedBox(height: 24),
               // Tab Selector
@@ -1563,9 +1797,9 @@ class QuranPageScreen extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
-                                            color: Theme.of(
-                                              context,
-                                            ).dividerColor,
+                                            color: context.isDarkMode
+                                                ? Colors.grey.shade800
+                                                : Colors.grey.shade300,
                                           ),
                                         ),
                                       ),
@@ -1581,7 +1815,7 @@ class QuranPageScreen extends StatelessWidget {
                                                   : controller
                                                         .selectedSurahName
                                                         .value,
-                                              style: pSemiBold14,
+                                              style: pMedium12,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -1651,21 +1885,26 @@ class QuranPageScreen extends StatelessWidget {
                               TextField(
                                 controller: controller.searchAyahController,
                                 keyboardType: TextInputType.number,
-                                style: pBold14,
+                                style: pMedium12,
                                 decoration: InputDecoration(
                                   hintText: 'No',
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 8,
+                                  contentPadding: const EdgeInsets.only(
+                                    top: 12,
+                                    bottom: 8,
                                   ),
                                   enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Theme.of(context).dividerColor,
+                                      color: context.isDarkMode
+                                          ? Colors.grey.shade800
+                                          : Colors.grey.shade300,
                                     ),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor,
+                                      color: context.isDarkMode
+                                          ? Colors.grey.shade800
+                                          : Colors.grey.shade300,
                                     ),
                                   ),
                                 ),
@@ -1691,26 +1930,30 @@ class QuranPageScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
-                                  color: Theme.of(context).dividerColor,
+                                  color: context.isDarkMode
+                                      ? Colors.grey.shade800
+                                      : Colors.grey.shade300,
                                 ),
                               ),
                             ),
-                            child: DropdownButton<int>(
-                              value: controller.selectedPage.value,
-                              isExpanded: true,
-                              items: controller.listPages
-                                  .map(
-                                    (page) => DropdownMenuItem(
-                                      value: page,
-                                      child: Text(
-                                        'Halaman $page',
-                                        style: pSemiBold14,
+                            child: Obx(
+                              () => DropdownButton<int>(
+                                value: controller.selectedPage.value,
+                                isExpanded: true,
+                                items: controller.listPages
+                                    .map(
+                                      (page) => DropdownMenuItem(
+                                        value: page,
+                                        child: Text(
+                                          'Halaman $page',
+                                          style: pRegular12,
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) =>
-                                  controller.selectedPage.value = v!,
+                                    )
+                                    .toList(),
+                                onChanged: (v) =>
+                                    controller.selectedPage.value = v!,
+                              ),
                             ),
                           ),
                         ),
@@ -1729,12 +1972,20 @@ class QuranPageScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        side: BorderSide(color: Theme.of(context).dividerColor),
+                        side: BorderSide(
+                          color: context.isDarkMode
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade500,
+                        ),
                         minimumSize: const Size(0, 50),
                       ),
                       child: Text(
                         'Batal',
-                        style: pSemiBold14.copyWith(color: Colors.grey),
+                        style: pSemiBold14.copyWith(
+                          color: context.isDarkMode
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade500,
+                        ),
                       ),
                     ),
                   ),
@@ -1822,7 +2073,7 @@ class QuranPageScreen extends StatelessWidget {
                                 controller.onSearchChanged(value),
                             style: pMedium14,
                             decoration: InputDecoration(
-                              hintText: 'Cari Surat atau Juz...',
+                              hintText: 'Cari Surat...',
                               hintStyle: pRegular14.copyWith(
                                 color: Theme.of(context).hintColor,
                               ),
@@ -1951,7 +2202,9 @@ class QuranPageScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
-                                        color: Theme.of(context).dividerColor,
+                                        color: context.isDarkMode
+                                            ? Colors.grey.shade800
+                                            : Colors.grey.shade300,
                                       ),
                                     ),
                                   ),
@@ -2012,55 +2265,88 @@ class QuranPageScreen extends StatelessWidget {
                             itemCount: controller.dropdownJuz.length,
                             itemBuilder: (context, index) {
                               final juz = controller.dropdownJuz[index];
-                              return InkWell(
-                                onTap: () =>
-                                    controller.onSelectJuz(juz.juzNomor),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Theme.of(context).dividerColor,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
+                              return Theme(
+                                data: Theme.of(
+                                  context,
+                                ).copyWith(dividerColor: Colors.transparent),
+                                child: ExpansionTile(
+                                  tilePadding: EdgeInsets.zero,
+                                  title: Row(
                                     children: [
-                                      Container(
-                                        height: 40,
-                                        width: 40,
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(
-                                            context,
-                                          ).primaryColor.withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            juz.juzNomor.toString(),
-                                            style: pBold14.copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).primaryColor,
-                                            ),
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/png/frame.png',
+                                            height: 36,
+                                            width: 36,
                                           ),
-                                        ),
+                                          Text(
+                                            juz.juzNomor.toString(),
+                                            style: pBold12,
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(width: 16),
                                       Text(
                                         'Juz ${juz.juzNomor}',
                                         style: pSemiBold16,
                                       ),
-                                      const Spacer(),
-                                      Icon(
-                                        IconlyLight.arrow_right_2,
-                                        size: 16,
-                                        color: Colors.grey.shade300,
-                                      ),
                                     ],
                                   ),
+                                  children: juz.surah.map((surah) {
+                                    return InkWell(
+                                      onTap: () => controller.onSelectSurah(
+                                        surah.id,
+                                        ayah: surah.startAyah,
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                          horizontal: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: context.isDarkMode
+                                                  ? Colors.grey.shade800
+                                                  : Colors.grey.shade100,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    surah.name,
+                                                    style: pMedium14,
+                                                  ),
+                                                  Text(
+                                                    '${surah.translationName} • ${surah.totalAyah} Ayat',
+                                                    style: pRegular12.copyWith(
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              surah.cityName,
+                                              style: pMedium12.copyWith(
+                                                color: Theme.of(
+                                                  context,
+                                                ).primaryColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               );
                             },

@@ -4,6 +4,7 @@ import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/pick_location_controller.dart';
 import 'package:quran_app/controller/prayer_time_detail_controller.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
 
 class PrayerTimeDetailScreen extends StatelessWidget {
   const PrayerTimeDetailScreen({super.key});
@@ -11,39 +12,51 @@ class PrayerTimeDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(PrayerTimeDetailController());
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
             Stack(
               children: [
                 // Header Background Image & Gradient
-                Container(
-                  height: 320,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/png/bg-palestine.png'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: Container(
+                Obx(() {
+                  final auth = AuthController.to;
+                  final bgUrl = auth.userData['selected_background_path_url'];
+
+                  return Container(
+                    height: 320,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Theme.of(context).primaryColor.withOpacity(0.9),
-                          Theme.of(context).primaryColor.withOpacity(0.4),
-                          Colors.transparent,
-                        ],
+                      image: DecorationImage(
+                        image:
+                            (auth.isLogin.value &&
+                                bgUrl != null &&
+                                bgUrl.isNotEmpty)
+                            ? NetworkImage(bgUrl) as ImageProvider
+                            : const AssetImage(
+                                'assets/images/png/bg-palestine.png',
+                              ),
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  ),
-                ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.9),
+                            Colors.black.withOpacity(0.5),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
 
                 // Header Content
                 SafeArea(
@@ -56,14 +69,19 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              onPressed: () => Get.back(),
-                              icon: const Icon(
-                                IconlyLight.arrow_left,
-                                color: Colors.white,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                            GestureDetector(
+                              onTap: () => Get.back(),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  IconlyLight.arrow_left,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
                             GestureDetector(
@@ -75,12 +93,12 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: 14,
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(100),
                                   border: Border.all(
                                     color: Colors.white.withOpacity(0.3),
                                   ),
@@ -91,18 +109,18 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                     const Icon(
                                       IconlyBold.location,
                                       color: Colors.white,
-                                      size: 16,
+                                      size: 14,
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     Obx(
                                       () => Text(
                                         '${controller.kabKota.value}',
-                                        style: pMedium12.copyWith(
+                                        style: pSemiBold12.copyWith(
                                           color: Colors.white,
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 6),
                                     const Icon(
                                       IconlyLight.swap,
                                       color: Colors.white,
@@ -119,19 +137,19 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                         Obx(
                           () => Text(
                             controller.nextPrayerName.value,
-                            style: pMedium16.copyWith(
+                            style: pMedium14.copyWith(
                               color: Colors.white.withOpacity(0.9),
-                              letterSpacing: 1.2,
+                              letterSpacing: 1.5,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Obx(
                           () => Text(
                             controller.nextPrayerTime.value,
                             style: pBold24.copyWith(
                               color: Colors.white,
-                              fontSize: 48,
+                              fontSize: 56,
                               height: 1.1,
                             ),
                           ),
@@ -140,7 +158,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                         Obx(
                           () => AnimatedOpacity(
                             opacity: controller.isPrayerArrived.value
-                                ? (controller.showHeartbeat.value ? 1.0 : 0.4)
+                                ? (controller.showHeartbeat.value ? 1.0 : 0.5)
                                 : 1.0,
                             duration: const Duration(milliseconds: 400),
                             child: Container(
@@ -150,13 +168,13 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(15),
+                                borderRadius: BorderRadius.circular(100),
                               ),
                               child: Text(
                                 controller.countdown.value,
                                 style: pSemiBold14.copyWith(
                                   color: Colors.white,
-                                  letterSpacing: 1,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
@@ -173,12 +191,12 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: 30,
+                    height: 32,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
+                      color: context.theme.scaffoldBackgroundColor,
                       borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
                       ),
                     ),
                   ),
@@ -190,86 +208,85 @@ class PrayerTimeDetailScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.15 : 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  color: context.theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: context.isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade100,
+                  ),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: context.theme.colorScheme.primary.withOpacity(
+                          0.1,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         IconlyLight.calendar,
-                        color: Theme.of(context).primaryColor,
+                        color: context.theme.colorScheme.primary,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Obx(
-                          () => Text(
-                            controller.calendarToday.value,
-                            style: pSemiBold16.copyWith(
-                              color: Theme.of(context).primaryColor,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Obx(
+                            () => Text(
+                              controller.calendarToday.value,
+                              style: pSemiBold16.copyWith(
+                                color: context.theme.colorScheme.primary,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Obx(
-                          () => Text(
-                            controller.calendarMasehi.value,
-                            style: pRegular12.copyWith(
-                              color: Theme.of(context).hintColor,
+                          const SizedBox(height: 2),
+                          Obx(
+                            () => Text(
+                              controller.calendarMasehi.value,
+                              style: pRegular12.copyWith(
+                                color:
+                                    context.theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 24),
 
             // Prayer Times Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   Container(
                     width: 4,
-                    height: 20,
+                    height: 18,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
+                      color: context.theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Jadwal Waktu Sholat',
-                    style: pSemiBold18.copyWith(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
+                  const SizedBox(width: 12),
+                  Text('Jadwal Waktu Sholat', style: pSemiBold16),
                 ],
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
 
             // Prayer Times List
             Padding(
@@ -315,12 +332,12 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                 ];
 
                 return ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 30),
+                  padding: const EdgeInsets.only(bottom: 40),
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: prayerTimes.length,
                   separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final prayerTime = prayerTimes[index];
                     final isNext =
@@ -328,28 +345,24 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                         (prayerTime['name'] as String).toLowerCase();
 
                     return Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isNext
-                            ? Theme.of(context).primaryColor.withOpacity(0.08)
-                            : Theme.of(context).colorScheme.surface,
+                            ? context.theme.colorScheme.primary.withOpacity(
+                                0.05,
+                              )
+                            : context.theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isNext
-                              ? Theme.of(context).primaryColor.withOpacity(0.4)
-                              : Theme.of(context).dividerColor.withOpacity(0.1),
+                              ? context.theme.colorScheme.primary.withOpacity(
+                                  0.3,
+                                )
+                              : context.isDarkMode
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade100,
                           width: 1.5,
                         ),
-                        boxShadow: [
-                          if (!isNext)
-                            BoxShadow(
-                              color: Colors.black.withOpacity(
-                                isDark ? 0.1 : 0.02,
-                              ),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                        ],
                       ),
                       child: Row(
                         children: [
@@ -357,42 +370,38 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: isNext
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(
-                                      context,
-                                    ).primaryColor.withOpacity(0.08),
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.primary
+                                        .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               prayerTime['icon'] as IconData,
                               color: isNext
                                   ? Colors.white
-                                  : Theme.of(context).primaryColor,
-                              size: 20,
+                                  : context.theme.colorScheme.primary,
+                              size: 18,
                             ),
                           ),
                           const SizedBox(width: 16),
                           Text(
                             prayerTime['name'] as String,
-                            style: pMedium16.copyWith(
+                            style: pSemiBold14.copyWith(
                               color: isNext
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(context).colorScheme.onSurface,
-                              fontWeight: isNext
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.onSurface,
                             ),
                           ),
                           const Spacer(),
                           Text(
                             prayerTime['time'] as String,
-                            style: pSemiBold16.copyWith(
+                            style: pSemiBold14.copyWith(
                               color: isNext
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(context).colorScheme.onSurface,
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(width: 18),
+                          const SizedBox(width: 16),
                           Obx(() {
                             final prayerName = prayerTime['name'] as String;
                             final defaultValue =
@@ -418,10 +427,13 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                   _selectNotification(context, prayerName),
                                 );
                               },
-                              child: Icon(
-                                iconData,
-                                color: Theme.of(context).primaryColor,
-                                size: 20,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  iconData,
+                                  color: context.theme.colorScheme.primary,
+                                  size: 18,
+                                ),
                               ),
                             );
                           }),
@@ -443,9 +455,9 @@ class PrayerTimeDetailScreen extends StatelessWidget {
     bool isImsakOrTerbit = controller.isImsakOrTerbit(prayerName);
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      child: Container(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: context.theme.colorScheme.surface,
+      child: Padding(
         padding: const EdgeInsets.all(24),
         child: Obx(() {
           final currentSetting =
@@ -459,33 +471,28 @@ class PrayerTimeDetailScreen extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: context.theme.colorScheme.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       IconlyBold.notification,
-                      color: Theme.of(context).primaryColor,
-                      size: 24,
+                      color: context.theme.colorScheme.primary,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text('Notifikasi $prayerName', style: pBold16),
+                        const SizedBox(height: 2),
                         Text(
-                          'Notifikasi $prayerName',
-                          style: pBold16.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Pilih suara notifikasi waktu sholat',
+                          'Pilih suara untuk jadwal sholat',
                           style: pRegular12.copyWith(
-                            color: Theme.of(context).hintColor,
+                            color: context.theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -496,7 +503,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildNotificationOption(
                 context: context,
-                title: 'Diam',
+                title: 'Diam (Tanpa Suara)',
                 icon: IconlyBold.volume_off,
                 value: 'silent',
                 groupValue: currentSetting,
@@ -507,10 +514,10 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   }
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildNotificationOption(
                 context: context,
-                title: 'Beep',
+                title: 'Beep (Suara Pendek)',
                 icon: IconlyBold.volume_up,
                 value: 'beep',
                 groupValue: currentSetting,
@@ -522,10 +529,10 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                 },
               ),
               if (!isImsakOrTerbit) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 _buildNotificationOption(
                   context: context,
-                  title: 'Adzan',
+                  title: 'Adzan (Suara Penuh)',
                   icon: IconlyBold.voice,
                   value: 'adzan',
                   groupValue: currentSetting,
@@ -538,26 +545,23 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Get.back(),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Batal',
-                        style: pSemiBold14.copyWith(
-                          color: Theme.of(context).hintColor,
-                        ),
-                      ),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Get.back(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ],
+                  child: Text(
+                    'Tutup',
+                    style: pSemiBold14.copyWith(
+                      color: context.theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               ),
             ],
           );
@@ -578,16 +582,18 @@ class PrayerTimeDetailScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(value),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.08)
-              : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
+              ? context.theme.colorScheme.primary.withOpacity(0.05)
+              : context.theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? Theme.of(context).primaryColor
-                : Theme.of(context).dividerColor.withOpacity(0.08),
+                ? context.theme.colorScheme.primary
+                : context.isDarkMode
+                ? Colors.grey.shade800
+                : Colors.grey.shade100,
             width: 1.5,
           ),
         ),
@@ -595,29 +601,29 @@ class PrayerTimeDetailScreen extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 20,
+              size: 18,
               color: isSelected
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).hintColor,
+                  ? context.theme.colorScheme.primary
+                  : context.theme.colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Text(
                 title,
                 style: isSelected
                     ? pSemiBold14.copyWith(
-                        color: Theme.of(context).primaryColor,
+                        color: context.theme.colorScheme.primary,
                       )
                     : pMedium14.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: context.theme.colorScheme.onSurface,
                       ),
               ),
             ),
             if (isSelected)
               Icon(
                 Icons.check_circle_rounded,
-                color: Theme.of(context).primaryColor,
-                size: 20,
+                color: context.theme.colorScheme.primary,
+                size: 18,
               ),
           ],
         ),

@@ -17,12 +17,7 @@ class ChangeProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Ubah Profil',
-          style: pSemiBold16.copyWith(
-            color: context.theme.colorScheme.onSurface,
-          ),
-        ),
+        title: Text('Ubah Profil', style: pSemiBold16),
         centerTitle: true,
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
@@ -31,7 +26,7 @@ class ChangeProfileScreen extends StatelessWidget {
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -42,23 +37,17 @@ class ChangeProfileScreen extends StatelessWidget {
                   child: Stack(
                     children: [
                       Container(
-                        height: 110,
-                        width: 110,
+                        height: 100,
+                        width: 100,
                         decoration: BoxDecoration(
                           color: context.theme.colorScheme.surface,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: context.theme.colorScheme.primary
-                                .withOpacity(0.1),
-                            width: 3,
+                            color: context.isDarkMode
+                                ? Colors.grey.shade800
+                                : Colors.grey.shade100,
+                            width: 2,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
                           image: controller.selectedImage.value != null
                               ? DecorationImage(
                                   image: FileImage(
@@ -86,15 +75,15 @@ class ChangeProfileScreen extends StatelessWidget {
                                     null
                             ? Icon(
                                 IconlyBold.profile,
-                                size: 45,
+                                size: 40,
                                 color: context.theme.colorScheme.primary
-                                    .withOpacity(0.2),
+                                    .withOpacity(0.3),
                               )
                             : null,
                       ),
                       Positioned(
-                        bottom: 4,
-                        right: 4,
+                        bottom: 0,
+                        right: 0,
                         child: GestureDetector(
                           onTap: () => controller.pickImage(),
                           child: Container(
@@ -109,8 +98,8 @@ class ChangeProfileScreen extends StatelessWidget {
                               boxShadow: [
                                 BoxShadow(
                                   color: context.theme.colorScheme.primary
-                                      .withOpacity(0.3),
-                                  blurRadius: 10,
+                                      .withOpacity(0.2),
+                                  blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -127,58 +116,36 @@ class ChangeProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
               // Form Section
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Nama Lengkap',
-                  style: pSemiBold14.copyWith(
-                    color: context.theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              _buildInputLabel(context, 'Nama Lengkap'),
+              const SizedBox(height: 8),
               TextInput(
                 controller: controller.nameController,
                 hintText: 'Masukkan nama lengkap',
               ),
-              const SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Nomor Telepon',
-                  style: pSemiBold14.copyWith(
-                    color: context.theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
+
+              _buildInputLabel(context, 'Nomor Telepon'),
+              const SizedBox(height: 8),
               TextInput(
                 controller: controller.phoneController,
                 hintText: 'Nomor Telepon Anda',
                 keyboardType: TextInputType.phone,
                 readOnly: false,
               ),
-              const SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Email',
-                  style: pSemiBold14.copyWith(
-                    color: context.theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
+
+              _buildInputLabel(context, 'Email'),
+              const SizedBox(height: 8),
               TextInput(
                 controller: controller.emailController,
                 hintText: 'Email Anda',
                 readOnly: true,
               ),
 
-              const SizedBox(height: 50),
+              const SizedBox(height: 40),
 
               // Save Button
               Obx(
@@ -189,9 +156,9 @@ class ChangeProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.theme.colorScheme.primary,
                     disabledBackgroundColor: context.theme.colorScheme.primary
-                        .withOpacity(0.6),
+                        .withOpacity(0.5),
                     foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 54),
+                    minimumSize: const Size(double.infinity, 52),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -199,21 +166,36 @@ class ChangeProfileScreen extends StatelessWidget {
                   ),
                   child: controller.isLoading.value
                       ? const SizedBox(
-                          height: 20,
-                          width: 20,
+                          height: 22,
+                          width: 22,
                           child: CircularProgressIndicator(
                             color: Colors.white,
-                            strokeWidth: 2,
+                            strokeWidth: 2.5,
                           ),
                         )
                       : Text(
                           'Simpan Perubahan',
-                          style: pSemiBold16.copyWith(color: Colors.white),
+                          style: pSemiBold14.copyWith(color: Colors.white),
                         ),
                 ),
               ),
               const SizedBox(height: 20),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputLabel(BuildContext context, String label) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Text(
+          label,
+          style: pSemiBold12.copyWith(
+            color: context.theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ),

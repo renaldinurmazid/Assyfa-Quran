@@ -124,7 +124,11 @@ class MosqueCharityShowScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           mosque.collectedAmount,
-          style: pBold18.copyWith(color: AppColor.primaryColorDark),
+          style: pBold18.copyWith(
+            color: context.isDarkMode
+                ? AppColor.primaryColorDark
+                : AppColor.primaryColor,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -146,8 +150,10 @@ class MosqueCharityShowScreen extends StatelessWidget {
             backgroundColor: context.isDarkMode
                 ? Colors.grey.shade900
                 : Colors.grey.shade100,
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              AppColor.primaryColorDark,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              context.isDarkMode
+                  ? AppColor.primaryColorDark
+                  : AppColor.primaryColor,
             ),
           ),
         ),
@@ -162,7 +168,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
           Icons.favorite,
           '${mosque.donaturCount}',
           'Donasi',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           onTap: () => Get.toNamed(
             Routes.mosqueCharityTabs,
             arguments: {'mosqueCharityId': mosque.id, 'initialTab': 0},
@@ -173,7 +181,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
           Icons.description,
           '',
           'Update',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           showValue: false,
           onTap: () => Get.toNamed(
             Routes.mosqueCharityTabs,
@@ -185,7 +195,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
           Icons.account_balance_wallet,
           '',
           'Fundraiser',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           showValue: false,
           onTap: () => Get.toNamed(
             Routes.mosqueCharityTabs,
@@ -300,8 +312,14 @@ class MosqueCharityShowScreen extends StatelessWidget {
                 icon: const Icon(Icons.share, size: 18),
                 label: const Text("Bagikan"),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColor.primaryColorDark,
-                  side: const BorderSide(color: AppColor.primaryColorDark),
+                  foregroundColor: context.isDarkMode
+                      ? AppColor.primaryColorDark
+                      : AppColor.primaryColor,
+                  side: BorderSide(
+                    color: context.isDarkMode
+                        ? AppColor.primaryColorDark
+                        : AppColor.primaryColor,
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -320,7 +338,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColorDark,
+                  backgroundColor: context.isDarkMode
+                      ? AppColor.primaryColorDark
+                      : AppColor.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(

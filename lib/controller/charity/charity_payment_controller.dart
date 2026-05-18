@@ -175,7 +175,6 @@ class CharityPaymentController extends GetxController {
       };
 
       final response = await Request().post(Url.donations, data: data);
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = DonationResponseModel.fromJson(response.data);
         Get.offNamed(Routes.charityPaymentDetail, arguments: result.data);

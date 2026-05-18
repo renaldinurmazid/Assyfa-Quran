@@ -34,6 +34,7 @@ class Surah {
   String translationName;
   String cityName;
   int totalAyah;
+  int startAyah;
 
   Surah({
     required this.id,
@@ -41,6 +42,7 @@ class Surah {
     required this.translationName,
     required this.cityName,
     required this.totalAyah,
+    required this.startAyah,
   });
 
   factory Surah.fromJson(Map<String, dynamic> json) => Surah(
@@ -49,6 +51,7 @@ class Surah {
     translationName: json["translation_name"],
     cityName: json["city_name"],
     totalAyah: json["total_ayah"],
+    startAyah: json["start_ayah"] ?? 1,
   );
 
   Map<String, dynamic> toJson() => {
@@ -57,5 +60,6 @@ class Surah {
     "translation_name": translationName,
     "city_name": cityName,
     "total_ayah": totalAyah,
+    "start_ayah": startAyah,
   };
 }

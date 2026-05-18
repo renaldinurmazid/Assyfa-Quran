@@ -115,7 +115,11 @@ class CharityShowScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           campaign.collectedAmount,
-          style: pBold18.copyWith(color: AppColor.primaryColorDark),
+          style: pBold18.copyWith(
+            color: context.isDarkMode
+                ? AppColor.primaryColorDark
+                : AppColor.primaryColor,
+          ),
         ),
         const SizedBox(height: 4),
         Row(
@@ -152,7 +156,9 @@ class CharityShowScreen extends StatelessWidget {
             minHeight: 10,
             backgroundColor: Colors.grey.shade100,
             valueColor: AlwaysStoppedAnimation<Color>(
-              AppColor.primaryColorDark,
+              context.isDarkMode
+                  ? AppColor.primaryColorDark
+                  : AppColor.primaryColor,
             ),
           ),
         ),
@@ -167,7 +173,9 @@ class CharityShowScreen extends StatelessWidget {
           Icons.favorite,
           '${campaign.donaturCount}',
           'Donasi',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           onTap: () => Get.toNamed(
             Routes.charityCampaignTabs,
             arguments: {'campaignId': campaign.id, 'initialTab': 0},
@@ -178,7 +186,9 @@ class CharityShowScreen extends StatelessWidget {
           Icons.description,
           '',
           'Kabar Terbaru',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           showValue: false,
           onTap: () => Get.toNamed(
             Routes.charityCampaignTabs,
@@ -190,7 +200,9 @@ class CharityShowScreen extends StatelessWidget {
           Icons.account_balance_wallet,
           '',
           'Fundraiser',
-          AppColor.primaryColorDark,
+          context.isDarkMode
+              ? AppColor.primaryColorDark
+              : AppColor.primaryColor,
           showValue: false,
           onTap: () => Get.toNamed(
             Routes.charityCampaignTabs,
@@ -306,8 +318,14 @@ class CharityShowScreen extends StatelessWidget {
                 icon: const Icon(Icons.share, size: 18),
                 label: const Text("Bagikan"),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColor.primaryColorDark,
-                  side: BorderSide(color: AppColor.primaryColorDark),
+                  foregroundColor: context.isDarkMode
+                      ? AppColor.primaryColorDark
+                      : AppColor.primaryColor,
+                  side: BorderSide(
+                    color: context.isDarkMode
+                        ? AppColor.primaryColorDark
+                        : AppColor.primaryColor,
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -332,7 +350,9 @@ class CharityShowScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColorDark,
+                  backgroundColor: context.isDarkMode
+                      ? AppColor.primaryColorDark
+                      : AppColor.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
