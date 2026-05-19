@@ -10,6 +10,7 @@ import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:quran_app/api/url.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MosqueCharityShowScreen extends StatelessWidget {
   const MosqueCharityShowScreen({super.key});
@@ -332,9 +333,13 @@ class MosqueCharityShowScreen extends StatelessWidget {
               flex: 2,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.toNamed(
-                    Routes.mosqueCharityPayment,
-                    arguments: {'id': mosque.id},
+                  // Get.toNamed(
+                  //   Routes.mosqueCharityPayment,
+                  //   arguments: {'id': mosque.id},
+                  // );
+                  launchUrl(
+                    Uri.parse('https://aksipeduli.id'),
+                    mode: LaunchMode.externalApplication,
                   );
                 },
                 style: ElevatedButton.styleFrom(

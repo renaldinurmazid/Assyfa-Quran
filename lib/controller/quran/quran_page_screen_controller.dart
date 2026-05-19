@@ -93,14 +93,14 @@ class QuranPageScreenController extends GetxController {
   final isPlaying = false.obs;
   final playingAyahId = 0.obs;
 
-  final reciters = const [
+  final reciters = <Map<String, String>>[
     {"code": "01", "name": "Abdullah Al-Juhany"},
     {"code": "02", "name": "Abdul Muhsin Al-Qasim"},
     {"code": "03", "name": "Abdurrahman As-Sudais"},
     {"code": "04", "name": "Ibrahim Al-Dossari"},
     {"code": "05", "name": "Misyari Rasyid Al-Afasi"},
     {"code": "06", "name": "Yasser Al-Dosari"},
-  ];
+  ].obs;
 
   final selectedReciter = '01'.obs;
   final isLandscape = false.obs;
@@ -116,7 +116,8 @@ class QuranPageScreenController extends GetxController {
   final toAyahNumber = 1.obs;
   final isAutoAudioTransition = false.obs;
   final isRangePlayback = false.obs;
-  final _suppressAudioStop = false.obs; // prevents changePage from stopping audio during fetchByPageNumber
+  final _suppressAudioStop = false
+      .obs; // prevents changePage from stopping audio during fetchByPageNumber
   int currentAyahRepeatIndex = 0;
 
   /* =======================
@@ -135,6 +136,9 @@ class QuranPageScreenController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+
+    // Fetch reciters from the API
+    fetchReciters();
 
     // Prevent screen from sleeping while reading Al-Quran
     WakelockPlus.enable();
@@ -196,6 +200,28 @@ class QuranPageScreenController extends GetxController {
   Future<bool> _checkConnection() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     return !connectivityResult.contains(ConnectivityResult.none);
+  }
+
+  Future<void> fetchReciters() async {
+    try {
+      final response = await Request().get(Url.reciters);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        final List<Map<String, String>> fetchedReciters = data.map((e) {
+          return {
+            "id": e["id"]?.toString() ?? "",
+            "name": e["name"]?.toString() ?? "",
+            "code": e["code"]?.toString() ?? "",
+          };
+        }).toList();
+
+        if (fetchedReciters.isNotEmpty) {
+          reciters.assignAll(fetchedReciters);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching reciters: $e");
+    }
   }
 
   Future<void> fetchListPages() async {
@@ -585,7 +611,8 @@ class QuranPageScreenController extends GetxController {
     final shouldResumeAudio = isAutoAudioTransition.value;
     if (shouldResumeAudio) {
       isAutoAudioTransition.value = false; // We handle it from here
-      _suppressAudioStop.value = true;     // Prevent any changePage from stopping audio
+      _suppressAudioStop.value =
+          true; // Prevent any changePage from stopping audio
     }
 
     isLoading.value = true;
@@ -1034,17 +1061,16 @@ class QuranPageScreenController extends GetxController {
     isRangePlayback.value = true;
 
     // Jump to the selected 'from' position first
-    await fetchInitial(
-      surahId: fromSurahId.value,
-      ayah: fromAyahNumber.value,
-    );
+    await fetchInitial(surahId: fromSurahId.value, ayah: fromAyahNumber.value);
 
     // Find the index of the target ayah in the newly loaded page
     if (dataPage.isNotEmpty) {
       final pageData = dataPage[currentPageIndex.value];
-      int index = pageData.ayahs.indexWhere((element) =>
-          element.ayah?.ayahNumber == fromAyahNumber.value &&
-          element.ayah?.surahId == fromSurahId.value);
+      int index = pageData.ayahs.indexWhere(
+        (element) =>
+            element.ayah?.ayahNumber == fromAyahNumber.value &&
+            element.ayah?.surahId == fromSurahId.value,
+      );
 
       if (index != -1) {
         playAyah(index);
@@ -1135,8 +1161,9 @@ class QuranPageScreenController extends GetxController {
           // Check if there's a next page to continue playback
           if (nextPageNumber.value != null && isPlaying.value) {
             // Find if next page exists as a dummy or real page in dataPage
-            int nextIdx = dataPage
-                .indexWhere((e) => e.pageNumber == nextPageNumber.value);
+            int nextIdx = dataPage.indexWhere(
+              (e) => e.pageNumber == nextPageNumber.value,
+            );
             if (nextIdx != -1) {
               isAutoAudioTransition.value = true;
               changePage(nextIdx);
@@ -1224,8 +1251,9 @@ class QuranPageScreenController extends GetxController {
     }
 
     // Validate against total ayah
-    final selectedSurah =
-        dropdownSurah.firstWhereOrNull((s) => s.id == surahId.value);
+    final selectedSurah = dropdownSurah.firstWhereOrNull(
+      (s) => s.id == surahId.value,
+    );
     if (selectedSurah != null && ayahNum > selectedSurah.totalAyah) {
       AppToast.info(
         context: Get.context,
@@ -1238,10 +1266,7 @@ class QuranPageScreenController extends GetxController {
 
     Get.back();
     isFocus.value = true;
-    fetchInitial(
-      surahId: surahId.value,
-      ayah: ayahNum,
-    );
+    fetchInitial(surahId: surahId.value, ayah: ayahNum);
   }
 
   void onJumpToPage() {

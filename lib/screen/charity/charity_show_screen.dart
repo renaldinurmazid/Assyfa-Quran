@@ -10,6 +10,7 @@ import 'package:quran_app/models/campaign_detail_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CharityShowScreen extends StatelessWidget {
   const CharityShowScreen({super.key});
@@ -338,15 +339,19 @@ class CharityShowScreen extends StatelessWidget {
               flex: 2,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.toNamed(
-                    Routes.charityPayment,
-                    arguments: {
-                      'id': campaign.id,
-                      'formType': campaign.formType,
-                      'qurbanPrice': campaign.qurbanPrice,
-                      'campaignOptions': campaign.campaignOptions,
-                      'withOption': campaign.withOption,
-                    },
+                  // Get.toNamed(
+                  //   Routes.charityPayment,
+                  //   arguments: {
+                  //     'id': campaign.id,
+                  //     'formType': campaign.formType,
+                  //     'qurbanPrice': campaign.qurbanPrice,
+                  //     'campaignOptions': campaign.campaignOptions,
+                  //     'withOption': campaign.withOption,
+                  //   },
+                  // );
+                  launchUrl(
+                    Uri.parse('https://aksipeduli.id'),
+                    mode: LaunchMode.externalApplication,
                   );
                 },
                 style: ElevatedButton.styleFrom(

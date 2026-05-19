@@ -78,4 +78,5 @@ class Url {
   static const String dzikirView = '/api/dzikir/view';
 
   static const String deleteAccount = '/api/delete-account';
+  static const String reciters = '/api/reciters';
 }
