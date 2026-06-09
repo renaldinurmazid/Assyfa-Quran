@@ -213,13 +213,13 @@ class MemorizeLeaderboardScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 30,
-            child: Text(
-              "${entry.rank ?? '-'}",
-              style: pBold14.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-          ),
+          // SizedBox(
+          //   width: 30,
+          //   child: Text(
+          //     "${entry.rank ?? '-'}",
+          //     style: pBold14.copyWith(color: colorScheme.onSurfaceVariant),
+          //   ),
+          // ),
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey[200],

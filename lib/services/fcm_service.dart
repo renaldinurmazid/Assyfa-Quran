@@ -289,9 +289,14 @@ class FcmService {
         }
 
         print("Saving FCM Token: $token");
+        final String deviceType =
+            Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown');
         final response = await Request().post(
           Url.saveFcmToken,
-          data: {'fcm_token': token},
+          data: {
+            'fcm_token': token,
+            'device_type': deviceType,
+          },
         );
 
         if (response.statusCode == 200) {

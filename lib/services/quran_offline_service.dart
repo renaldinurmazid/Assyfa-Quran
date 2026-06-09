@@ -264,4 +264,48 @@ class QuranOfflineService {
     }
     return null;
   }
+
+  Future<void> downloadOfflineDropdowns() async {
+    final path = await _localPath;
+    final file = File(p.join(path, 'quran', 'dropdowns.json'));
+    
+    // Create the quran directory if it does not exist
+    final quranDir = Directory(p.join(path, 'quran'));
+    if (!await quranDir.exists()) {
+      await quranDir.create(recursive: true);
+    }
+
+    final url = '${Url.baseUrl}${Url.quranOfflineDropdowns}';
+    final response = await dio.get(url);
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      if (data == null || data is! Map) {
+        throw Exception('Failed to download dropdowns: Invalid response data');
+      }
+
+      await file.writeAsString(json.encode(data));
+      print("Downloaded offline dropdowns successfully!");
+    } else {
+      throw Exception(
+        'Failed to download dropdowns: Server returned ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<bool> hasOfflineDropdowns() async {
+    final path = await _localPath;
+    final file = File(p.join(path, 'quran', 'dropdowns.json'));
+    return await file.exists();
+  }
+
+  Future<Map<String, dynamic>?> getOfflineDropdowns() async {
+    final path = await _localPath;
+    final file = File(p.join(path, 'quran', 'dropdowns.json'));
+    if (await file.exists()) {
+      final content = await file.readAsString();
+      return json.decode(content) as Map<String, dynamic>;
+    }
+    return null;
+  }
 }

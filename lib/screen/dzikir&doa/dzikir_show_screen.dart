@@ -14,54 +14,63 @@ class DzikirShowScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(DzikirShowScreenController());
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(context, controller),
-          SliverToBoxAdapter(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return SizedBox(
-                  height: Get.height * 0.7,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                );
-              }
-
-              if (controller.data.isEmpty) {
-                return SizedBox(
-                  height: Get.height * 0.7,
-                  child: Center(
-                    child: Text(
-                      'Tidak ada data dzikir',
-                      style: pRegular14.copyWith(
-                        color: Theme.of(context).hintColor,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: CustomScrollView(
+          slivers: [
+            _buildSliverAppBar(context, controller),
+            SliverToBoxAdapter(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return SizedBox(
+                    height: Get.height * 0.7,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              return ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(20),
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final dzikir = controller.data[index];
-                  return _DzikirCard(dzikir: dzikir, index: index + 1);
-                },
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 16),
-                itemCount: controller.data.length,
-              );
-            }),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+                if (controller.data.isEmpty) {
+                  return SizedBox(
+                    height: Get.height * 0.7,
+                    child: Center(
+                      child: Text(
+                        'Tidak ada data dzikir',
+                        style: pRegular14.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(20),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final dzikir = controller.data[index];
+                    return _DzikirCard(dzikir: dzikir, index: index + 1);
+                  },
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemCount: controller.data.length,
+                );
+              }),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -111,6 +120,51 @@ class DzikirShowScreen extends StatelessWidget {
           ],
         ),
       ),
+      actions: [
+        Obx(() {
+          final isAlMatsurat =
+              controller.title.value.toLowerCase().contains('al-matsurat');
+          if (!isAlMatsurat) return const SizedBox.shrink();
+
+          return PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            color: Theme.of(context).colorScheme.surface,
+            onSelected: (value) {
+              if (value == 'toggleLandscape') {
+                controller.toggleOrientation();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'toggleLandscape',
+                child: Row(
+                  children: [
+                    Icon(
+                      controller.isLandscape.value
+                          ? Icons.stay_current_portrait_rounded
+                          : Icons.stay_current_landscape_rounded,
+                      color: Theme.of(context).primaryColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      controller.isLandscape.value
+                          ? 'Mode Potret'
+                          : 'Mode Landscape',
+                      style: pMedium14.copyWith(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }),
+      ],
       leading: IconButton(
         icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
         onPressed: () => Get.back(),

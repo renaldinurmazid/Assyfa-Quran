@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -333,13 +335,16 @@ class MosqueCharityShowScreen extends StatelessWidget {
               flex: 2,
               child: ElevatedButton(
                 onPressed: () {
-                  // Get.toNamed(
-                  //   Routes.mosqueCharityPayment,
-                  //   arguments: {'id': mosque.id},
-                  // );
-                  launchUrl(
-                    Uri.parse('https://aksipeduli.id'),
-                    mode: LaunchMode.externalApplication,
+                  if (Platform.isIOS) {
+                    launchUrl(
+                      Uri.parse('https://aksipeduli.id'),
+                      mode: LaunchMode.externalApplication,
+                    );
+                    return;
+                  }
+                  Get.toNamed(
+                    Routes.mosqueCharityPayment,
+                    arguments: {'id': mosque.id},
                   );
                 },
                 style: ElevatedButton.styleFrom(

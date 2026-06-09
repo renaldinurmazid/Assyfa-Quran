@@ -108,6 +108,10 @@ class QuranPageScreenController extends GetxController {
   // Audio Settings
   final repeatCount = 1.obs; // x1, x2, x3, x5, x10
   final delayBetweenAyahs = 0.obs; // 0-10 seconds
+  final playbackRepeatOption = 1.obs; // 1 (Tidak), 2 (2x), 3 (3x), 5 (5x), 10 (10x), -1 (Selamanya)
+  int currentPlaybackIteration = 1;
+  int? startSurahId;
+  int? startAyahNumber;
 
   // Audio Range Settings
   final fromSurahId = 0.obs;
@@ -226,6 +230,25 @@ class QuranPageScreenController extends GetxController {
 
   Future<void> fetchListPages() async {
     isDialogLoading.value = true;
+    final isOnline = await _checkConnection();
+    if (!isOnline) {
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> pagesJson = offlineData['data']['pages'] ?? [];
+          final List<int> pages = pagesJson
+              .map((e) => int.tryParse(e.toString()) ?? 0)
+              .where((p) => p > 0)
+              .toList();
+          if (pages.isNotEmpty) {
+            listPages.assignAll(pages);
+          }
+        }
+      }
+      isDialogLoading.value = false;
+      return;
+    }
+
     try {
       final response = await Request().get(Url.dropdownPage);
       if (response.statusCode == 200) {
@@ -241,6 +264,19 @@ class QuranPageScreenController extends GetxController {
       }
     } catch (e) {
       print("Error fetching dropdown page: $e");
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> pagesJson = offlineData['data']['pages'] ?? [];
+          final List<int> pages = pagesJson
+              .map((e) => int.tryParse(e.toString()) ?? 0)
+              .where((p) => p > 0)
+              .toList();
+          if (pages.isNotEmpty) {
+            listPages.assignAll(pages);
+          }
+        }
+      }
     } finally {
       isDialogLoading.value = false;
     }
@@ -724,7 +760,7 @@ class QuranPageScreenController extends GetxController {
     final selectedDatum = dataPage[index];
 
     // Don't stop audio if we're in the middle of an audio-driven page transition
-    if (isPlaying.value &&
+    if ((isPlaying.value || playingAyahId.value != 0) &&
         !isAutoAudioTransition.value &&
         !_suppressAudioStop.value) {
       stopAudio();
@@ -934,6 +970,12 @@ class QuranPageScreenController extends GetxController {
     isDownloading.value = true;
     isPaused.value = false;
     try {
+      try {
+        await offlineService.downloadOfflineDropdowns();
+      } catch (e) {
+        debugPrint("Error downloading offline dropdowns: $e");
+      }
+
       final total = await offlineService.downloadIndex(type);
       totalPagesToDownload.value = total;
 
@@ -1044,11 +1086,27 @@ class QuranPageScreenController extends GetxController {
    * ======================= */
   void toggleAudio() {
     if (isPlaying.value) {
-      stopAudio();
+      pauseAudio();
     } else {
       isRangePlayback.value = false;
-      playAyah(0);
+      currentPlaybackIteration = 1;
+      if (playingAyahId.value != 0) {
+        isPlaying.value = true;
+        audioPlayer.play();
+      } else {
+        if (dataPage.isNotEmpty && currentPageIndex.value < dataPage.length) {
+          final pageData = dataPage[currentPageIndex.value];
+          startSurahId = pageData.ayahs.firstOrNull?.ayah?.surahId;
+          startAyahNumber = pageData.ayahs.firstOrNull?.ayah?.ayahNumber;
+        }
+        playAyah(0);
+      }
     }
+  }
+
+  void pauseAudio() {
+    audioPlayer.pause();
+    isPlaying.value = false;
   }
 
   /// Play audio from a specific range (Dari - Sampai) as configured in settings.
@@ -1059,7 +1117,12 @@ class QuranPageScreenController extends GetxController {
     }
 
     isRangePlayback.value = true;
+    currentPlaybackIteration = 1;
 
+    _startRangePlayback();
+  }
+
+  void _startRangePlayback() async {
     // Jump to the selected 'from' position first
     await fetchInitial(surahId: fromSurahId.value, ayah: fromAyahNumber.value);
 
@@ -1150,7 +1213,7 @@ class QuranPageScreenController extends GetxController {
           if (currentAyah != null &&
               currentAyah.surahId == toSurahId.value &&
               currentAyah.ayahNumber == toAyahNumber.value) {
-            stopAudio();
+            _handleRangePlaybackCompletion();
             return;
           }
         }
@@ -1168,11 +1231,67 @@ class QuranPageScreenController extends GetxController {
               isAutoAudioTransition.value = true;
               changePage(nextIdx);
             } else {
-              stopAudio();
+              if (isRangePlayback.value) {
+                _handleRangePlaybackCompletion();
+              } else {
+                _handleGeneralPlaybackCompletion();
+              }
             }
           } else {
-            stopAudio();
+            if (isRangePlayback.value) {
+              _handleRangePlaybackCompletion();
+            } else {
+              _handleGeneralPlaybackCompletion();
+            }
           }
+        }
+      }
+    } else {
+      stopAudio();
+    }
+  }
+
+  void _handleRangePlaybackCompletion() async {
+    final option = playbackRepeatOption.value;
+    if (option == -1) {
+      // Loop forever
+      currentPlaybackIteration++;
+      _startRangePlayback();
+    } else if (currentPlaybackIteration < option) {
+      currentPlaybackIteration++;
+      _startRangePlayback();
+    } else {
+      stopAudio();
+    }
+  }
+
+  void _handleGeneralPlaybackCompletion() async {
+    final option = playbackRepeatOption.value;
+    if (option == -1) {
+      currentPlaybackIteration++;
+      _restartGeneralPlayback();
+    } else if (currentPlaybackIteration < option) {
+      currentPlaybackIteration++;
+      _restartGeneralPlayback();
+    } else {
+      stopAudio();
+    }
+  }
+
+  void _restartGeneralPlayback() async {
+    if (startSurahId != null && startAyahNumber != null) {
+      await fetchInitial(surahId: startSurahId, ayah: startAyahNumber);
+      if (dataPage.isNotEmpty) {
+        final pageData = dataPage[currentPageIndex.value];
+        int index = pageData.ayahs.indexWhere(
+          (element) =>
+              element.ayah?.ayahNumber == startAyahNumber &&
+              element.ayah?.surahId == startSurahId,
+        );
+        if (index != -1) {
+          playAyah(index);
+        } else {
+          playAyah(0);
         }
       }
     } else {
@@ -1288,6 +1407,35 @@ class QuranPageScreenController extends GetxController {
 
   Future<void> fetchDropdownSurah(String search) async {
     isDialogLoading.value = true;
+    final isOnline = await _checkConnection();
+    if (!isOnline) {
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> surahsJson = offlineData['data']['surahs'] ?? [];
+          final List<DropdownSurah> allSurahs = surahsJson
+              .map((e) => DropdownSurah.fromJson(e))
+              .toList();
+
+          if (search.isEmpty) {
+            dropdownSurah.value = allSurahs;
+          } else {
+            dropdownSurah.value = allSurahs
+                .where(
+                  (s) =>
+                      s.name.toLowerCase().contains(search.toLowerCase()) ||
+                      s.translationName.toLowerCase().contains(
+                        search.toLowerCase(),
+                      ),
+                )
+                .toList();
+          }
+        }
+      }
+      isDialogLoading.value = false;
+      return;
+    }
+
     try {
       final response = await Request().get(
         Url.dropdownSurah,
@@ -1306,18 +1454,29 @@ class QuranPageScreenController extends GetxController {
       }
     } catch (e) {
       print("Error fetching dropdown surah: $e");
-      // final String response = await rootBundle.loadString(
-      //   'assets/data/ddl-surah.json',
-      // );
-      // final List<DropdownSurah> allSurahs = dropdownSurahFromJson(response);
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> surahsJson = offlineData['data']['surahs'] ?? [];
+          final List<DropdownSurah> allSurahs = surahsJson
+              .map((e) => DropdownSurah.fromJson(e))
+              .toList();
 
-      // if (search.isEmpty) {
-      //   dropdownSurah.value = allSurahs;
-      // } else {
-      //   dropdownSurah.value = allSurahs
-      //       .where((s) => s.name.toLowerCase().contains(search.toLowerCase()))
-      //       .toList();
-      // }
+          if (search.isEmpty) {
+            dropdownSurah.value = allSurahs;
+          } else {
+            dropdownSurah.value = allSurahs
+                .where(
+                  (s) =>
+                      s.name.toLowerCase().contains(search.toLowerCase()) ||
+                      s.translationName.toLowerCase().contains(
+                        search.toLowerCase(),
+                      ),
+                )
+                .toList();
+          }
+        }
+      }
     } finally {
       isDialogLoading.value = false;
     }
@@ -1325,6 +1484,21 @@ class QuranPageScreenController extends GetxController {
 
   Future<void> fetchDropdownJuz() async {
     isDialogLoading.value = true;
+    final isOnline = await _checkConnection();
+    if (!isOnline) {
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> juzsJson = offlineData['data']['juzs'] ?? [];
+          dropdownJuz.value = juzsJson
+              .map((e) => DropdownJuz.fromJson(e))
+              .toList();
+        }
+      }
+      isDialogLoading.value = false;
+      return;
+    }
+
     try {
       final response = await Request().get(Url.dropdownJuz);
       if (response.statusCode == 200) {
@@ -1333,6 +1507,15 @@ class QuranPageScreenController extends GetxController {
       }
     } catch (e) {
       print("Error fetching dropdown juz: $e");
+      if (await offlineService.hasOfflineDropdowns()) {
+        final offlineData = await offlineService.getOfflineDropdowns();
+        if (offlineData != null && offlineData['data'] != null) {
+          final List<dynamic> juzsJson = offlineData['data']['juzs'] ?? [];
+          dropdownJuz.value = juzsJson
+              .map((e) => DropdownJuz.fromJson(e))
+              .toList();
+        }
+      }
     } finally {
       isDialogLoading.value = false;
     }

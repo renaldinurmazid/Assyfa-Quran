@@ -78,7 +78,8 @@ class Request {
             // Only show toast if it's not a "No internet" error we already handled in onRequest
             if (e.message != 'No internet connection') {
               AppToast.error(
-                message: 'Gagal terhubung ke server. Periksa koneksi internet Anda.',
+                message:
+                    'Gagal terhubung ke server. Periksa koneksi internet Anda.',
                 title: 'Kesalahan Koneksi',
               );
             }

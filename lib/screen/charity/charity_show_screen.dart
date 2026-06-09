@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
@@ -339,19 +341,22 @@ class CharityShowScreen extends StatelessWidget {
               flex: 2,
               child: ElevatedButton(
                 onPressed: () {
-                  // Get.toNamed(
-                  //   Routes.charityPayment,
-                  //   arguments: {
-                  //     'id': campaign.id,
-                  //     'formType': campaign.formType,
-                  //     'qurbanPrice': campaign.qurbanPrice,
-                  //     'campaignOptions': campaign.campaignOptions,
-                  //     'withOption': campaign.withOption,
-                  //   },
-                  // );
-                  launchUrl(
-                    Uri.parse('https://aksipeduli.id'),
-                    mode: LaunchMode.externalApplication,
+                  if (Platform.isIOS) {
+                    launchUrl(
+                      Uri.parse('https://aksipeduli.id'),
+                      mode: LaunchMode.externalApplication,
+                    );
+                    return;
+                  }
+                  Get.toNamed(
+                    Routes.charityPayment,
+                    arguments: {
+                      'id': campaign.id,
+                      'formType': campaign.formType,
+                      'qurbanPrice': campaign.qurbanPrice,
+                      'campaignOptions': campaign.campaignOptions,
+                      'withOption': campaign.withOption,
+                    },
                   );
                 },
                 style: ElevatedButton.styleFrom(

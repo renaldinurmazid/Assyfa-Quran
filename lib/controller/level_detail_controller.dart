@@ -65,6 +65,7 @@ class LevelDetailController extends GetxController {
         Url.memorizationLevelDetail(levelId),
       );
       if (response.statusCode == 200) {
+        print(response);
         final data = response.data['data'];
         levelDetail.value = MemorizationLevelDetail.fromJson(data);
         totalSteps.value = levelDetail.value!.questions.length;
@@ -148,7 +149,9 @@ class LevelDetailController extends GetxController {
         debugPrint('[LevelDetail] Question $questionId marked complete');
       }
     } catch (e) {
-      debugPrint('[LevelDetail] Failed to mark question $questionId complete: $e');
+      debugPrint(
+        '[LevelDetail] Failed to mark question $questionId complete: $e',
+      );
     }
   }
 

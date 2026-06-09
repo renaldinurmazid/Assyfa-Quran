@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
@@ -12,7 +13,10 @@ class ProfileScreenController extends GetxController {
 
     isLoadingShare.value = true;
     try {
-      final response = await Request().get(Url.myReferral);
+      final String platform = Platform.isIOS ? 'ios' : 'android';
+      final response = await Request().get(
+        '${Url.myReferral}?platform=$platform',
+      );
 
       if (response.statusCode == 200) {
         final String? referralLink = response.data['data']['referral_link'];

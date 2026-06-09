@@ -8,6 +8,7 @@ class DzikirShowScreenController extends GetxController {
   final title = ''.obs;
   final data = <DzikirModel>[].obs;
   final isLoading = true.obs;
+  final isLandscape = false.obs;
 
   @override
   void onInit() {
@@ -19,6 +20,30 @@ class DzikirShowScreenController extends GetxController {
         loadDzikirData(dataPath);
       }
     }
+  }
+
+  void toggleOrientation() {
+    isLandscape.value = !isLandscape.value;
+    if (isLandscape.value) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
+  }
+
+  @override
+  void onClose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.onClose();
   }
 
   Future<void> loadDzikirData(String path) async {

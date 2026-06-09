@@ -367,16 +367,22 @@ class AuthController extends GetxController {
     );
 
     try {
-      final response = await Request().post(Url.logout);
+      final prefs = await SharedPreferences.getInstance();
+      final fcmToken = prefs.getString('saved_fcm_token');
+
+      final response = await Request().post(
+        Url.logout,
+        data: fcmToken != null ? {'fcm_token': fcmToken} : null,
+      );
       final message = response.data['message'];
 
       if (response.statusCode == 200) {
         await GoogleSignIn.instance.signOut();
         await FirebaseAuth.instance.signOut();
 
-        final prefs = await SharedPreferences.getInstance();
         await prefs.remove('access_token');
         await prefs.remove('user_data');
+        await prefs.remove('saved_fcm_token');
 
         token.value = '';
         userData.value = {};

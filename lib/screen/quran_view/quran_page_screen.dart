@@ -384,6 +384,38 @@ class QuranPageScreen extends StatelessWidget {
                                           : BoxFit.contain,
                                       gaplessPlayback: true,
                                       filterQuality: FilterQuality.medium,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        // Delete the corrupted local file
+                                        try {
+                                          File(localPath).delete();
+                                          controller.localImagePaths.remove(
+                                            page.pageNumber,
+                                          );
+                                        } catch (_) {}
+
+                                        return CachedNetworkImage(
+                                          imageUrl: page.imagePath,
+                                          fit: isLandscape
+                                              ? BoxFit.fitWidth
+                                              : BoxFit.contain,
+                                          filterQuality: FilterQuality.medium,
+                                          placeholder: (context, url) => Center(
+                                            child: CircularProgressIndicator(
+                                              color: Theme.of(
+                                                context,
+                                              ).primaryColor,
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              const Center(
+                                                child: Icon(
+                                                  Icons.error,
+                                                  color: Colors.red,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                        );
+                                      },
                                     )
                                   : CachedNetworkImage(
                                       imageUrl: page.imagePath,
@@ -442,6 +474,59 @@ class QuranPageScreen extends StatelessWidget {
                                                   gaplessPlayback: true,
                                                   filterQuality:
                                                       FilterQuality.medium,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        // Delete the corrupted local file
+                                                        try {
+                                                          File(
+                                                            localPath,
+                                                          ).delete();
+                                                          controller
+                                                              .localImagePaths
+                                                              .remove(
+                                                                page.pageNumber,
+                                                              );
+                                                        } catch (_) {}
+
+                                                        return CachedNetworkImage(
+                                                          imageUrl:
+                                                              page.imagePath,
+                                                          width: displayWidth,
+                                                          height: displayHeight,
+                                                          fit: BoxFit.fill,
+                                                          filterQuality:
+                                                              FilterQuality
+                                                                  .medium,
+                                                          placeholder:
+                                                              (
+                                                                context,
+                                                                url,
+                                                              ) => Center(
+                                                                child: CircularProgressIndicator(
+                                                                  color: Theme.of(
+                                                                    context,
+                                                                  ).primaryColor,
+                                                                ),
+                                                              ),
+                                                          errorWidget:
+                                                              (
+                                                                context,
+                                                                url,
+                                                                error,
+                                                              ) => const Center(
+                                                                child: Icon(
+                                                                  Icons.error,
+                                                                  color: Colors
+                                                                      .red,
+                                                                  size: 40,
+                                                                ),
+                                                              ),
+                                                        );
+                                                      },
                                                 )
                                               : CachedNetworkImage(
                                                   imageUrl: page.imagePath,
@@ -471,7 +556,9 @@ class QuranPageScreen extends StatelessWidget {
                                                 );
                                         }(),
                                         Obx(
-                                          () => controller.isPlaying.value
+                                          () =>
+                                              controller.playingAyahId.value !=
+                                                  0
                                               ? Stack(
                                                   children: page.ayahs
                                                       .where(
@@ -911,7 +998,9 @@ class QuranPageScreen extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       GestureDetector(
                                         onTap: () {
-                                          if (controller.dropdownSurah.isEmpty) {
+                                          if (controller
+                                              .dropdownSurah
+                                              .isEmpty) {
                                             controller.fetchDropdownSurah('');
                                           }
                                           controller.initAudioRange();
@@ -1345,230 +1434,231 @@ class QuranPageScreen extends StatelessWidget {
               style: pRegular12.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
-            Obx(() => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Dari', style: pMedium12),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // From Surah
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorScheme.surfaceVariant.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: controller.fromSurahId.value,
-                                isExpanded: true,
-                                dropdownColor: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                items: controller.dropdownSurah.isEmpty
-                                    ? [
-                                        DropdownMenuItem<int>(
-                                          value: controller.fromSurahId.value,
-                                          child: const Text('Loading...'),
-                                        )
-                                      ]
-                                    : controller.dropdownSurah.map((surah) {
-                                        return DropdownMenuItem<int>(
-                                          value: surah.id,
-                                          child: Text(
-                                            surah.name,
-                                            style: pMedium14,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        );
-                                      }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    controller.fromSurahId.value = val;
-                                    controller.fromAyahNumber.value = 1;
-                                  }
-                                },
-                              ),
-                            ),
+            Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Dari', style: pMedium12),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // From Surah
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        // From Ayah
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: controller.fromSurahId.value,
+                              isExpanded: true,
+                              dropdownColor: colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: controller.fromAyahNumber.value,
-                                isExpanded: true,
-                                dropdownColor: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                items: () {
-                                  final surah = controller.dropdownSurah
-                                      .firstWhereOrNull(
-                                    (s) =>
-                                        s.id == controller.fromSurahId.value,
-                                  );
-                                  int total = surah?.totalAyah ?? 0;
-                                  if (total == 0) {
-                                    return [
+                              items: controller.dropdownSurah.isEmpty
+                                  ? [
                                       DropdownMenuItem<int>(
-                                        value: controller.fromAyahNumber.value,
-                                        child: Text(
-                                          controller.fromAyahNumber.value
-                                              .toString(),
-                                        ),
-                                      )
-                                    ];
-                                  }
-                                  return List.generate(total, (i) => i + 1)
-                                      .map((ayah) {
-                                    return DropdownMenuItem<int>(
-                                      value: ayah,
-                                      child: Text(
-                                        ayah.toString(),
-                                        style: pMedium14,
+                                        value: controller.fromSurahId.value,
+                                        child: const Text('Loading...'),
                                       ),
-                                    );
-                                  }).toList();
-                                }(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    controller.fromAyahNumber.value = val;
-                                  }
-                                },
-                              ),
+                                    ]
+                                  : controller.dropdownSurah.map((surah) {
+                                      return DropdownMenuItem<int>(
+                                        value: surah.id,
+                                        child: Text(
+                                          surah.name,
+                                          style: pMedium14,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  controller.fromSurahId.value = val;
+                                  controller.fromAyahNumber.value = 1;
+                                }
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                )),
+                      ),
+                      const SizedBox(width: 8),
+                      // From Ayah
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: controller.fromAyahNumber.value,
+                              isExpanded: true,
+                              dropdownColor: colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              items: () {
+                                final surah = controller.dropdownSurah
+                                    .firstWhereOrNull(
+                                      (s) =>
+                                          s.id == controller.fromSurahId.value,
+                                    );
+                                int total = surah?.totalAyah ?? 0;
+                                if (total == 0) {
+                                  return [
+                                    DropdownMenuItem<int>(
+                                      value: controller.fromAyahNumber.value,
+                                      child: Text(
+                                        controller.fromAyahNumber.value
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ];
+                                }
+                                return List.generate(total, (i) => i + 1).map((
+                                  ayah,
+                                ) {
+                                  return DropdownMenuItem<int>(
+                                    value: ayah,
+                                    child: Text(
+                                      ayah.toString(),
+                                      style: pMedium14,
+                                    ),
+                                  );
+                                }).toList();
+                              }(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  controller.fromAyahNumber.value = val;
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
-            Obx(() => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Sampai', style: pMedium12),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // To Surah
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorScheme.surfaceVariant.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: controller.toSurahId.value,
-                                isExpanded: true,
-                                dropdownColor: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                items: controller.dropdownSurah.isEmpty
-                                    ? [
-                                        DropdownMenuItem<int>(
-                                          value: controller.toSurahId.value,
-                                          child: const Text('Loading...'),
-                                        )
-                                      ]
-                                    : controller.dropdownSurah.map((surah) {
-                                        return DropdownMenuItem<int>(
-                                          value: surah.id,
-                                          child: Text(
-                                            surah.name,
-                                            style: pMedium14,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        );
-                                      }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    controller.toSurahId.value = val;
-                                    controller.toAyahNumber.value = 1;
-                                  }
-                                },
-                              ),
-                            ),
+            Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Sampai', style: pMedium12),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // To Surah
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        // To Ayah
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorScheme.surfaceVariant.withOpacity(0.3),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: controller.toSurahId.value,
+                              isExpanded: true,
+                              dropdownColor: colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int>(
-                                value: controller.toAyahNumber.value,
-                                isExpanded: true,
-                                dropdownColor: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                items: () {
-                                  final surah = controller.dropdownSurah
-                                      .firstWhereOrNull(
-                                    (s) => s.id == controller.toSurahId.value,
-                                  );
-                                  int total = surah?.totalAyah ?? 0;
-                                  if (total == 0) {
-                                    return [
+                              items: controller.dropdownSurah.isEmpty
+                                  ? [
                                       DropdownMenuItem<int>(
-                                        value: controller.toAyahNumber.value,
-                                        child: Text(
-                                          controller.toAyahNumber.value
-                                              .toString(),
-                                        ),
-                                      )
-                                    ];
-                                  }
-                                  return List.generate(total, (i) => i + 1)
-                                      .map((ayah) {
-                                    return DropdownMenuItem<int>(
-                                      value: ayah,
-                                      child: Text(
-                                        ayah.toString(),
-                                        style: pMedium14,
+                                        value: controller.toSurahId.value,
+                                        child: const Text('Loading...'),
                                       ),
-                                    );
-                                  }).toList();
-                                }(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    controller.toAyahNumber.value = val;
-                                  }
-                                },
-                              ),
+                                    ]
+                                  : controller.dropdownSurah.map((surah) {
+                                      return DropdownMenuItem<int>(
+                                        value: surah.id,
+                                        child: Text(
+                                          surah.name,
+                                          style: pMedium14,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  controller.toSurahId.value = val;
+                                  controller.toAyahNumber.value = 1;
+                                }
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                )),
+                      ),
+                      const SizedBox(width: 8),
+                      // To Ayah
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: controller.toAyahNumber.value,
+                              isExpanded: true,
+                              dropdownColor: colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              items: () {
+                                final surah = controller.dropdownSurah
+                                    .firstWhereOrNull(
+                                      (s) => s.id == controller.toSurahId.value,
+                                    );
+                                int total = surah?.totalAyah ?? 0;
+                                if (total == 0) {
+                                  return [
+                                    DropdownMenuItem<int>(
+                                      value: controller.toAyahNumber.value,
+                                      child: Text(
+                                        controller.toAyahNumber.value
+                                            .toString(),
+                                      ),
+                                    ),
+                                  ];
+                                }
+                                return List.generate(total, (i) => i + 1).map((
+                                  ayah,
+                                ) {
+                                  return DropdownMenuItem<int>(
+                                    value: ayah,
+                                    child: Text(
+                                      ayah.toString(),
+                                      style: pMedium14,
+                                    ),
+                                  );
+                                }).toList();
+                              }(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  controller.toAyahNumber.value = val;
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
             // Repeat Dropdown
             _buildSettingRow(
               context,
               label: "Pengulangan per Ayat",
-              icon: Icons.repeat_rounded,
               child: Obx(
                 () => DropdownButton<int>(
                   value: controller.repeatCount.value,
@@ -1591,7 +1681,6 @@ class QuranPageScreen extends StatelessWidget {
             _buildSettingRow(
               context,
               label: "Jeda antar Ayat",
-              icon: Icons.timer_outlined,
               child: Obx(
                 () => DropdownButton<int>(
                   value: controller.delayBetweenAyahs.value,
@@ -1605,6 +1694,48 @@ class QuranPageScreen extends StatelessWidget {
                   }).toList(),
                   onChanged: (val) =>
                       controller.delayBetweenAyahs.value = val ?? 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Playback Repeat Dropdown
+            _buildSettingRow(
+              context,
+              label: "Putar ulang pemutaran",
+              child: Obx(
+                () => DropdownButton<int>(
+                  value: controller.playbackRepeatOption.value,
+                  underline: const SizedBox(),
+                  dropdownColor: colorScheme.surface,
+                  items: [
+                    DropdownMenuItem<int>(
+                      value: 1,
+                      child: Text("Tidak", style: pMedium14),
+                    ),
+                    DropdownMenuItem<int>(
+                      value: 2,
+                      child: Text("2x", style: pMedium14),
+                    ),
+                    DropdownMenuItem<int>(
+                      value: 3,
+                      child: Text("3x", style: pMedium14),
+                    ),
+                    DropdownMenuItem<int>(
+                      value: 5,
+                      child: Text("5x", style: pMedium14),
+                    ),
+                    DropdownMenuItem<int>(
+                      value: 10,
+                      child: Text("10x", style: pMedium14),
+                    ),
+                    DropdownMenuItem<int>(
+                      value: -1,
+                      child: Text("Selamanya", style: pMedium14),
+                    ),
+                  ],
+                  onChanged: (val) =>
+                      controller.playbackRepeatOption.value = val ?? 1,
                 ),
               ),
             ),
@@ -1654,7 +1785,6 @@ class QuranPageScreen extends StatelessWidget {
   Widget _buildSettingRow(
     BuildContext context, {
     required String label,
-    required IconData icon,
     required Widget child,
   }) {
     final colorScheme = context.theme.colorScheme;
@@ -1667,8 +1797,6 @@ class QuranPageScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColor.primaryColor),
-          const SizedBox(width: 12),
           Expanded(child: Text(label, style: pMedium14)),
           child,
         ],
