@@ -404,6 +404,7 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           children: [
             _buildTabItem(context, controller, 0, 'Mingguan'),
             _buildTabItem(context, controller, 1, 'Bulanan'),
+            _buildTabItem(context, controller, 2, 'All Time'),
           ],
         ),
       ),
@@ -441,7 +442,9 @@ class AppShareLeaderboardScreen extends StatelessWidget {
             child: Text(
               label,
               style: (isActive ? pBold12 : pMedium12).copyWith(
-                color: isActive ? Theme.of(context).primaryColor : Colors.white70,
+                color: isActive
+                    ? Theme.of(context).primaryColor
+                    : Colors.white70,
               ),
             ),
           ),

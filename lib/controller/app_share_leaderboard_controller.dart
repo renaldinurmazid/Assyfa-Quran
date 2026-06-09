@@ -22,7 +22,11 @@ class AppShareLeaderboardController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final type = filterIndex.value == 0 ? 'weekly' : 'monthly';
+      final type = filterIndex.value == 0
+          ? 'weekly'
+          : filterIndex.value == 1
+          ? 'monthly'
+          : '';
       final response = await Request().get(
         '${Url.appShareLeaderboard}?filter=$type',
       );
