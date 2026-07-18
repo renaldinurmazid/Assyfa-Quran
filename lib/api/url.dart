@@ -1,7 +1,7 @@
 class Url {
-  static const String baseUrl = 'https://quran.titiktolak.com';
+  // static const String baseUrl = 'https://quran.titiktolak.com';
   // static const String baseUrl = 'http://10.0.2.2:8000';
-  // static const String baseUrl = 'http://127.0.0.1:8000';
+  static const String baseUrl = 'http://127.0.0.1:8000';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -15,11 +15,14 @@ class Url {
   static const String quranOfflinePage = '/api/quran/offline/page';
   static const String quranOfflineDropdowns = '/api/quran/offline/dropdowns';
   static const String campaigns = '/api/campaigns';
+  static const String umrah = '/api/umrah';
+  static const String umrahFilters = '/api/umrah/filters';
   static const String campaignCategories = '/api/campaign-categories';
   static const String logout = '/api/logout';
   static const String listMarkers = '/api/list-markers';
   static const String saveMarkers = '/api/toggle-marker';
   static const String listUserMarkers = '/api/list-user-markers';
+  static const String nearbyMosques = '/api/nearby-mosques';
 
   static const String readingHistory = '/api/reading-history';
   static const String readingHistoryWeekly = '/api/reading-history/weekly';

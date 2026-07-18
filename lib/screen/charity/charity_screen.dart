@@ -17,86 +17,205 @@ class CharityScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Infaq', style: pSemiBold16),
+        title: Text('Infaq & Sedekah', style: pBold16),
         centerTitle: true,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           controller: controller.scrollController,
+          physics: const BouncingScrollPhysics(),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                onTap: () => Get.toNamed(Routes.charitySearch),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade600
-                            : Colors.grey.shade500,
-                      ),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Row(
+              // Top Hero Banner
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Icon(
-                          IconlyLight.search,
-                          color: context.isDarkMode
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade500,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Cari program kebaikan...',
-                          style: pRegular14.copyWith(
-                            color: context.isDarkMode
-                                ? Colors.grey.shade600
-                                : Colors.grey.shade500,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColor.primaryColorDark.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: AppColor.primaryColorDark.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.favorite_rounded,
+                                size: 12,
+                                color: AppColor.primaryColorDark,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Assyfa Peduli Sesama',
+                                style: pSemiBold10.copyWith(
+                                  color: AppColor.primaryColorDark,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("Program Terbaru", style: pSemiBold14),
-                    InkWell(
-                      onTap: () {
-                        _showFilterBottomSheet(context, controller);
-                      },
-                      child: Icon(
-                        Icons.filter_alt,
-                        color: context.isDarkMode
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade800,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tebar Kebaikan & Infaq',
+                      style: pBold20.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Salurkan infaq dan sedekah Anda dengan mudah, aman, dan transparan.',
+                      style: pRegular12.copyWith(
+                        color: context.theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Search Bar & Filter Button Inline
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Get.toNamed(Routes.charitySearch),
+                        borderRadius: BorderRadius.circular(100),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 20,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: context.isDarkMode
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade200,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                IconlyLight.search,
+                                size: 20,
+                                color: context.isDarkMode
+                                    ? Colors.grey.shade600
+                                    : Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Cari program kebaikan...',
+                                style: pRegular14.copyWith(
+                                  color: context.isDarkMode
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: context.isDarkMode
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade200,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: () => _showFilterBottomSheet(context, controller),
+                        icon: Icon(
+                          IconlyLight.filter,
+                          color: AppColor.primaryColorDark,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Category Filter Status (Quick Reset Chip if category selected)
+              Obx(() {
+                final categoryId = controller.selectedCategoryId.value;
+                if (categoryId == null) return const SizedBox.shrink();
+                
+                final matchedCat = controller.campaignCategories.firstWhereOrNull(
+                  (c) => c.id == categoryId,
+                );
+                final catName = matchedCat?.name ?? 'Kategori';
+                
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Wrap(
+                    children: [
+                      InputChip(
+                        label: Text('Kategori: $catName', style: pSemiBold12.copyWith(color: Colors.white)),
+                        backgroundColor: AppColor.primaryColorDark,
+                        deleteIconColor: Colors.white,
+                        onDeleted: () {
+                          controller.filterByCategory(null);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text("Program Terbaru", style: pBold14),
+              ),
+
               // list program terbaru
               const SizedBox(height: 12),
               _buildLatestProgramList(controller),
               const SizedBox(height: 24),
+              
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text("Program Lainnya", style: pSemiBold14),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text("Program Lainnya", style: pBold14),
               ),
+
               // list program lainnya
               const SizedBox(height: 12),
               _buildOtherProgramList(controller),
@@ -112,7 +231,7 @@ class CharityScreen extends StatelessWidget {
     return ListView.builder(
       itemCount: 3,
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (context, index) => Shimmer.fromColors(
         baseColor: context.isDarkMode
             ? Colors.grey.shade900
@@ -121,11 +240,11 @@ class CharityScreen extends StatelessWidget {
             ? Colors.grey.shade800
             : Colors.grey.shade100,
         child: Container(
-          width: 260,
-          margin: const EdgeInsets.only(right: 16),
+          width: 200,
+          margin: const EdgeInsets.only(right: 14),
           decoration: BoxDecoration(
             color: context.theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       ),
@@ -134,7 +253,7 @@ class CharityScreen extends StatelessWidget {
 
   Widget _buildLatestProgramList(CharityScreenController controller) {
     return SizedBox(
-      height: 260,
+      height: 275,
       child: Obx(() {
         if (controller.isLoading.value) {
           return _buildFeaturedShimmer(Get.context!);
@@ -142,30 +261,31 @@ class CharityScreen extends StatelessWidget {
         return ListView.separated(
           itemCount: controller.latestCharityList.length,
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           physics: const BouncingScrollPhysics(),
-          separatorBuilder: (context, index) => const SizedBox(width: 12),
+          separatorBuilder: (context, index) => const SizedBox(width: 14),
           itemBuilder: (context, index) {
             final charity = controller.latestCharityList[index];
+            final double progressValue = (charity.percentage / 100).clamp(0.0, 1.0);
             return GestureDetector(
               onTap: () => Get.toNamed(
                 Routes.charityShow,
                 arguments: {'id': charity.id},
               ),
               child: Container(
-                width: 180,
+                width: 200,
                 decoration: BoxDecoration(
                   color: context.theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: context.isDarkMode
                         ? Colors.grey.shade800
-                        : Colors.grey.shade100,
+                        : Colors.grey.shade200,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -198,34 +318,34 @@ class CharityScreen extends StatelessWidget {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                charity.category?.name ?? "Program Kebaikan",
-                                style: pRegular10.copyWith(
-                                  color: context
-                                      .theme
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    charity.category?.name ?? "Program Kebaikan",
+                                    style: pBold10.copyWith(
+                                      color: AppColor.primaryColorDark,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.verified,
-                                color: Colors.blue.shade500,
-                                size: 12,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            height: 30,
-                            child: Text(
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.verified_rounded,
+                                  color: Colors.blue,
+                                  size: 12,
+                                ),
+                              ],
+                            ),
+                            Text(
                               charity.title,
                               style: pSemiBold12.copyWith(
                                 color: context.theme.colorScheme.onSurface,
@@ -234,54 +354,68 @@ class CharityScreen extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: LinearProgressIndicator(
-                              value: charity.percentage / 100,
-                              minHeight: 6,
-                              backgroundColor: context.isDarkMode
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade100,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                AppColor.primaryColorDark,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Terkumpul', style: pRegular10),
-                                  Text(
-                                    charity.collectedAmount,
-                                    style: pSemiBold12,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: progressValue,
+                                    minHeight: 6,
+                                    backgroundColor: context.isDarkMode
+                                        ? Colors.grey.shade800
+                                        : Colors.grey.shade100,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(
+                                      AppColor.primaryColorDark,
+                                    ),
                                   ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text('Sisa hari', style: pRegular10),
-                                  charity.endDate.toString() == 'Infinity'
-                                      ? const Icon(
-                                          Icons.all_inclusive,
-                                          size: 16,
-                                        )
-                                      : Text(
-                                          charity.endDate.toString(),
-                                          style: pSemiBold12,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Terkumpul',
+                                            style: pRegular10.copyWith(color: Colors.grey.shade500),
+                                          ),
+                                          Text(
+                                            charity.collectedAmount,
+                                            style: pBold10.copyWith(color: context.theme.colorScheme.onSurface),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Sisa Hari',
+                                          style: pRegular10.copyWith(color: Colors.grey.shade500),
                                         ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                                        charity.endDate.toString() == 'Infinity'
+                                            ? const Icon(
+                                                Icons.all_inclusive,
+                                                size: 14,
+                                                color: Colors.grey,
+                                              )
+                                            : Text(
+                                                charity.endDate.toString(),
+                                                style: pBold10.copyWith(color: context.theme.colorScheme.onSurface),
+                                              ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -304,21 +438,35 @@ class CharityScreen extends StatelessWidget {
           return ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: controller.charityList.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 32,
-              color: context.isDarkMode
-                  ? Colors.grey.shade900
-                  : Colors.grey.shade200,
-            ),
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final charity = controller.charityList[index];
+              final double progressValue = (charity.percentage / 100).clamp(0.0, 1.0);
               return GestureDetector(
-                onTap: () => Get.toNamed(Routes.charityShow,
-                    arguments: {'id': charity.id}),
+                onTap: () => Get.toNamed(
+                  Routes.charityShow,
+                  arguments: {'id': charity.id},
+                ),
                 child: Container(
-                  color: Colors.transparent,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: context.theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: context.isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade200,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -327,13 +475,13 @@ class CharityScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
                           charity.coverImage,
-                          width: 130,
-                          height: 100,
+                          width: 110,
+                          height: 90,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
-                            width: 130,
-                            height: 100,
+                            width: 110,
+                            height: 90,
                             color: context.theme.colorScheme.surfaceVariant,
                             child: const Icon(IconlyLight.image),
                           ),
@@ -345,42 +493,43 @@ class CharityScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    charity.category?.name ?? "Program Kebaikan",
+                                    style: pBold10.copyWith(
+                                      color: AppColor.primaryColorDark,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.verified_rounded,
+                                  color: Colors.blue,
+                                  size: 12,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
                             Text(
                               charity.title,
                               style: pSemiBold12.copyWith(
                                 color: context.theme.colorScheme.onSurface,
-                                height: 1.2,
+                                height: 1.3,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
-                            // Organizer + Verified + ORG
-                            Row(
-                              children: [
-                                Text(
-                                  charity.category?.name ?? "Program Kebaikan",
-                                  style: pRegular10.copyWith(
-                                    color: context
-                                        .theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.verified,
-                                  color: Colors.blue.shade500,
-                                  size: 14,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
                             // Progress Bar
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: LinearProgressIndicator(
-                                value: charity.percentage / 100,
-                                minHeight: 4,
+                                value: progressValue,
+                                minHeight: 5,
                                 backgroundColor: context.isDarkMode
                                     ? Colors.grey.shade900
                                     : Colors.grey.shade100,
@@ -406,7 +555,7 @@ class CharityScreen extends StatelessWidget {
                                     ),
                                     Text(
                                       charity.collectedAmount,
-                                      style: pSemiBold12,
+                                      style: pBold10.copyWith(color: context.theme.colorScheme.onSurface),
                                     ),
                                   ],
                                 ),
@@ -414,7 +563,7 @@ class CharityScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      "Sisa hari",
+                                      "Sisa Hari",
                                       style: pRegular10.copyWith(
                                         color: context.theme.colorScheme
                                             .onSurfaceVariant,
@@ -422,10 +571,10 @@ class CharityScreen extends StatelessWidget {
                                     ),
                                     charity.endDate.toString() == 'Infinity'
                                         ? const Icon(Icons.all_inclusive,
-                                            size: 16)
+                                            size: 14, color: Colors.grey)
                                         : Text(
                                             charity.endDate.toString(),
-                                            style: pSemiBold12,
+                                            style: pBold10.copyWith(color: context.theme.colorScheme.onSurface),
                                           ),
                                   ],
                                 ),
@@ -443,8 +592,8 @@ class CharityScreen extends StatelessWidget {
         }),
         Obx(() {
           if (controller.isLoadingMore.value) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: SizedBox(
                   width: 24,
@@ -480,10 +629,17 @@ class CharityScreen extends StatelessWidget {
   ) {
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         decoration: BoxDecoration(
           color: context.theme.scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -491,21 +647,21 @@ class CharityScreen extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                width: 40,
+                width: 48,
                 height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.grey.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Filter Kategori',
-                  style: pSemiBold18.copyWith(
+                  style: pBold16.copyWith(
                     color: context.theme.colorScheme.onSurface,
                   ),
                 ),
@@ -515,13 +671,14 @@ class CharityScreen extends StatelessWidget {
                     Get.back();
                   },
                   child: Text(
-                    'Reset',
-                    style: pRegular14.copyWith(color: Colors.red),
+                    'Reset Semua',
+                    style: pBold14.copyWith(color: Colors.red.shade700),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const Divider(height: 16),
+            const SizedBox(height: 8),
             Obx(() {
               if (controller.isLoadingCategory.value) {
                 return const Center(child: CircularProgressIndicator());
@@ -532,14 +689,14 @@ class CharityScreen extends StatelessWidget {
               }
 
               return Wrap(
-                spacing: 8,
-                runSpacing: 10,
+                spacing: 10,
+                runSpacing: 12,
                 children: controller.campaignCategories.map((category) {
                   return _buildCategoryChip(context, controller, category);
                 }).toList(),
               );
             }),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -560,8 +717,9 @@ class CharityScreen extends StatelessWidget {
           Get.back();
         },
         borderRadius: BorderRadius.circular(100),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColor.primaryColorDark
@@ -579,7 +737,7 @@ class CharityScreen extends StatelessWidget {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColor.primaryColorDark.withOpacity(0.3),
+                      color: AppColor.primaryColorDark.withOpacity(0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -604,7 +762,7 @@ class CharityScreen extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: 5,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (context, index) => Shimmer.fromColors(
         baseColor: context.isDarkMode
             ? Colors.grey.shade900
@@ -613,13 +771,13 @@ class CharityScreen extends StatelessWidget {
             ? Colors.grey.shade800
             : Colors.grey.shade100,
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 24.0),
+          padding: const EdgeInsets.only(bottom: 12.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 130,
-                height: 100,
+                width: 110,
+                height: 90,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),

@@ -68,12 +68,12 @@ class Datum {
 class CreatedBy {
   int id;
   String name;
-  String profilePicture;
+  String? profilePicture;
 
   CreatedBy({
     required this.id,
     required this.name,
-    required this.profilePicture,
+    this.profilePicture,
   });
 
   factory CreatedBy.fromJson(Map<String, dynamic> json) => CreatedBy(

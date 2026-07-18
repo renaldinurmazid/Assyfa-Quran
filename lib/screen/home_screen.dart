@@ -689,7 +689,7 @@ class HomeScreen extends StatelessWidget {
     HomeScreenController controller,
   ) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildActionItem(
           context,
@@ -707,11 +707,18 @@ class HomeScreen extends StatelessWidget {
         ),
         _buildActionItem(
           context,
-          'Infaq Masjid',
-          'assets/images/png/masjid.png',
-          () => Get.toNamed(Routes.mosqueCharity),
-          const Color(0xFFFFF7ED),
+          'Haji & Umrah',
+          'assets/images/png/haji&umrah.png',
+          () => Get.toNamed(Routes.hajiAndUmrah),
+          const Color(0xFFF0F9F1),
         ),
+        // _buildActionItem(
+        //   context,
+        //   'Infaq Masjid',
+        //   'assets/images/png/masjid.png',
+        //   () => Get.toNamed(Routes.mosqueCharity),
+        //   const Color(0xFFFFF7ED),
+        // ),
         _buildActionItem(
           context,
           'More',
@@ -735,8 +742,8 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 65,
-            width: 65,
+            height: 62,
+            width: 62,
             child: Image.asset(asset, fit: BoxFit.contain, width: 120),
           ),
           const SizedBox(height: 10),
@@ -1151,6 +1158,21 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/giving-zakat.png',
         'route': Routes.calculatorZakat,
       },
+      {
+        'title': 'Infaq Masjid',
+        'icon': 'assets/images/png/masjid.png',
+        'route': Routes.mosqueCharity,
+      },
+      // {
+      //   'title': 'Quran Mp3',
+      //   'icon': 'assets/images/png/quran_mp3.png',
+      //   'route': Routes.quranMp3,
+      // },
+      {
+        'title': 'Masjid Terdekat',
+        'icon': 'assets/images/png/find-mosque.png',
+        'route': Routes.findMosque,
+      },
     ];
     return Container(
       decoration: BoxDecoration(
@@ -1167,9 +1189,9 @@ class HomeScreen extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              childAspectRatio: 0.7,
+              childAspectRatio: (MediaQuery.of(context).size.width - 72) / 420,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),

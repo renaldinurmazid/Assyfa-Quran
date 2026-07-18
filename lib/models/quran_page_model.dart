@@ -185,6 +185,7 @@ class Audio {
   int ayahId;
   int reciterId;
   String audioPath;
+  int? duration;
   DateTime? createdAt;
   DateTime? updatedAt;
   Reciter? reciter;
@@ -194,6 +195,7 @@ class Audio {
     required this.ayahId,
     required this.reciterId,
     required this.audioPath,
+    this.duration,
     this.createdAt,
     this.updatedAt,
     this.reciter,
@@ -204,6 +206,7 @@ class Audio {
     ayahId: json["ayah_id"] ?? 0,
     reciterId: json["reciter_id"] ?? 0,
     audioPath: json["audio_path"] ?? "",
+    duration: json["duration"],
     createdAt: json["created_at"] != null
         ? DateTime.parse(json["created_at"])
         : null,
@@ -218,6 +221,7 @@ class Audio {
     "ayah_id": ayahId,
     "reciter_id": reciterId,
     "audio_path": audioPath,
+    "duration": duration,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "reciter": reciter?.toJson(),

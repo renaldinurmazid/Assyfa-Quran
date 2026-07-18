@@ -48,9 +48,10 @@ class CharityPaymentController extends GetxController {
         campaignOptions!.isNotEmpty) {
       selectedOption.value = campaignOptions![0];
       updateNominal();
-    } else if (formType != 'regular' && qurbanPrice != null) {
-      nominalController.text = qurbanPrice.toString();
-      selectedNominal.value = qurbanPrice.toString();
+    } else if (qurbanPrice != null) {
+      final formatter = NumberFormat.decimalPattern('id');
+      nominalController.text = formatter.format(qurbanPrice);
+      selectedNominal.value = nominalController.text;
     }
 
     nominalController.addListener(() {

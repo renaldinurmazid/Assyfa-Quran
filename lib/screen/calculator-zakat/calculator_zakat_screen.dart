@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/screen/calculator-zakat/calculator_zakat_controller.dart';
 
 class CalculatorZakatScreen extends StatefulWidget {
   const CalculatorZakatScreen({super.key});
@@ -13,7 +15,7 @@ class CalculatorZakatScreen extends StatefulWidget {
 }
 
 class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
-  String selectedZakatSlug = 'fitrah';
+  String selectedZakatSlug = 'zakat-maal';
 
   // Controllers for Fitrah
   final TextEditingController _jumlahOrangController = TextEditingController();
@@ -62,13 +64,13 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     double totalZakat = 0;
     String breakdown = "";
 
-    if (selectedZakatSlug == 'fitrah') {
+    if (selectedZakatSlug == 'zakat-fitrah') {
       int orang = int.tryParse(_jumlahOrangController.text) ?? 0;
       double hargaBeras = _parseValue(_hargaBerasController.text);
       totalZakat = orang * 2.5 * hargaBeras;
       breakdown =
           "Jumlah Orang: $orang\nHarga Beras: ${currencyFormatter.format(hargaBeras)}/kg\nKadar Zakat: 2.5kg per orang";
-    } else if (selectedZakatSlug == 'mal') {
+    } else if (selectedZakatSlug == 'zakat-maal') {
       double totalHarta = _parseValue(_totalHartaController.text);
       double hargaEmas = _parseValue(_hargaEmasMaalController.text);
       double nisab = 85 * hargaEmas;
@@ -82,7 +84,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
         breakdown =
             "Total Harta belum mencapai Nisab (${currencyFormatter.format(nisab)})";
       }
-    } else if (selectedZakatSlug == 'penghasilan') {
+    } else if (selectedZakatSlug == 'zakat-penghasilan') {
       double gaji = _parseValue(_gajiBulananController.text);
       double bonus = _parseValue(_bonusController.text);
       double hargaEmas = _parseValue(_hargaEmasPenghasilanController.text);
@@ -98,7 +100,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
         breakdown =
             "Penghasilan belum mencapai Nisab (${currencyFormatter.format(nisabPerBulan)})";
       }
-    } else if (selectedZakatSlug == 'emas') {
+    } else if (selectedZakatSlug == 'zakat-emas') {
       double berat = double.tryParse(_beratEmasController.text) ?? 0;
       double harga = _parseValue(_hargaEmasController.text);
 
@@ -165,27 +167,93 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
               Text(
                 currencyFormatter.format(total),
                 style: pSemiBold20.copyWith(
-                  color: total > 0 ? AppColor.primaryColor : Colors.grey,
+                  color: total > 0
+                      ? context.isDarkMode
+                            ? Colors.white
+                            : Colors.black
+                      : Colors.grey,
                 ),
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _resetForm();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Obx(() {
+                final calcController = Get.put(CalculatorZakatController());
+                return ElevatedButton(
+                  onPressed: calcController.isLoading.value
+                      ? null
+                      : () async {
+                          final listData = [
+                            {
+                              'title': 'Zakat Maal',
+                              'slug': 'zakat-maal',
+                              'slug-campaign':
+                                  'mari-tunaikan-kewajiban-zakat-maal',
+                            },
+                            {
+                              'title': 'Zakat Fitrah',
+                              'slug': 'zakat-fitrah',
+                              'slug-campaign': 'zakat-fitrah',
+                            },
+                            {
+                              'title': 'Zakat Penghasilan',
+                              'slug': 'zakat-penghasilan',
+                              'slug-campaign': 'zakat-penghasilan',
+                            },
+                            {
+                              'title': 'Zakat Emas',
+                              'slug': 'zakat-emas',
+                              'slug-campaign': 'zakat-emas',
+                            },
+                          ];
+
+                          final selectedItem = listData.firstWhere(
+                            (item) => item['slug'] == selectedZakatSlug,
+                            orElse: () => listData[0],
+                          );
+
+                          final campaignSlug = selectedItem['slug-campaign']!;
+
+                          final campaignData = await calcController
+                              .getCampaignDetail(campaignSlug);
+                          if (campaignData != null) {
+                            Navigator.pop(context); // Tutup bottom sheet
+                            Get.toNamed(
+                              Routes.charityPayment,
+                              arguments: {
+                                'id': campaignData.id,
+                                'title': campaignData.title,
+                                'slug': campaignSlug,
+                                'formType': campaignData.formType,
+                                'qurbanPrice': total.toInt(),
+                                'withOption': campaignData.withOption,
+                                'campaignOptions': campaignData.campaignOptions,
+                              },
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.isDarkMode
+                        ? AppColor.primaryColorDark
+                        : AppColor.primaryColor,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Tutup',
-                  style: pMedium14.copyWith(color: Colors.white),
-                ),
-              ),
+                  child: calcController.isLoading.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Bayar Sekarang',
+                          style: pMedium14.copyWith(color: Colors.white),
+                        ),
+                );
+              }),
               const SizedBox(height: 16),
             ],
           ),
@@ -205,7 +273,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     _beratEmasController.clear();
     _hargaEmasController.clear();
     setState(() {
-      selectedZakatSlug = 'fitrah';
+      selectedZakatSlug = 'zakat-maal';
     });
   }
 
@@ -253,13 +321,13 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
 
   Widget _buildDynamicForm(BuildContext context) {
     switch (selectedZakatSlug) {
-      case 'fitrah':
+      case 'zakat-fitrah':
         return _formZakatFitrah(context);
-      case 'mal':
+      case 'zakat-maal':
         return _formZakatMaal(context);
-      case 'penghasilan':
+      case 'zakat-penghasilan':
         return _formZakatPenghasilan(context);
-      case 'emas':
+      case 'zakat-emas':
         return _formZakatEmas(context);
       default:
         return _formZakatFitrah(context);
@@ -469,10 +537,26 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
 
   Widget _buildTypeZakat(BuildContext context) {
     final listData = [
-      {'title': 'Zakat Fitrah', 'slug': 'fitrah'},
-      {'title': 'Zakat Maal', 'slug': 'mal'},
-      {'title': 'Zakat Penghasilan', 'slug': 'penghasilan'},
-      {'title': 'Zakat Emas', 'slug': 'emas'},
+      {
+        'title': 'Zakat Maal',
+        'slug': 'zakat-maal',
+        'slug-campaign': 'mari-tunaikan-kewajiban-zakat-maal',
+      },
+      {
+        'title': 'Zakat Fitrah',
+        'slug': 'zakat-fitrah',
+        'slug-campaign': 'zakat-fitrah',
+      },
+      {
+        'title': 'Zakat Penghasilan',
+        'slug': 'zakat-penghasilan',
+        'slug-campaign': 'zakat-penghasilan',
+      },
+      {
+        'title': 'Zakat Emas',
+        'slug': 'zakat-emas',
+        'slug-campaign': 'zakat-emas',
+      },
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

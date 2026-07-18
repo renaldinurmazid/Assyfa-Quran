@@ -8,9 +8,13 @@ import 'package:quran_app/screen/blog/show_blog_screen.dart';
 import 'package:quran_app/screen/calculator-zakat/calculator_zakat_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
+import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
+import 'package:quran_app/screen/haji&umrah/haji_and_umrah_screen.dart';
+import 'package:quran_app/screen/haji&umrah/detail/haji_and_umrah_detail_screen.dart';
+import 'package:quran_app/screen/haji&umrah/register/register_screen.dart';
 import 'package:quran_app/screen/leaderboard/leaderboard_screen.dart';
 import 'package:quran_app/screen/memorize_quran/level_detail_screen.dart';
 import 'package:quran_app/screen/memorize_quran/memorize_leaderboard_screen.dart';
@@ -28,6 +32,7 @@ import 'package:quran_app/screen/prayer/create_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/list_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/show_prayer_screen.dart';
 import 'package:quran_app/bindings/mosque_add_binding.dart';
+import 'package:quran_app/bindings/find_mosque_binding.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
@@ -352,6 +357,31 @@ class AppPages {
       name: Routes.deleteAccount,
       page: () => const DeleteAccountScreen(),
       binding: DeleteAccountBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.hajiAndUmrah,
+      page: () => const HajiAndUmrahScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.hajiAndUmrahDetail,
+      page: () => const HajiAndUmrahDetailScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.hajiAndUmrahRegister,
+      page: () => const HajiAndUmrahRegisterScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.findMosque,
+      page: () => const FindMosqueScreen(),
+      binding: FindMosqueBinding(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

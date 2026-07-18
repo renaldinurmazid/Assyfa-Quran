@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/charity/charity_payment_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 import 'package:flutter/services.dart' hide TextInput;
@@ -47,303 +48,390 @@ class CharityPaymentScreen extends StatelessWidget {
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Infaq Sekarang', style: pSemiBold16),
+        centerTitle: true,
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Step 1: Nominal or Qurban Detail
               if (controller.formType == 'general') ...[
-                _buildSectionHeader(context, 'Nominal Infaq'),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: controller.nominalController,
-                  cursorColor: context.theme.colorScheme.primary,
-                  style: pSemiBold14,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.end,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter(),
-                  ],
-                  decoration: InputDecoration(
-                    hintText: '0',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Text('Rp ', style: pSemiBold14),
-                    ),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                    hintStyle: pMedium12,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade200,
+                _buildStepCard(
+                  context: context,
+                  stepNumber: '1',
+                  title: 'Nominal Infaq',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: controller.nominalController,
+                        cursorColor: context.isDarkMode
+                            ? AppColor.primaryColorDark
+                            : AppColor.primaryColor,
+                        style: pBold20.copyWith(
+                          color: context.isDarkMode
+                              ? AppColor.primaryColorDark
+                              : AppColor.primaryColor,
+                        ),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.end,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          CurrencyInputFormatter(),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: '0',
+                          hintStyle: pBold20.copyWith(
+                            color: Colors.grey.shade400,
+                          ),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: Text(
+                              'Rp',
+                              style: pBold20.copyWith(
+                                color: context.isDarkMode
+                                    ? AppColor.primaryColorDark
+                                    : AppColor.primaryColor,
+                              ),
+                            ),
+                          ),
+                          prefixIconConstraints: const BoxConstraints(
+                            minWidth: 0,
+                            minHeight: 0,
+                          ),
+                          filled: true,
+                          fillColor: context.isDarkMode
+                              ? Colors.grey.shade900
+                              : Colors.grey.shade50,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: context.isDarkMode
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade200,
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: context.isDarkMode
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade200,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: AppColor.primaryColor,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade200,
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp10.000',
+                            '10000',
+                          ),
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp25.000',
+                            '25000',
+                          ),
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp50.000',
+                            '50000',
+                          ),
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp100.000',
+                            '100000',
+                          ),
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp500.000',
+                            '500000',
+                          ),
+                          _buildFastInput(
+                            context,
+                            controller,
+                            'Rp1.000.000',
+                            '1000000',
+                          ),
+                        ],
                       ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade200,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _buildFastInput(context, controller, 'Rp10.000', '10000'),
-                    _buildFastInput(context, controller, 'Rp25.000', '25000'),
-                    _buildFastInput(context, controller, 'Rp50.000', '50000'),
-                    _buildFastInput(context, controller, 'Rp100.000', '100000'),
-                    _buildFastInput(context, controller, 'Rp500.000', '500000'),
-                    _buildFastInput(
-                      context,
-                      controller,
-                      'Rp1.000.000',
-                      '1000000',
-                    ),
-                  ],
-                ),
               ] else ...[
-                _buildQurbanSection(context, controller),
+                _buildStepCard(
+                  context: context,
+                  stepNumber: '1',
+                  title: 'Detail Paket Kurban/Infaq',
+                  child: _buildQurbanSection(context, controller),
+                ),
               ],
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, 'Data Diri'),
-              const SizedBox(height: 18),
-              TextInput(
-                controller: controller.nameController,
-                hintText: 'Nama Lengkap',
-              ),
-              const SizedBox(height: 18),
-              if (controller.formType == 'general') ...[
-                Row(
+
+              // Step 2: Personal Information
+              _buildStepCard(
+                context: context,
+                stepNumber: '2',
+                title: 'Data Diri Donatur',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Obx(
-                      () => SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: controller.isAnonymous.value,
-                          onChanged: (value) {
-                            controller.isAnonymous.value = value!;
-                          },
-                          activeColor: context.theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                    TextInput(
+                      controller: controller.nameController,
+                      hintText: 'Nama Lengkap',
+                    ),
+                    if (controller.formType == 'general') ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Obx(
+                            () => SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: controller.isAnonymous.value,
+                                onChanged: (value) {
+                                  controller.isAnonymous.value = value!;
+                                },
+                                activeColor: AppColor.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                side: BorderSide(
+                                  color: AppColor.primaryColor.withOpacity(0.4),
+                                ),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.padded,
+                              ),
+                            ),
                           ),
-                          side: BorderSide(
-                            color: context.theme.colorScheme.primary
-                                .withOpacity(0.2),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sembunyikan nama saya (Anonim)',
+                            style: pRegular12.copyWith(
+                              color: context.theme.colorScheme.onSurface,
+                            ),
                           ),
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    TextInput(
+                      controller: controller.phoneController,
+                      hintText: 'Nomor WhatsApp',
+                      keyboardType: TextInputType.phone,
+                    ),
+                    if (AuthController.to.userData['phone_number'] == null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(
+                            context.isDarkMode ? 0.05 : 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.amber.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              IconlyLight.info_square,
+                              color: Colors.amber.shade900,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Lengkapi nomor telepon di profilmu yuk, supaya transaksi berikutnya jadi lebih praktis!',
+                                style: pRegular12.copyWith(
+                                  color: context.isDarkMode
+                                      ? Colors.amber.shade200
+                                      : Colors.amber.shade900,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Sembunyikan nama saya (Anonim)',
-                      style: pRegular12.copyWith(
-                        color: context.theme.colorScheme.onSurface,
-                      ),
-                    ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 18),
-              ],
-              TextInput(
-                controller: controller.phoneController,
-                hintText: 'Nomor WhatsApp',
-                keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 12),
-              AuthController.to.userData['phone_number'] == null
-                  ? Container(
+
+              // Step 3: Payment Method
+              _buildStepCard(
+                context: context,
+                stepNumber: '3',
+                title: 'Pilih Metode Pembayaran',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() {
+                      final selected = controller.selectedPaymentMethod.value;
+                      return GestureDetector(
+                        onTap: () =>
+                            _showPaymentMethodBottomSheet(context, controller),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: context.isDarkMode
+                                ? Colors.grey.shade900
+                                : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: selected != null
+                                  ? AppColor.primaryColor
+                                  : (context.isDarkMode
+                                        ? Colors.grey.shade800
+                                        : Colors.grey.shade200),
+                              width: selected != null ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              if (selected != null) ...[
+                                Container(
+                                  width: 48,
+                                  height: 32,
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: context.isDarkMode
+                                        ? Colors.grey.shade800
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: context.isDarkMode
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade200,
+                                    ),
+                                  ),
+                                  child: selected.logo.isNotEmpty
+                                      ? SvgPicture.network(
+                                          selected.logo,
+                                          placeholderBuilder: (context) =>
+                                              const Center(
+                                                child: SizedBox(
+                                                  width: 12,
+                                                  height: 12,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              ),
+                                        )
+                                      : const Icon(
+                                          IconlyLight.wallet,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    selected.name,
+                                    style: pSemiBold14.copyWith(
+                                      color:
+                                          context.theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                const Icon(
+                                  IconlyLight.wallet,
+                                  size: 22,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    'Pilih metode pembayaran',
+                                    style: pRegular14.copyWith(
+                                      color: context
+                                          .theme
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const Icon(
+                                IconlyLight.arrow_down_2,
+                                size: 20,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(
-                          context.isDarkMode ? 0.05 : 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.orange.withOpacity(0.05),
                         border: Border.all(
-                          color: Colors.amber.withOpacity(0.3),
-                          width: 1,
+                          color: Colors.orange.withOpacity(0.3),
                         ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            IconlyLight.info_square,
-                            color: Colors.amber.shade900,
+                          const Icon(
+                            Icons.warning_amber_rounded,
                             size: 18,
+                            color: Colors.orange,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Lengkapi nomor telepon di profilmu yuk, supaya transaksi berikutnya jadi lebih praktis!',
-                              style: pRegular12.copyWith(
+                              'Dana donasi yang terhimpun di Quranuna bukan untuk tujuan pencucian uang, terorisme maupun tindak kejahatan lainnya.',
+                              style: pRegular10.copyWith(
                                 color: context.isDarkMode
-                                    ? Colors.amber.shade200
-                                    : Colors.amber.shade900,
+                                    ? Colors.orange.shade200
+                                    : Colors.orange.shade900,
                               ),
                             ),
                           ),
                         ],
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, 'Pilih Metode Pembayaran'),
-              const SizedBox(height: 12),
-              Obx(() {
-                final selected = controller.selectedPaymentMethod.value;
-                return GestureDetector(
-                  onTap: () =>
-                      _showPaymentMethodBottomSheet(context, controller),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: context.theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: selected != null
-                            ? context.theme.colorScheme.primary
-                            : (context.isDarkMode
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade200),
-                        width: selected != null ? 2 : 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        if (selected != null) ...[
-                          Container(
-                            width: 48,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: context
-                                  .theme
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: selected.logo.isNotEmpty
-                                ? SvgPicture.network(
-                                    selected.logo,
-                                    placeholderBuilder: (context) =>
-                                        const Center(
-                                          child: SizedBox(
-                                            width: 12,
-                                            height: 12,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        ),
-                                  )
-                                : const Icon(
-                                    IconlyLight.wallet,
-                                    size: 20,
-                                    color: Colors.grey,
-                                  ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              selected.name,
-                              style: pSemiBold14.copyWith(
-                                color: context.theme.colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ] else ...[
-                          const Icon(
-                            IconlyLight.wallet,
-                            size: 22,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              'Pilih metode pembayaran',
-                              style: pRegular14.copyWith(
-                                color:
-                                    context.theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ],
-                        const Icon(
-                          IconlyLight.arrow_down_2,
-                          size: 20,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-              const SizedBox(height: 24),
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.05),
-                  border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      size: 18,
-                      color: Colors.orange,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Dana donasi yang terhimpun di Quranuna bukan untuk tujuan pencucian uang, terorisme maupun tindak kejahatan lainnya.',
-                        style: pRegular12.copyWith(color: Colors.orange),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         decoration: BoxDecoration(
           color: context.theme.colorScheme.surface,
           boxShadow: [
@@ -353,6 +441,14 @@ class CharityPaymentScreen extends StatelessWidget {
               offset: const Offset(0, -5),
             ),
           ],
+          border: Border(
+            top: BorderSide(
+              color: context.isDarkMode
+                  ? Colors.grey.shade900
+                  : Colors.grey.shade100,
+              width: 1,
+            ),
+          ),
         ),
         child: Obx(
           () => ElevatedButton(
@@ -360,10 +456,13 @@ class CharityPaymentScreen extends StatelessWidget {
                 ? null
                 : controller.submitDonation,
             style: ElevatedButton.styleFrom(
-              backgroundColor: context.theme.colorScheme.primary,
+              backgroundColor: context.isDarkMode
+                  ? AppColor.primaryColorDark
+                  : AppColor.primaryColor,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(100),
               ),
               elevation: 0,
             ),
@@ -386,11 +485,82 @@ class CharityPaymentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Text(
-      title,
-      style: pSemiBold14.copyWith(
-        color: context.theme.colorScheme.onSurface.withOpacity(0.8),
+  Widget _buildStepCard({
+    required BuildContext context,
+    required String stepNumber,
+    required String title,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: context.theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: context.isDarkMode
+              ? Colors.grey.shade800
+              : Colors.grey.shade200,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFD4AF37), Color(0xFFC5A880)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD4AF37).withOpacity(0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    stepNumber,
+                    style: pBold12.copyWith(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: pBold14.copyWith(
+                      color: context.theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: context.isDarkMode
+                ? Colors.grey.shade800
+                : Colors.grey.shade100,
+          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
+        ],
       ),
     );
   }
@@ -409,39 +579,47 @@ class CharityPaymentScreen extends StatelessWidget {
           final formatter = NumberFormat.decimalPattern('id');
           final formattedValue = formatter.format(double.parse(value));
           controller.nominalController.text = formattedValue;
-          // Trigger reactivity if needed, though controller.text isn't observable
-          // But we can check it in the Obx
           controller.nominalController.selection = TextSelection.fromPosition(
             TextPosition(offset: formattedValue.length),
           );
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? context.theme.colorScheme.primary
-                : context.theme.colorScheme.surface,
+                ? AppColor.primaryColor
+                : (context.isDarkMode ? Colors.grey.shade900 : Colors.white),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? context.theme.colorScheme.primary
+                  ? AppColor.primaryColor
                   : (context.isDarkMode
-                        ? Colors.grey.shade900
+                        ? Colors.grey.shade800
                         : Colors.grey.shade200),
+              width: 1,
             ),
             boxShadow: [
               if (isSelected)
                 BoxShadow(
-                  color: context.theme.colorScheme.primary.withOpacity(0.2),
+                  color: AppColor.primaryColor.withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
+                )
+              else
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.01),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
             ],
           ),
           child: Text(
             label,
-            style: pSemiBold14.copyWith(
-              color: isSelected ? Colors.white : null,
+            style: pBold12.copyWith(
+              color: isSelected
+                  ? Colors.white
+                  : (context.isDarkMode ? Colors.grey[300] : Colors.grey[700]),
             ),
           ),
         ),
@@ -461,8 +639,13 @@ class CharityPaymentScreen extends StatelessWidget {
       children: [
         if (controller.withOption == 1 &&
             controller.campaignOptions != null) ...[
-          _buildSectionHeader(context, 'Pilih Paket $label'),
-          const SizedBox(height: 12),
+          Text(
+            'Pilih Paket $label',
+            style: pMedium12.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 10),
           SizedBox(
             height: 90,
             child: ListView.separated(
@@ -476,25 +659,52 @@ class CharityPaymentScreen extends StatelessWidget {
                       controller.selectedOption.value?.id == option.id;
                   return GestureDetector(
                     onTap: () => controller.selectOption(option),
-                    child: Container(
-                      width: 160,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 170,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? LinearGradient(
+                                colors: [
+                                  AppColor.primaryColor,
+                                  AppColor.primaryColor.withOpacity(0.85),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
                         color: isSelected
-                            ? context.theme.colorScheme.primary.withOpacity(
-                              0.05,
-                            )
-                            : context.theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
+                            ? null
+                            : (context.isDarkMode
+                                  ? Colors.grey.shade900
+                                  : Colors.white),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isSelected
-                              ? context.theme.colorScheme.primary
-                              : context.theme.dividerColor.withOpacity(0.1),
+                              ? AppColor.primaryColor
+                              : (context.isDarkMode
+                                    ? Colors.grey.shade800
+                                    : Colors.grey.shade200),
                           width: isSelected ? 2 : 1,
                         ),
+                        boxShadow: [
+                          if (isSelected)
+                            BoxShadow(
+                              color: AppColor.primaryColor.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            )
+                          else
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.01),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,21 +712,21 @@ class CharityPaymentScreen extends StatelessWidget {
                         children: [
                           Text(
                             option.name,
-                            style: pSemiBold14.copyWith(
+                            style: pSemiBold12.copyWith(
                               color: isSelected
-                                  ? context.theme.colorScheme.primary
+                                  ? Colors.white
                                   : context.theme.colorScheme.onSurface,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             option.price,
                             style: pBold14.copyWith(
                               color: isSelected
-                                  ? context.theme.colorScheme.primary
-                                  : context.theme.colorScheme.primary,
+                                  ? const Color(0xFFD4AF37)
+                                  : AppColor.primaryColorDark,
                             ),
                           ),
                         ],
@@ -527,85 +737,110 @@ class CharityPaymentScreen extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
         ],
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Jumlah $label :',
-              style: pSemiBold14.copyWith(
-                color: context.theme.colorScheme.onSurface,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: context.isDarkMode
+                ? Colors.grey.shade900
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: context.isDarkMode
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade200,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Jumlah $label',
+                style: pMedium14.copyWith(
+                  color: context.theme.colorScheme.onSurface,
+                ),
               ),
-            ),
-            Row(
-              children: [
-                Obx(
-                  () => Text(
-                    '${controller.quantity.value} $label',
-                    style: pBold14.copyWith(
-                      color: context.theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: controller.incrementQuantity,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: context.theme.colorScheme.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.theme.colorScheme.primary.withOpacity(
-                            0.3,
-                          ),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: controller.decrementQuantity,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: context.isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.white,
+                        border: Border.all(
+                          color: context.isDarkMode
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade300,
                         ),
-                      ],
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: controller.decrementQuantity,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: context.isDarkMode
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade100,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.remove,
-                      color: context.isDarkMode
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
-                      size: 20,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.remove,
+                        color: context.isDarkMode
+                            ? Colors.grey.shade300
+                            : Colors.grey.shade700,
+                        size: 16,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 16),
+                  Obx(
+                    () => Text(
+                      '${controller.quantity.value}',
+                      style: pBold16.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  GestureDetector(
+                    onTap: controller.incrementQuantity,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColor.primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColor.primaryColor.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 24),
-        _buildSectionHeader(context, 'Total Infaq'),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: context.isDarkMode
-                ? Colors.grey.shade900
-                : context.theme.colorScheme.primary.withOpacity(0.05),
+            gradient: LinearGradient(
+              colors: context.isDarkMode
+                  ? [Colors.grey.shade900, const Color(0xFF0F0F0F)]
+                  : [const Color(0xFFF9F6F0), const Color(0xFFF0EAE1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: context.theme.colorScheme.primary.withOpacity(0.1),
+              color: context.isDarkMode
+                  ? Colors.grey.shade800
+                  : const Color(0xFFE5DCD0),
             ),
           ),
           child: Obx(() {
@@ -619,30 +854,33 @@ class CharityPaymentScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Subtotal',
+                  'Subtotal Tagihan',
                   style: pMedium14.copyWith(
                     color: context.theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
                 Text(
                   'Rp ${formatter.format(total)}',
-                  style: pBold18.copyWith(
-                    color: context.theme.colorScheme.primary,
-                  ),
+                  style: pBold18.copyWith(color: AppColor.primaryColorDark),
                 ),
               ],
             );
           }),
         ),
-        const SizedBox(height: 24),
-        _buildSectionHeader(context, 'Kurban atas nama...'),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
+        Text(
+          'Kurban atas nama...',
+          style: pMedium12.copyWith(
+            color: context.theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 10),
         Obx(
           () => ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: controller.qurbanNameControllers.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               return TextInput(
                 controller: controller.qurbanNameControllers[index],

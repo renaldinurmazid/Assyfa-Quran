@@ -48,4 +48,8 @@ abstract class Routes {
   static const memorizeLeaderboard = '/memorize_leaderboard';
   static const calculatorZakat = '/calculator_zakat';
   static const deleteAccount = '/delete_account';
+  static const hajiAndUmrah = '/haji_and_umrah';
+  static const hajiAndUmrahDetail = '/haji_and_umrah_detail';
+  static const hajiAndUmrahRegister = '/haji_and_umrah_register';
+  static const findMosque = '/find_mosque';
 }
