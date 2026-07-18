@@ -20,7 +20,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
   @override
   void initState() {
     super.initState();
-    controller = Get.put(QuranMp3Controller());
+    controller = Get.find<QuranMp3Controller>();
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showReciterBottomSheet();

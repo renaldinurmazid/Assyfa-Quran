@@ -15,6 +15,8 @@ import 'package:quran_app/controller/theme_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 
 import 'package:toastification/toastification.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audio_session/audio_session.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,16 @@ void main() async {
   ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FcmService.init();
+  
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
+
+  final session = await AudioSession.instance;
+  await session.configure(const AudioSessionConfiguration.music());
+
   Get.put(ThemeController());
   runApp(const MyApp());
 }

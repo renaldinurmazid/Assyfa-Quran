@@ -7,6 +7,7 @@ import 'package:quran_app/api/url.dart';
 import 'package:quran_app/models/dropdown_surah_model.dart';
 import 'package:quran_app/models/reciter_model.dart';
 import 'package:quran_app/widgets/app_toast.dart';
+import 'package:quran_app/controller/global/global_audio_controller.dart';
 
 class QuranMp3Controller extends GetxController {
   final scrollController = ScrollController();
@@ -21,21 +22,20 @@ class QuranMp3Controller extends GetxController {
   final selectedReciter = Rxn<ReciterModel>();
   final isRecitersLoading = false.obs;
 
+  GlobalAudioController get audio => GlobalAudioController.to;
+
   // Active player state for premium UI player card and tile highlights
-  final playingSurahId = RxnInt();
-  final isPlaying = false.obs;
-  final lastPlayingSurah = Rxn<DropdownSurah>();
+  RxnInt get playingSurahId => audio.playingSurahId;
+  RxBool get isPlaying => audio.isPlaying;
+  RxBool get isAudioLoading => audio.isAudioLoading;
 
-  final AudioPlayer audioPlayer = AudioPlayer();
-  final isAudioLoading = false.obs;
-
-  // Audio state
-  final position = Duration.zero.obs;
-  final duration = Duration.zero.obs;
-  final isShuffle = false.obs;
-  final isRepeat = false.obs;
-  final playbackSpeed = 1.0.obs;
-  final currentAyahIndex = 0.obs;
+  // Audio state getters
+  Rx<Duration> get position => audio.position;
+  Rx<Duration> get duration => audio.duration;
+  RxBool get isShuffle => audio.isShuffle;
+  RxBool get isRepeat => audio.isRepeat;
+  RxDouble get playbackSpeed => audio.playbackSpeed;
+  RxInt get currentAyahIndex => audio.currentAyahIndex;
 
   int _currentPage = 1;
   int _lastPage = 1;
@@ -47,34 +47,9 @@ class QuranMp3Controller extends GetxController {
     scrollController.addListener(_onScroll);
     fetchSurahList(isRefresh: true);
     fetchReciters();
-    _initAudioPlayer();
-  }
 
-  void _initAudioPlayer() {
-    audioPlayer.playingStream.listen((playing) {
-      isPlaying.value = playing;
-    });
-    audioPlayer.positionStream.listen((pos) {
-      position.value = pos;
-    });
-    audioPlayer.durationStream.listen((dur) {
-      if (dur != null) duration.value = dur;
-    });
-    audioPlayer.currentIndexStream.listen((index) {
-      if (index != null) currentAyahIndex.value = index;
-    });
-    audioPlayer.loopModeStream.listen((loopMode) {
-      isRepeat.value = loopMode == LoopMode.all;
-    });
-    audioPlayer.shuffleModeEnabledStream.listen((shuffle) {
-      isShuffle.value = shuffle;
-    });
-    audioPlayer.speedStream.listen((speed) {
-      playbackSpeed.value = speed;
-    });
-    audioPlayer.playerStateStream.listen((state) {
+    audio.audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
-        // Audio finished playing
         playNextSurah();
       }
     });
@@ -85,60 +60,22 @@ class QuranMp3Controller extends GetxController {
     scrollController.dispose();
     searchController.dispose();
     _debounce?.cancel();
-    audioPlayer.dispose();
     super.onClose();
   }
 
   Future<void> loadAndPlayAudio(int surahId, int reciterId) async {
-    try {
-      isAudioLoading.value = true;
-      final response = await Request().get(
-        Url.surahAudio,
-        queryParameters: {'surah_id': surahId, 'reciter_id': reciterId},
-      );
-
-      if (response.statusCode == 200) {
-        final String? audioUrl = response.data['data']['audio_url'];
-
-        if (audioUrl != null) {
-          final audioSource = AudioSource.uri(
-            Uri.parse(audioUrl),
-            tag: surahId,
-          );
-
-          await audioPlayer.setAudioSource(audioSource);
-          audioPlayer.play();
-        } else {
-          AppToast.error(message: 'Audio surah tidak tersedia');
-        }
-      } else {
-        AppToast.error(message: 'Gagal memuat audio surah');
-      }
-    } catch (e) {
-      print("Error loading audio: $e");
-      AppToast.error(message: 'Terjadi kesalahan saat memuat audio');
-    } finally {
-      isAudioLoading.value = false;
+    final surah = surahList.firstWhereOrNull((s) => s.id == surahId);
+    final reciter = reciters.firstWhereOrNull((r) => r.id == reciterId);
+    
+    if (surah != null && reciter != null) {
+      await audio.loadAndPlayAudio(surah, reciter);
     }
   }
 
   void togglePlay(int id) {
     if (playingSurahId.value == id) {
-      // Toggle play/pause for current track
-      if (audioPlayer.playing) {
-        audioPlayer.pause();
-      } else {
-        audioPlayer.play();
-      }
+      audio.togglePlay();
     } else {
-      // Play new track
-      playingSurahId.value = id;
-
-      final surah = surahList.firstWhereOrNull((s) => s.id == id);
-      if (surah != null) {
-        lastPlayingSurah.value = surah;
-      }
-
       if (selectedReciter.value != null) {
         loadAndPlayAudio(id, selectedReciter.value!.id);
       } else {
@@ -148,7 +85,7 @@ class QuranMp3Controller extends GetxController {
   }
 
   void seek(Duration pos) {
-    audioPlayer.seek(pos);
+    audio.audioPlayer.seek(pos);
   }
 
   void next() {
@@ -164,15 +101,11 @@ class QuranMp3Controller extends GetxController {
     if (currentIndex > 0) {
       final prevSurah = surahList[currentIndex - 1];
 
-      playingSurahId.value = prevSurah.id;
-      lastPlayingSurah.value = prevSurah;
-
       if (selectedReciter.value != null) {
         loadAndPlayAudio(prevSurah.id, selectedReciter.value!.id);
       }
     } else if (currentIndex == 0) {
-      // If it's the first surah, just seek to start
-      audioPlayer.seek(Duration.zero);
+      audio.audioPlayer.seek(Duration.zero);
     }
   }
 
@@ -185,40 +118,38 @@ class QuranMp3Controller extends GetxController {
     if (currentIndex != -1 && currentIndex < surahList.length - 1) {
       final nextSurah = surahList[currentIndex + 1];
 
-      playingSurahId.value = nextSurah.id;
-      lastPlayingSurah.value = nextSurah;
-
       if (selectedReciter.value != null) {
         loadAndPlayAudio(nextSurah.id, selectedReciter.value!.id);
       }
+    } else {
+      audio.audioPlayer.pause();
     }
   }
 
   void toggleSpeed() {
     double nextSpeed = 1.0;
-    if (playbackSpeed.value == 1.0) {
+    if (audio.playbackSpeed.value == 1.0) {
       nextSpeed = 1.25;
-    } else if (playbackSpeed.value == 1.25) {
+    } else if (audio.playbackSpeed.value == 1.25) {
       nextSpeed = 1.5;
-    } else if (playbackSpeed.value == 1.5) {
+    } else if (audio.playbackSpeed.value == 1.5) {
       nextSpeed = 2.0;
     } else {
       nextSpeed = 1.0;
     }
-    audioPlayer.setSpeed(nextSpeed);
+    audio.audioPlayer.setSpeed(nextSpeed);
   }
 
   void toggleShuffle() {
-    audioPlayer.setShuffleModeEnabled(!isShuffle.value);
+    audio.audioPlayer.setShuffleModeEnabled(!audio.isShuffle.value);
   }
 
   void toggleRepeat() {
-    audioPlayer.setLoopMode(isRepeat.value ? LoopMode.off : LoopMode.all);
+    audio.audioPlayer.setLoopMode(audio.isRepeat.value ? LoopMode.off : LoopMode.all);
   }
 
   DropdownSurah? get currentPlayingSurah {
-    if (playingSurahId.value == null) return null;
-    return surahList.firstWhereOrNull((s) => s.id == playingSurahId.value);
+    return audio.currentSurah.value;
   }
 
   void _onScroll() {

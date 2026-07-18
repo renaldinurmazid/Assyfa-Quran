@@ -9,6 +9,7 @@ import 'package:quran_app/screen/profile/profile_screen.dart';
 import 'package:quran_app/screen/tilawahku_screen.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/widgets/global_mini_player.dart';
 import 'package:upgrader/upgrader.dart';
 
 class MainController extends GetxController {
@@ -41,13 +42,20 @@ class MainScreen extends StatelessWidget {
       upgrader: Upgrader(durationUntilAlertAgain: const Duration(days: 1)),
       child: Scaffold(
         body: Obx(() {
-          return IndexedStack(
-            index: controller.tabIndex.value,
-            children: const [
-              HomeScreen(),
-              TilawahkuScreen(),
-              ChatScreen(),
-              ProfileScreen(),
+          return Column(
+            children: [
+              Expanded(
+                child: IndexedStack(
+                  index: controller.tabIndex.value,
+                  children: const [
+                    HomeScreen(),
+                    TilawahkuScreen(),
+                    ChatScreen(),
+                    ProfileScreen(),
+                  ],
+                ),
+              ),
+              const GlobalMiniPlayer(),
             ],
           );
         }),
