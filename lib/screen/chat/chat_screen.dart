@@ -45,10 +45,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.theme.colorScheme.background,
+      backgroundColor: context.theme.colorScheme.surface,
       appBar: AppBar(
         centerTitle: false,
-        backgroundColor: context.theme.colorScheme.background,
+        backgroundColor: context.theme.colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Text('Notifikasi', style: pSemiBold18),
@@ -151,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
           color: isSelected
               ? context.theme.colorScheme.primary
               : context.isDarkMode
-              ? context.theme.colorScheme.surfaceVariant.withOpacity(0.3)
+              ? context.theme.colorScheme.surfaceContainerHighest.withOpacity(0.3)
               : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -295,7 +295,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: Text(
                             notification.title ?? '-',
                             style: pSemiBold14.copyWith(
-                              color: context.theme.colorScheme.onBackground,
+                              color: context.theme.colorScheme.onSurface,
                               fontWeight: isRead
                                   ? FontWeight.w600
                                   : FontWeight.w800,

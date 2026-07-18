@@ -69,7 +69,7 @@ class AuthController extends GetxController {
             '801779467180-a86s8gt9catgv8eagncpibe6n6o9ui6c.apps.googleusercontent.com',
       );
 
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance
           .authenticate();
 
       if (googleUser == null) {
@@ -77,7 +77,7 @@ class AuthController extends GetxController {
       }
 
       final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+          googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,

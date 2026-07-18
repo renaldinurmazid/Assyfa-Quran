@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -59,6 +60,9 @@ class ThemeController extends GetxController {
           updatedData['selected_background_path_url'] =
               response.data['data']['selected_background_path_url'];
           authController.userData.value = updatedData;
+          
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user_data', jsonEncode(updatedData));
         }
 
         AppToast.success(message: 'Background berhasil diperbarui');

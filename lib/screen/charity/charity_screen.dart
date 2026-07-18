@@ -482,7 +482,7 @@ class CharityScreen extends StatelessWidget {
                               Container(
                             width: 110,
                             height: 90,
-                            color: context.theme.colorScheme.surfaceVariant,
+                            color: context.theme.colorScheme.surfaceContainerHighest,
                             child: const Icon(IconlyLight.image),
                           ),
                         ),

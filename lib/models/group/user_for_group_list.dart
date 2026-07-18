@@ -38,9 +38,7 @@ class Datum {
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
     id: json["id"],
     name: json["name"],
-    profilePicture: json["profile_picture"] == null
-        ? ""
-        : json["profile_picture"],
+    profilePicture: json["profile_picture"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {

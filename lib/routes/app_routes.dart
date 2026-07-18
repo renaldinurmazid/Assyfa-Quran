@@ -51,5 +51,8 @@ abstract class Routes {
   static const hajiAndUmrah = '/haji_and_umrah';
   static const hajiAndUmrahDetail = '/haji_and_umrah_detail';
   static const hajiAndUmrahRegister = '/haji_and_umrah_register';
+  static const quranMp3 = '/quran_mp3';
+  static const quranMp3Detail = '/quran_mp3_detail';
   static const findMosque = '/find_mosque';
+  static const chatBot = '/chat_bot';
 }

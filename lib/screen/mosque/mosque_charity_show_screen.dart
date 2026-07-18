@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MosqueCharityShowScreen extends StatelessWidget {
   const MosqueCharityShowScreen({super.key});

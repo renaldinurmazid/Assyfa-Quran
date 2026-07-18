@@ -465,9 +465,7 @@ class QuranPageScreenController extends GetxController {
       targetPage = args?['page_number'];
 
       // If still no target page, check local storage for last reading page
-      if (targetPage == null) {
-        targetPage = await _getLastReadingPage(slug);
-      }
+      targetPage ??= await _getLastReadingPage(slug);
     }
 
     final isOnline = await _checkConnection();
@@ -572,8 +570,9 @@ class QuranPageScreenController extends GetxController {
   Future<void> fetchBrowseNext() async {
     if (mode.value != QuranPaginationMode.browse ||
         isLoading.value ||
-        isLastPage.value)
+        isLastPage.value) {
       return;
+    }
 
     isLoading.value = true;
     final Map<String, dynamic>? args = Get.arguments;
@@ -834,8 +833,9 @@ class QuranPageScreenController extends GetxController {
       if (item.id < 0) continue; // Skip dummy pages
 
       // If it's already local, no need to download
-      if (item.imagePath.isNotEmpty && !item.imagePath.startsWith('http'))
+      if (item.imagePath.isNotEmpty && !item.imagePath.startsWith('http')) {
         continue;
+      }
 
       // Check if it's already downloaded in local storage
       final exists = await offlineService.isPageDownloaded(

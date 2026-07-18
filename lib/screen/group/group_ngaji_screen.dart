@@ -317,7 +317,7 @@ class GroupNgajiScreen extends StatelessWidget {
   }
 
   Widget _createGroupCard(BuildContext context) {
-    void _showLoginDialog() {
+    void showLoginDialog() {
       final homeController = Get.find<HomeScreenController>();
       Get.dialog(const HomeScreen().buildLoginDialog(homeController));
     }
@@ -366,7 +366,7 @@ class GroupNgajiScreen extends StatelessWidget {
               if (AuthController.to.isLogin.value) {
                 Get.toNamed(Routes.createGroupNgaji);
               } else {
-                _showLoginDialog();
+                showLoginDialog();
               }
             },
             style: ElevatedButton.styleFrom(

@@ -48,7 +48,7 @@ class MorizeQuranScreen extends StatelessWidget {
               ),
             ),
             title: Text(
-              "Hafalan Quran",
+              "Arabic Quran",
               style: pSemiBold16.copyWith(color: colorScheme.onSurface),
             ),
             centerTitle: false,

@@ -16,7 +16,6 @@ import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart' as widget;
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/services/deep_link_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -113,6 +112,12 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      // floatingActionButton: GestureDetector(
+      //   onTap: () {
+      //     Get.toNamed(Routes.chatBot);
+      //   },
+      //   child: Image.asset('assets/gif/chat-bot.gif', width: 68, height: 68),
+      // ),
     );
   }
 
@@ -812,40 +817,7 @@ class HomeScreen extends StatelessWidget {
             return GestureDetector(
               onTap: () async {
                 final link = banner.redirectTo;
-                final uri = Uri.tryParse(link);
-
-                if (uri != null) {
-                  final segments = uri.pathSegments;
-
-                  // Check for charity: /c/{id} or /api/c/{id}
-                  final cIndex = segments.indexOf('c');
-                  if (cIndex != -1 && cIndex + 1 < segments.length) {
-                    final id = int.tryParse(segments[cIndex + 1]);
-                    if (id != null) {
-                      Get.toNamed(Routes.charityShow, arguments: {'id': id});
-                      return;
-                    }
-                  }
-
-                  // Check for mosque charity: /m/{id} or /api/m/{id}
-                  final mIndex = segments.indexOf('m');
-                  if (mIndex != -1 && mIndex + 1 < segments.length) {
-                    final id = int.tryParse(segments[mIndex + 1]);
-                    if (id != null) {
-                      Get.toNamed(
-                        Routes.mosqueCharityShow,
-                        arguments: {'id': id},
-                      );
-                      return;
-                    }
-                  }
-                }
-
-                // Fallback: open external URL
-                final url = Uri.parse(link);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
+                await DeepLinkService.handlePayload(link);
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -1084,8 +1056,9 @@ class HomeScreen extends StatelessWidget {
     HomeScreenController controller,
   ) {
     return Obx(() {
-      if (!AuthController.to.isLogin.value || controller.isOfflineMode.value)
+      if (!AuthController.to.isLogin.value || controller.isOfflineMode.value) {
         return const SizedBox();
+      }
       return InkWell(
         onTap: () {
           Get.back();
@@ -1149,7 +1122,7 @@ class HomeScreen extends StatelessWidget {
         'route': Routes.appShareLeaderboard,
       },
       {
-        'title': 'Bahasa Arab Quran',
+        'title': 'Arabic Quran',
         'icon': 'assets/images/png/hafalan.png',
         'route': Routes.memorizeQuran,
       },
@@ -1163,11 +1136,11 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/masjid.png',
         'route': Routes.mosqueCharity,
       },
-      // {
-      //   'title': 'Quran Mp3',
-      //   'icon': 'assets/images/png/quran_mp3.png',
-      //   'route': Routes.quranMp3,
-      // },
+      {
+        'title': 'Quran Mp3',
+        'icon': 'assets/images/png/quran_mp3.png',
+        'route': Routes.quranMp3,
+      },
       {
         'title': 'Masjid Terdekat',
         'icon': 'assets/images/png/find-mosque.png',
@@ -1513,16 +1486,18 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Flexible(
                 child: Obx(() {
-                  if (tilawahController.isLoading.value)
+                  if (tilawahController.isLoading.value) {
                     return const Padding(
                       padding: EdgeInsets.all(20),
                       child: CircularProgressIndicator(),
                     );
-                  if (tilawahController.bookmarks.isEmpty)
+                  }
+                  if (tilawahController.bookmarks.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(40),
                       child: Text('Belum ada data'),
                     );
+                  }
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),

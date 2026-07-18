@@ -104,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '\"Sudahkah hatimu menyapa Al-Quran hari ini?\"',
+                    '"Sudahkah hatimu menyapa Al-Quran hari ini?"',
                     style: pMedium12.copyWith(
                       color: context.theme.colorScheme.primary,
                       fontStyle: FontStyle.italic,

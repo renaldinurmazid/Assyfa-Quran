@@ -69,7 +69,7 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                     onChanged: (value) {
                       controller.isPrivate.value = value;
                     },
-                    activeColor: Theme.of(context).primaryColor,
+                    activeThumbColor: Theme.of(context).primaryColor,
                   ),
                 ),
               ],

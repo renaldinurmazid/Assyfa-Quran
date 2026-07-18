@@ -564,7 +564,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
         Text('Pilih Jenis Zakat', style: pMedium14),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
-          value: selectedZakatSlug,
+          initialValue: selectedZakatSlug,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

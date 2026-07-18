@@ -48,8 +48,8 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.9),
-                            Colors.black.withOpacity(0.5),
+                            Colors.black.withValues(alpha: 0.9),
+                            Colors.black.withValues(alpha: 0.5),
                             Colors.transparent,
                           ],
                         ),
@@ -69,41 +69,45 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            GestureDetector(
-                              onTap: () => Get.back(),
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  IconlyLight.arrow_left,
-                                  color: Colors.white,
-                                  size: 20,
+                            Material(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                onTap: () => Get.back(),
+                                customBorder: const CircleBorder(),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Icon(
+                                    IconlyLight.arrow_left,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                final pickController = Get.put(
-                                  PickLocationController(),
-                                );
-                                pickController.useCurrentLocation();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(100),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
+                            Material(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(100),
+                              child: InkWell(
+                                onTap: () {
+                                  final pickController = Get.put(
+                                    PickLocationController(),
+                                  );
+                                  pickController.useCurrentLocation();
+                                },
+                                borderRadius: BorderRadius.circular(100),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
                                   ),
-                                ),
-                                child: Row(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(
@@ -114,7 +118,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Obx(
                                       () => Text(
-                                        '${controller.kabKota.value}',
+                                        controller.kabKota.value,
                                         style: pSemiBold12.copyWith(
                                           color: Colors.white,
                                         ),
@@ -130,7 +134,8 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ],
+                          ),
+                        ],
                         ),
                         const SizedBox(height: 40),
                         // Next Prayer Info
@@ -138,7 +143,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                           () => Text(
                             controller.nextPrayerName.value,
                             style: pMedium14.copyWith(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               letterSpacing: 1.5,
                             ),
                           ),
@@ -167,7 +172,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(100),
                               ),
                               child: Text(
@@ -223,7 +228,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: context.theme.colorScheme.primary.withOpacity(
+                        color: context.theme.colorScheme.primary.withValues(alpha: 
                           0.1,
                         ),
                         shape: BoxShape.circle,
@@ -348,14 +353,14 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isNext
-                            ? context.theme.colorScheme.primary.withOpacity(
+                            ? context.theme.colorScheme.primary.withValues(alpha: 
                                 0.05,
                               )
                             : context.theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isNext
-                              ? context.theme.colorScheme.primary.withOpacity(
+                              ? context.theme.colorScheme.primary.withValues(alpha: 
                                   0.3,
                                 )
                               : context.isDarkMode
@@ -372,7 +377,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                               color: isNext
                                   ? context.theme.colorScheme.primary
                                   : context.theme.colorScheme.primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -421,20 +426,23 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                               iconData = IconlyBold.voice;
                             }
 
-                            return InkWell(
-                              onTap: () {
+                            return IconButton(
+                              onPressed: () {
                                 Get.dialog(
                                   _selectNotification(context, prayerName),
                                 );
                               },
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  iconData,
-                                  color: context.theme.colorScheme.primary,
-                                  size: 18,
-                                ),
+                              icon: Icon(
+                                iconData,
+                                color: context.theme.colorScheme.primary,
+                                size: 20,
                               ),
+                              constraints: const BoxConstraints(
+                                minWidth: 44,
+                                minHeight: 44,
+                              ),
+                              padding: EdgeInsets.zero,
+                              tooltip: 'Atur Notifikasi',
                             );
                           }),
                         ],
@@ -473,7 +481,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: context.theme.colorScheme.primary.withOpacity(0.1),
+                      color: context.theme.colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -579,25 +587,28 @@ class PrayerTimeDetailScreen extends StatelessWidget {
     required Function(String?) onChanged,
   }) {
     final isSelected = value == groupValue;
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? context.theme.colorScheme.primary.withOpacity(0.05)
-              : context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? context.theme.colorScheme.primary
-                : context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade100,
-            width: 1.5,
+    return Material(
+      color: isSelected
+          ? context.theme.colorScheme.primary.withValues(alpha: 0.05)
+          : context.theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => onChanged(value),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? context.theme.colorScheme.primary
+                  : context.isDarkMode
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade100,
+              width: 1.5,
+            ),
           ),
-        ),
-        child: Row(
+          child: Row(
           children: [
             Icon(
               icon,
@@ -628,6 +639,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

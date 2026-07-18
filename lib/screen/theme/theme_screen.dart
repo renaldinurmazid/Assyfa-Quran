@@ -60,14 +60,16 @@ class ThemeScreen extends StatelessWidget {
                     () => Switch(
                       value: controller.isDarkMode,
                       onChanged: (value) => controller.toggleTheme(),
-                      activeColor: context.theme.colorScheme.primary,
+                      activeThumbColor: context.theme.colorScheme.primary,
                     ),
                   ),
                 ],
               ),
             ),
             Obx(() {
-              if (!AuthController.to.isLogin.value) return const SizedBox.shrink();
+              if (!AuthController.to.isLogin.value) {
+                return const SizedBox.shrink();
+              }
 
               return Expanded(
                 child: Column(
@@ -78,65 +80,109 @@ class ThemeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Expanded(
                       child: Obx(() {
-                        if (controller.isLoadingBackgrounds.value) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (controller.isLoadingBackgrounds.value &&
+                            controller.backgrounds.isEmpty) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
 
-                        if (controller.backgrounds.isEmpty) {
-                          return const Center(child: Text('Tidak ada background tersedia'));
-                        }
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            await controller.fetchBackgrounds();
+                          },
+                          color: context.theme.colorScheme.primary,
+                          child: controller.backgrounds.isEmpty
+                              ? ListView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  children: [
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                          0.4,
+                                      child: const Center(
+                                        child: Text(
+                                          'Tidak ada background tersedia',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : GridView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 0.8,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                      ),
+                                  itemCount: controller.backgrounds.length,
+                                  itemBuilder: (context, index) {
+                                    final bg = controller.backgrounds[index];
+                                    final isSelected =
+                                        bg['is_selected'] ?? false;
 
-                        return GridView.builder(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 0.8,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                          ),
-                          itemCount: controller.backgrounds.length,
-                          itemBuilder: (context, index) {
-                            final bg = controller.backgrounds[index];
-                            final isSelected = bg['is_selected'] ?? false;
-
-                            return GestureDetector(
-                              onTap: () => controller.selectBackground(bg['id']),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: isSelected
-                                      ? Border.all(
-                                          color: context.theme.colorScheme.primary,
-                                          width: 3,
-                                        )
-                                      : null,
-                                  image: DecorationImage(
-                                    image: NetworkImage(bg['path']),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                child: isSelected
-                                    ? Align(
-                                        alignment: Alignment.topRight,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: context.theme.colorScheme.primary,
-                                            borderRadius: const BorderRadius.only(
-                                              topRight: Radius.circular(8),
-                                              bottomLeft: Radius.circular(8),
-                                            ),
+                                    return GestureDetector(
+                                      onTap: () =>
+                                          controller.selectBackground(bg['id']),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
-                                          child: const Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: 16,
+                                          border: isSelected
+                                              ? Border.all(
+                                                  color: context
+                                                      .theme
+                                                      .colorScheme
+                                                      .primary,
+                                                  width: 3,
+                                                )
+                                              : null,
+                                          image: DecorationImage(
+                                            image: NetworkImage(bg['path']),
+                                            fit: BoxFit.cover,
                                           ),
                                         ),
-                                      )
-                                    : null,
-                              ),
-                            );
-                          },
+                                        child: isSelected
+                                            ? Align(
+                                                alignment: Alignment.topRight,
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                    4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: context
+                                                        .theme
+                                                        .colorScheme
+                                                        .primary,
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                          topRight:
+                                                              Radius.circular(
+                                                                8,
+                                                              ),
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.check,
+                                                    color: Colors.white,
+                                                    size: 16,
+                                                  ),
+                                                ),
+                                              )
+                                            : null,
+                                      ),
+                                    );
+                                  },
+                                ),
                         );
                       }),
                     ),

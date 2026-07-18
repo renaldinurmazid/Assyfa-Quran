@@ -616,7 +616,7 @@ class ShowGroupScreen extends StatelessWidget {
                 () => Switch(
                   value: controller.isPrivate.value,
                   onChanged: (val) => controller.isPrivate.value = val,
-                  activeColor: Get.context!.theme.colorScheme.primary,
+                  activeThumbColor: Get.context!.theme.colorScheme.primary,
                 ),
               ),
             ],

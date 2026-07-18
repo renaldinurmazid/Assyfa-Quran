@@ -1135,7 +1135,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Obx(() {
                   return DropdownButtonFormField<String>(
-                    value: relationshipRx.value,
+                    initialValue: relationshipRx.value,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,

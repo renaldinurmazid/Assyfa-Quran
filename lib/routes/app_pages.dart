@@ -7,6 +7,7 @@ import 'package:quran_app/screen/blog/comment_screen.dart';
 import 'package:quran_app/screen/blog/show_blog_screen.dart';
 import 'package:quran_app/screen/calculator-zakat/calculator_zakat_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
+import 'package:quran_app/screen/chat-bot/chat_bot_screen.dart';
 import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
 import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
@@ -47,6 +48,8 @@ import 'package:quran_app/screen/group/group_search_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
 import 'package:quran_app/screen/main_screen.dart';
 import 'package:quran_app/screen/prayer_time_detail_screen.dart';
+import 'package:quran_app/screen/quran_mp3/quran_mp3_screen.dart';
+import 'package:quran_app/screen/quran_mp3/detail/quran_mp3_detail_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_list_detail_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_list_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_page_info_screen.dart';
@@ -379,9 +382,27 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
+      name: Routes.quranMp3,
+      page: () => const QuranMp3Screen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.quranMp3Detail,
+      page: () => const QuranMp3DetailScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
       name: Routes.findMosque,
       page: () => const FindMosqueScreen(),
       binding: FindMosqueBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.chatBot,
+      page: () => const ChatBotScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

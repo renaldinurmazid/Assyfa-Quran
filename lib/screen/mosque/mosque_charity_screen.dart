@@ -256,7 +256,7 @@ class MosqueCharityScreen extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           height: 110,
-                          color: context.theme.colorScheme.surfaceVariant,
+                          color: context.theme.colorScheme.surfaceContainerHighest,
                           child: const Icon(IconlyLight.image),
                         ),
                       ),

@@ -20,7 +20,7 @@ class MosqueCharityDonaturScreen extends StatelessWidget {
         backgroundColor: context.theme.colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        surfaceTintColor: context.theme.colorScheme.surfaceVariant,
+        surfaceTintColor: context.theme.colorScheme.surfaceContainerHighest,
         leading: IconButton(
           icon: Icon(
             IconlyLight.arrow_left_2,
@@ -232,7 +232,7 @@ class MosqueCharityDonaturScreen extends StatelessWidget {
         width: 46,
         height: 46,
         decoration: BoxDecoration(
-          color: Get.context!.theme.colorScheme.surfaceVariant,
+          color: Get.context!.theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Icon(
@@ -300,7 +300,7 @@ class MosqueCharityDonaturScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Get.context!.theme.colorScheme.surfaceVariant,
+                color: Get.context!.theme.colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -334,7 +334,7 @@ class MosqueCharityDonaturScreen extends StatelessWidget {
 
   Widget _buildLoadingState() {
     return Shimmer.fromColors(
-      baseColor: Get.context!.theme.colorScheme.surfaceVariant,
+      baseColor: Get.context!.theme.colorScheme.surfaceContainerHighest,
       highlightColor: Get.context!.theme.colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(20),

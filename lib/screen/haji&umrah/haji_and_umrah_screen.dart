@@ -788,7 +788,7 @@ class HajiAndUmrahScreen extends StatelessWidget {
           Obx(
             () => DropdownButtonFormField<String>(
               isExpanded: true,
-              value: controller.selectedMonthLabel.value,
+              initialValue: controller.selectedMonthLabel.value,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
