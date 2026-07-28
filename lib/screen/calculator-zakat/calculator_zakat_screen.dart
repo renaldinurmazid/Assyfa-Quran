@@ -262,20 +262,20 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     );
   }
 
-  void _resetForm() {
-    _jumlahOrangController.clear();
-    _hargaBerasController.clear();
-    _totalHartaController.clear();
-    _hargaEmasMaalController.clear();
-    _gajiBulananController.clear();
-    _bonusController.clear();
-    _hargaEmasPenghasilanController.clear();
-    _beratEmasController.clear();
-    _hargaEmasController.clear();
-    setState(() {
-      selectedZakatSlug = 'zakat-maal';
-    });
-  }
+  // void _resetForm() {
+  //   _jumlahOrangController.clear();
+  //   _hargaBerasController.clear();
+  //   _totalHartaController.clear();
+  //   _hargaEmasMaalController.clear();
+  //   _gajiBulananController.clear();
+  //   _bonusController.clear();
+  //   _hargaEmasPenghasilanController.clear();
+  //   _beratEmasController.clear();
+  //   _hargaEmasController.clear();
+  //   setState(() {
+  //     selectedZakatSlug = 'zakat-maal';
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

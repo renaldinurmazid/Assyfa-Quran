@@ -17,6 +17,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:quran_app/models/banner_model.dart';
 import 'package:quran_app/models/prayer_model.dart';
+import 'package:quran_app/models/event_model.dart';
 
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
@@ -51,6 +52,9 @@ class HomeScreenController extends GetxController {
   final dataBanner = <BannerData>[].obs;
   final isLoadingBanner = false.obs;
 
+  final events = <EventModel>[].obs;
+  final isLoadingEvents = false.obs;
+
   final bannerLoginController = PageController();
   final bannerLoginPage = 0.obs;
   final banner = [
@@ -70,6 +74,7 @@ class HomeScreenController extends GetxController {
     getPrayerTime();
     _startTimer();
     fetchBanners();
+    fetchEvents();
     autoSlideBanner();
     fetchPrayers();
     _checkConnection();
@@ -569,6 +574,26 @@ class HomeScreenController extends GetxController {
       AppToast.error(message: 'Gagal memuat banner');
     } finally {
       isLoadingBanner.value = false;
+    }
+  }
+
+  Future<void> fetchEvents() async {
+    isLoadingEvents.value = true;
+    try {
+      final response = await Request().get(Url.events);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'] ?? [];
+        events.assignAll(data.map((e) => EventModel.fromJson(e)).toList());
+      } else {
+        AppToast.error(
+          message: response.data['message'] ?? 'Gagal memuat event',
+        );
+      }
+    } catch (e) {
+      print(e);
+      AppToast.error(message: 'Gagal memuat event');
+    } finally {
+      isLoadingEvents.value = false;
     }
   }
 

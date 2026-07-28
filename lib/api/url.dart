@@ -40,12 +40,17 @@ class Url {
 
   static const String mosqueCharity = '/api/mosque-charities';
   static const String banners = '/api/banners';
+  static const String events = '/api/events';
 
   static const String mosqueCharityPayment = '/api/mosque-donations';
   static const String leaderboard = '/api/reading-history/leaderboard';
   static const String myReferral = '/api/my-referral';
 
+  // Event
+  static const String myEventRegistrations = '/api/events/my-registrations';
+
   static const String appShareLeaderboard = '/api/app-share/leaderboard';
+  static String appShareReferrals(int id) => '/api/app-share/leaderboard/$id/referrals';
   static const String blogs = '/api/blogs';
   static const String blogCategories = '/api/blog-categories';
   static String blogDetail(String slug) => '/api/blogs/$slug';

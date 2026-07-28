@@ -149,6 +149,14 @@ class ProfileScreen extends StatelessWidget {
         ),
         _menuItem(
           context,
+          title: 'Aktivitas Event',
+          icon: IconlyLight.ticket,
+          onTap: () {
+            Get.toNamed(Routes.eventRegistrationList);
+          },
+        ),
+        _menuItem(
+          context,
           title: 'Aktivitas Doa',
           icon: Icons.handshake_outlined,
           onTap: () => Get.toNamed(Routes.listPrayer),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/app_share_leaderboard_controller.dart';
 import 'package:quran_app/models/leaderboard/app_share_leaderboard_model.dart';
+import 'package:quran_app/screen/app_share_leaderboard/referral_list_screen.dart';
 import 'package:quran_app/theme/font.dart';
 
 class AppShareLeaderboardScreen extends StatelessWidget {
@@ -257,67 +258,96 @@ class AppShareLeaderboardScreen extends StatelessWidget {
 
   Widget _buildListTile(BuildContext context, LeaderboardEntry user) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 30,
-            child: Text(
-              '${user.rank}',
-              style: pBold14.copyWith(color: Theme.of(context).hintColor),
-            ),
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
-            backgroundImage: user.profilePicture != null
-                ? NetworkImage(user.profilePicture!)
-                : null,
-            child: user.profilePicture == null
-                ? Icon(
-                    IconlyBold.profile,
-                    color: Theme.of(context).disabledColor,
-                  )
-                : null,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name,
-                  style: pBold14.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: InkWell(
+        onTap: () {
+          final controller = Get.find<AppShareLeaderboardController>();
+          final myId = controller.myStats.value?.id;
+          
+          if (user.id == myId) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReferralListScreen(
+                  userId: user.id,
+                  userName: user.name,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'KODE: ${user.referralCode}',
-                  style: pRegular12.copyWith(
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${user.totalReferral} Teman',
-                style: pBold14.copyWith(color: Theme.of(context).primaryColor),
               ),
-              Text(
-                '${user.totalShare} Share',
-                style: pRegular10.copyWith(color: Theme.of(context).hintColor),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Anda hanya dapat melihat daftar referral milik sendiri'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 30,
+                child: Text(
+                  '${user.rank}',
+                  style: pBold14.copyWith(color: Theme.of(context).hintColor),
+                ),
+              ),
+              const SizedBox(width: 8),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
+                backgroundImage: user.profilePicture != null
+                    ? NetworkImage(user.profilePicture!)
+                    : null,
+                child: user.profilePicture == null
+                    ? Icon(
+                        IconlyBold.profile,
+                        color: Theme.of(context).disabledColor,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      style: pBold14.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'KODE: ${user.referralCode}',
+                      style: pRegular12.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${user.totalReferral} Teman',
+                    style: pBold14.copyWith(color: Theme.of(context).primaryColor),
+                  ),
+                  Text(
+                    '${user.totalShare} Share',
+                    style: pRegular10.copyWith(color: Theme.of(context).hintColor),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -341,48 +371,61 @@ class AppShareLeaderboardScreen extends StatelessWidget {
           ],
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
-        child: Row(
-          children: [
-            Text(
-              '${me.rank}',
-              style: pBold18.copyWith(color: Theme.of(context).primaryColor),
-            ),
-            const SizedBox(width: 16),
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
-              backgroundImage: me.profilePicture != null
-                  ? NetworkImage(me.profilePicture!)
-                  : null,
-              child: me.profilePicture == null
-                  ? Icon(
-                      IconlyBold.profile,
-                      color: Theme.of(context).disabledColor,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Level Penyebar: ${me.rank > 10 ? 'Pemula' : 'Inspirator'}',
-                    style: pBold14.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  Text(
-                    'Anda telah mengajak ${me.totalReferral} teman',
-                    style: pRegular12.copyWith(
-                      color: Theme.of(context).hintColor,
-                    ),
-                  ),
-                ],
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReferralListScreen(
+                  userId: me.id,
+                  userName: me.name,
+                ),
               ),
-            ),
-            Icon(IconlyLight.send, color: Theme.of(context).primaryColor),
-          ],
+            );
+          },
+          child: Row(
+            children: [
+              Text(
+                '${me.rank}',
+                style: pBold18.copyWith(color: Theme.of(context).primaryColor),
+              ),
+              const SizedBox(width: 16),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Theme.of(context).dividerColor.withOpacity(0.5),
+                backgroundImage: me.profilePicture != null
+                    ? NetworkImage(me.profilePicture!)
+                    : null,
+                child: me.profilePicture == null
+                    ? Icon(
+                        IconlyBold.profile,
+                        color: Theme.of(context).disabledColor,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${me.totalReferral} Teman Berhasil Diundang',
+                      style: pBold14.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      'Bagikan lagi untuk mengajak lebih banyak teman',
+                      style: pRegular12.copyWith(
+                        color: Theme.of(context).hintColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(IconlyLight.arrow_right_2, color: Theme.of(context).primaryColor),
+            ],
+          ),
         ),
       ),
     );

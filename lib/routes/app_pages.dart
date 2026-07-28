@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:quran_app/controller/event_registration_list_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
 import 'package:quran_app/bindings/blog_comment_binding.dart';
@@ -9,6 +10,7 @@ import 'package:quran_app/screen/calculator-zakat/calculator_zakat_screen.dart';
 import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/chat-bot/chat_bot_screen.dart';
 import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
+import 'package:quran_app/screen/event/event_registration_list_screen.dart';
 import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
@@ -34,6 +36,8 @@ import 'package:quran_app/screen/prayer/list_prayer_screen.dart';
 import 'package:quran_app/screen/prayer/show_prayer_screen.dart';
 import 'package:quran_app/bindings/mosque_add_binding.dart';
 import 'package:quran_app/bindings/find_mosque_binding.dart';
+import 'package:quran_app/screen/event/event_payment_screen.dart';
+import 'package:quran_app/screen/event/event_payment_detail_screen.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
@@ -61,6 +65,7 @@ import 'package:quran_app/screen/charity/infaq_activity_screen.dart';
 import 'package:quran_app/screen/charity/infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/splash_screen.dart';
 import 'package:quran_app/screen/theme/theme_screen.dart';
+import 'package:quran_app/screen/event/show_event_screen.dart';
 
 class AppPages {
   static const initial = Routes.splash;
@@ -189,6 +194,27 @@ class AppPages {
     GetPage(
       name: Routes.charityPaymentDetail,
       page: () => const CharityPaymentDetailScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.eventRegistrationList,
+      page: () => const EventRegistrationListScreen(),
+      binding: BindingsBuilder(() {
+        Get.put(EventRegistrationListController());
+      }),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.eventPayment,
+      page: () => const EventPaymentScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.eventPaymentDetail,
+      page: () => const EventPaymentDetailScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),
@@ -403,6 +429,12 @@ class AppPages {
     GetPage(
       name: Routes.chatBot,
       page: () => const ChatBotScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.showEvent,
+      page: () => const ShowEventScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

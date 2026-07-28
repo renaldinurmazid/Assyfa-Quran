@@ -31,7 +31,7 @@ class ChatBotController extends GetxController {
     messages.add(
       ChatMessage(
         content:
-            "Assalamu'alaikum! Saya Syifa, asisten virtual Islami Anda. Ada yang bisa Syifa bantu hari ini?",
+            "Assalamu'alaikum! Saya Una, asisten virtual Islami Anda. Ada yang bisa Una bantu hari ini?",
         role: 'model',
         isUser: false,
       ),

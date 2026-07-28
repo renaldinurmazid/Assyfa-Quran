@@ -4,6 +4,7 @@ import 'package:quran_app/models/chat_bot_model.dart';
 import 'package:quran_app/screen/chat-bot/chat_bot_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ChatBotScreen extends StatelessWidget {
   const ChatBotScreen({super.key});
@@ -356,11 +357,22 @@ class ChatBotScreen extends StatelessWidget {
                   bottomRight: Radius.circular(message.isUser ? 4 : 16),
                 ),
               ),
-              child: Text(
-                message.content,
-                style: pRegular14.copyWith(
-                  color: message.isUser ? Colors.white : AppColor.textColor,
-                  height: 1.4,
+              child: MarkdownBody(
+                data: message.content,
+                styleSheet: MarkdownStyleSheet(
+                  p: pRegular14.copyWith(
+                    color: message.isUser ? Colors.white : AppColor.textColor,
+                    height: 1.4,
+                  ),
+                  strong: pBold14.copyWith(
+                    color: message.isUser ? Colors.white : AppColor.textColor,
+                    height: 1.4,
+                  ),
+                  em: pRegular14.copyWith(
+                    color: message.isUser ? Colors.white : AppColor.textColor,
+                    height: 1.4,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
             ),

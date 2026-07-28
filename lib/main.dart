@@ -53,20 +53,20 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.light,
           primaryColor: AppColor.primaryColor,
-          scaffoldBackgroundColor: const Color(0xFFFBFBFB),
+          scaffoldBackgroundColor: AppColor.backgroundColor,
           useMaterial3: true,
-          colorScheme: ColorScheme.light(
+          colorScheme: const ColorScheme.light(
             primary: AppColor.primaryColor,
-            surface: const Color(0xFFFBFBFB),
+            surface: AppColor.backgroundColor,
             onSurface: AppColor.textColor,
-            surfaceContainer: Colors.white,
+            surfaceContainer: AppColor.surfaceColor,
           ),
           textTheme: GoogleFonts.poppinsTextTheme().apply(
             bodyColor: AppColor.textColor,
             displayColor: AppColor.textColor,
           ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFFFBFBFB),
+            backgroundColor: AppColor.backgroundColor,
             elevation: 0,
             iconTheme: IconThemeData(color: AppColor.textColor),
             centerTitle: true,
@@ -74,22 +74,22 @@ class MyApp extends StatelessWidget {
         ),
         darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
           primaryColor: AppColor.primaryColorDark,
-          scaffoldBackgroundColor: const Color.fromARGB(255, 19, 19, 19),
-          colorScheme: ColorScheme.dark(
+          scaffoldBackgroundColor: AppColor.backgroundColorDark,
+          colorScheme: const ColorScheme.dark(
             primary: AppColor.primaryColorDark,
-            surface: const Color(0xFF121212),
-            onSurface: Colors.white,
-            surfaceContainer: Colors.grey[900]!,
+            surface: AppColor.backgroundColorDark,
+            onSurface: AppColor.textColorDark,
+            surfaceContainer: AppColor.surfaceColorDark,
           ),
           textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
               .apply(
-                bodyColor: Colors.white.withOpacity(0.85),
-                displayColor: Colors.white,
+                bodyColor: AppColor.textColorDark,
+                displayColor: AppColor.textColorDark,
               ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF121212),
+            backgroundColor: AppColor.backgroundColorDark,
             elevation: 0,
-            iconTheme: IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: AppColor.textColorDark),
             centerTitle: true,
           ),
         ),

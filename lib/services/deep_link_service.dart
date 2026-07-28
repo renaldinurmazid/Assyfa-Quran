@@ -82,12 +82,13 @@ class DeepLinkService {
     );
   }
 
-  void _processDeepLink(Uri uri) {
+  void _processDeepLink(Uri uri, {bool isFromUserTap = false}) {
     print('DeepLink: Processing → $uri');
 
     // Deduplicate: avoid processing the exact same URI twice
     // (initial link + stream can fire the same URI)
-    if (_lastProcessedUri != null &&
+    if (!isFromUserTap &&
+        _lastProcessedUri != null &&
         _lastProcessedUri.toString() == uri.toString()) {
       print('DeepLink: Already processed – skipping');
       return;
@@ -108,7 +109,7 @@ class DeepLinkService {
 
   /// Actually resolve the URI to a route and navigate.
   /// Wrapped in a try-catch so navigation errors don't crash the app silently.
-  void _safeNavigate(Uri uri) {
+  void _safeNavigate(Uri uri) async {
     try {
       // Mark as last processed to prevent duplicates
       _lastProcessedUri = uri;
@@ -129,7 +130,13 @@ class DeepLinkService {
       //    - /m/{id}?ref=XXX  → Mosque Charity
       //    (Also with /api/ prefix)
       // ════════════════════════════════════════════════
-      _handleWebUrl(uri);
+      bool handled = _handleWebUrl(uri);
+      
+      if (!handled && (uri.scheme == 'http' || uri.scheme == 'https')) {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
     } catch (e) {
       print('DeepLink: Navigation error: $e');
     }
@@ -193,7 +200,7 @@ class DeepLinkService {
   // Web URL Handler
   // ──────────────────────────────────────────────────
 
-  void _handleWebUrl(Uri uri) {
+  bool _handleWebUrl(Uri uri) {
     final segments = uri.pathSegments;
 
     // Find the key segment. Routes can be:
@@ -205,7 +212,7 @@ class DeepLinkService {
     int gIndex = segments.indexOf('g');
     if (gIndex != -1 && gIndex + 1 < segments.length) {
       _navigateToGroupByCode(segments[gIndex + 1]);
-      return;
+      return true;
     }
 
     // ── Campaign: /c/ID ──
@@ -214,7 +221,7 @@ class DeepLinkService {
       final campaignId = int.tryParse(segments[cIndex + 1]);
       if (campaignId != null) {
         _navigateToCampaign(campaignId);
-        return;
+        return true;
       }
     }
 
@@ -224,7 +231,7 @@ class DeepLinkService {
       final mosqueId = int.tryParse(segments[mIndex + 1]);
       if (mosqueId != null) {
         _navigateToMosqueCharity(mosqueId);
-        return;
+        return true;
       }
     }
 
@@ -232,8 +239,10 @@ class DeepLinkService {
     int bIndex = segments.indexOf('b');
     if (bIndex != -1 && bIndex + 1 < segments.length) {
       _navigateToBlog(segments[bIndex + 1]);
-      return;
+      return true;
     }
+    
+    return false;
   }
 
   // ════════════════════════════════════════════════════
@@ -395,7 +404,7 @@ class DeepLinkService {
     if (uri.scheme == 'quranuna' ||
         uri.host == 'quran.titiktolak.com' ||
         uri.pathSegments.contains('api')) {
-      service._processDeepLink(uri);
+      service._processDeepLink(uri, isFromUserTap: true);
     } else if (uri.scheme == 'http' || uri.scheme == 'https') {
       // Handle normal web URLs
       if (await canLaunchUrl(uri)) {

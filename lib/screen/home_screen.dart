@@ -17,6 +17,7 @@ import 'package:quran_app/widgets/text_input.dart' as widget;
 import 'package:shimmer/shimmer.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:quran_app/models/event_model.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -43,6 +44,7 @@ class HomeScreen extends StatelessWidget {
             await controller.getPrayerTime();
             await controller.fetchWeeklyStats();
             await controller.fetchPrayers();
+            await controller.fetchEvents();
             await blogController.refreshBlogs();
             await controller.fetchReadingHistoryTotal();
           },
@@ -63,6 +65,15 @@ class HomeScreen extends StatelessWidget {
                       // _buildSectionHeader(context, 'Program Spesial'),
                       const SizedBox(height: 16),
                       _buildSlideBanner(context, controller),
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        context,
+                        'Event Mendatang',
+                        false,
+                        const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildEventList(context),
                       const SizedBox(height: 32),
                       _buildSectionHeader(
                         context,
@@ -112,12 +123,12 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      // floatingActionButton: GestureDetector(
-      //   onTap: () {
-      //     Get.toNamed(Routes.chatBot);
-      //   },
-      //   child: Image.asset('assets/gif/chat-bot.gif', width: 68, height: 68),
-      // ),
+      floatingActionButton: GestureDetector(
+        onTap: () {
+          Get.toNamed(Routes.chatBot);
+        },
+        child: Image.asset('assets/gif/chat-bot.gif', width: 68, height: 68),
+      ),
     );
   }
 
@@ -786,6 +797,167 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildEventList(BuildContext context) {
+    final controller = Get.find<HomeScreenController>();
+    return Obx(() {
+      if (controller.isLoadingEvents.value) {
+        return _buildBannerShimmer(); // Using banner shimmer for simplicity
+      }
+
+      if (controller.events.isEmpty) {
+        return SizedBox(
+          height: 100,
+          child: Center(
+            child: Text(
+              'Belum ada event mendatang.',
+              style: pRegular12.copyWith(color: Colors.grey),
+            ),
+          ),
+        );
+      }
+
+      return SizedBox(
+        height: 260,
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 0,
+          ), // Already has horizontal padding in sliver
+          scrollDirection: Axis.horizontal,
+          itemCount: controller.events.length,
+          separatorBuilder: (context, index) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            final event = controller.events[index];
+            return _buildEventCard(context, event);
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildEventCard(BuildContext context, EventModel event) {
+    String dateText = '-';
+    if (event.startDate != null) {
+      final startStr = DateFormat(
+        'dd MMM yyyy, HH:mm',
+      ).format(event.startDate!);
+      if (event.endDate == null) {
+        dateText = startStr;
+      } else {
+        if (event.startDate!.year == event.endDate!.year &&
+            event.startDate!.month == event.endDate!.month &&
+            event.startDate!.day == event.endDate!.day) {
+          dateText =
+              '$startStr - ${DateFormat('HH:mm').format(event.endDate!)}';
+        } else {
+          dateText =
+              '$startStr - ${DateFormat('dd MMM yyyy, HH:mm').format(event.endDate!)}';
+        }
+      }
+    }
+
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(Routes.showEvent, arguments: event.id);
+      },
+      child: Container(
+        width: 240,
+        decoration: BoxDecoration(
+          color: context.theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+              child: CachedNetworkImage(
+                imageUrl: event.thumbnail ?? '',
+                height: 130,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 130,
+                  color: Colors.grey[200],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 130,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: pSemiBold14,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  if (event.startDate != null) ...[
+                    Row(
+                      children: [
+                        Icon(
+                          IconlyLight.calendar,
+                          size: 14,
+                          color: context.theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            dateText,
+                            style: pMedium12.copyWith(color: Colors.grey[600]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (event.location != null) ...[
+                    Row(
+                      children: [
+                        Icon(
+                          IconlyLight.location,
+                          size: 14,
+                          color: context.theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event.location!,
+                            style: pMedium12.copyWith(color: Colors.grey[600]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSlideBanner(
     BuildContext context,
     HomeScreenController controller,
@@ -1121,11 +1293,11 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/share.png',
         'route': Routes.appShareLeaderboard,
       },
-      {
-        'title': 'Arabic Quran',
-        'icon': 'assets/images/png/hafalan.png',
-        'route': Routes.memorizeQuran,
-      },
+      // {
+      //   'title': 'Arabic Quran',
+      //   'icon': 'assets/images/png/hafalan.png',
+      //   'route': Routes.memorizeQuran,
+      // },
       {
         'title': 'Kalkulator Zakat',
         'icon': 'assets/images/png/giving-zakat.png',

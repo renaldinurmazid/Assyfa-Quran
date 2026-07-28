@@ -504,7 +504,7 @@ class CharityPaymentDetailScreen extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () async {
-          const String phoneNumber = "6285797890027";
+          const String phoneNumber = "6283196064151";
           const String message =
               "Halo Admin, saya ingin konfirmasi pembayaran untuk order saya.";
           final Uri whatsappUrl = Uri.parse(
