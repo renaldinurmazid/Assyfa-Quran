@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
-import 'package:quran_app/controller/dzikir_screen_controller.dart';
+import 'package:quran_app/screen/dzikir&doa/dzikir_screen_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/circular_progress_painter.dart';
 import 'package:quran_app/widgets/text_input.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/charity/infaq_activity_detail_controller.dart';
+import 'package:quran_app/screen/charity/infaq_activity_detail_controller.dart';
 import 'package:quran_app/models/donation_detail_model.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/app_toast.dart';
@@ -334,9 +334,9 @@ class InfaqActivityDetailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: payment.paymentMethode?.logo != null
-                ? (payment.paymentMethode!.logo.contains('.svg')
-                      ? SvgPicture.network(payment.paymentMethode!.logo)
-                      : Image.network(payment.paymentMethode!.logo))
+                ? (payment.paymentMethode!.logo!.contains('.svg')
+                      ? SvgPicture.network(payment.paymentMethode!.logo!)
+                      : Image.network(payment.paymentMethode!.logo!))
                 : const Icon(IconlyLight.wallet),
           ),
           const SizedBox(width: 16),
@@ -351,7 +351,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 ),
                 if (payment.paymentMethode?.accountName != null)
                   Text(
-                    payment.paymentMethode!.accountName,
+                    payment.paymentMethode!.accountName!,
                     style: pRegular12.copyWith(
                       color: context.theme.colorScheme.onSurfaceVariant,
                     ),

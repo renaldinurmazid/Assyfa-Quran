@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/quran/tilawah_controller.dart';
+import 'package:quran_app/screen/quran_view/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
 

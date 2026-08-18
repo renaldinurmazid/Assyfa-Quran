@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/prayer/create_prayer_controller.dart';
+import 'package:quran_app/screen/prayer/create_prayer_controller.dart';
 import 'package:quran_app/theme/font.dart';
 
 class CreatePrayerScreen extends StatelessWidget {

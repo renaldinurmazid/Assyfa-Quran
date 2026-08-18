@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/mosque_charity_donatur_controller.dart';
-import 'package:quran_app/controller/mosque_charity_show_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_donatur_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_show_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';

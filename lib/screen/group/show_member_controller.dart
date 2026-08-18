@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/group/show_group_controller.dart';
+import 'package:quran_app/screen/group/show_group_controller.dart';
 import 'package:quran_app/models/group/member_group_tilawah.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/widgets/app_toast.dart';

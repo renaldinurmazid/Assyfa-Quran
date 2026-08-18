@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/change_profile_controller.dart';
+import 'package:quran_app/screen/profile/change_profile_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';

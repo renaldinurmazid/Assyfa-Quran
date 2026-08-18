@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/charity/infaq_activity_controller.dart';
+import 'package:quran_app/screen/charity/mosque/infaq_activity_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';

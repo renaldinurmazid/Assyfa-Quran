@@ -5,6 +5,10 @@ import 'package:quran_app/screen/chat-bot/chat_bot_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:quran_app/controller/global/auth_controller.dart';
+import 'package:quran_app/screen/home/home_screen.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatBotScreen extends StatelessWidget {
   const ChatBotScreen({super.key});
@@ -54,7 +58,7 @@ class ChatBotScreen extends StatelessWidget {
                   style: pSemiBold16.copyWith(color: AppColor.textColor),
                 ),
                 Text(
-                  'Asisten Virtual Islami',
+                  'Asisten Virtual Quranuna',
                   style: pRegular12.copyWith(color: Colors.grey[600]),
                 ),
               ],
@@ -102,6 +106,42 @@ class ChatBotScreen extends StatelessWidget {
               );
             }),
           ),
+          Obx(() {
+            if (!controller.showContactAdmin.value) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Butuh bantuan lebih lanjut? hubungi admin Quranuna.',
+                    style: pRegular12.copyWith(color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      side: BorderSide(color: Colors.grey.shade200),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    onPressed: () async {
+                      final Uri url = Uri.parse('https://wa.me/6283196064151');
+                      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                        debugPrint('Could not launch \$url');
+                      }
+                    },
+                    child: Text(
+                      'Chat admin Quranuna',
+                      style: pMedium12.copyWith(color: Colors.grey.shade800),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           _buildMessageInput(controller),
         ],
       ),
@@ -202,10 +242,7 @@ class ChatBotScreen extends StatelessWidget {
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.grey.shade50
@@ -213,6 +250,7 @@ class ChatBotScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             if (isSelected)
                               Container(
@@ -238,6 +276,49 @@ class ChatBotScreen extends StatelessWidget {
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            InkWell(
+                              onTap: () {
+                                Get.dialog(
+                                  AlertDialog(
+                                    title: const Text('Hapus Riwayat Obrolan'),
+                                    content: const Text(
+                                      'Apakah Anda yakin ingin menghapus riwayat obrolan ini?',
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Get.back(),
+                                        child: const Text(
+                                          'Batal',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                          controller.deleteSession(session.id);
+                                        },
+                                        child: const Text(
+                                          'Hapus',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 20,
+                                  color: Colors.red,
                                 ),
                               ),
                             ),
@@ -419,7 +500,20 @@ class ChatBotScreen extends StatelessWidget {
                         vertical: 14,
                       ),
                     ),
-                    onSubmitted: (_) => controller.sendMessage(),
+                    onSubmitted: (_) {
+                      if (!AuthController.to.isLogin.value) {
+                        final homeController =
+                            Get.isRegistered<HomeScreenController>()
+                            ? Get.find<HomeScreenController>()
+                            : Get.put(HomeScreenController());
+                        homeController.isEmailLogin.value = false;
+                        Get.dialog(
+                          const HomeScreen().buildLoginDialog(homeController),
+                        );
+                        return;
+                      }
+                      controller.sendMessage();
+                    },
                   ),
                 ),
               ),
@@ -429,7 +523,20 @@ class ChatBotScreen extends StatelessWidget {
               () => GestureDetector(
                 onTap: controller.isWaitingReply.value
                     ? null
-                    : controller.sendMessage,
+                    : () {
+                        if (!AuthController.to.isLogin.value) {
+                          final homeController =
+                              Get.isRegistered<HomeScreenController>()
+                              ? Get.find<HomeScreenController>()
+                              : Get.put(HomeScreenController());
+                          homeController.isEmailLogin.value = false;
+                          Get.dialog(
+                            const HomeScreen().buildLoginDialog(homeController),
+                          );
+                          return;
+                        }
+                        controller.sendMessage();
+                      },
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

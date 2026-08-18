@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/app_share_leaderboard_controller.dart';
+import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_controller.dart';
 import 'package:quran_app/models/leaderboard/app_share_leaderboard_model.dart';
 import 'package:quran_app/screen/app_share_leaderboard/referral_list_screen.dart';
 import 'package:quran_app/theme/font.dart';

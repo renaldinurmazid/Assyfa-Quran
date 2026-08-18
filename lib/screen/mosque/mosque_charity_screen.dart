@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:quran_app/controller/mosque_charity_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -47,7 +47,10 @@ class MosqueCharityScreen extends StatelessWidget {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -63,7 +66,9 @@ class MosqueCharityScreen extends StatelessWidget {
                               color: AppColor.primaryColorDark.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(100),
                               border: Border.all(
-                                color: AppColor.primaryColorDark.withOpacity(0.2),
+                                color: AppColor.primaryColorDark.withOpacity(
+                                  0.2,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -195,10 +200,12 @@ class MosqueCharityScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(IconlyLight.search, size: 64, color: Colors.grey.shade300),
-                const SizedBox(height: 16),
+                Image.asset(
+                  'assets/images/png/no-data-illustration.png',
+                  height: 280,
+                ),
                 Text(
-                  'Masjid tidak ditemukan',
+                  'Masjid tidak ditemukan.',
                   style: pMedium14.copyWith(color: Colors.grey.shade400),
                 ),
               ],
@@ -214,11 +221,14 @@ class MosqueCharityScreen extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            mainAxisExtent: 275,
+            mainAxisExtent: 240,
           ),
           delegate: SliverChildBuilderDelegate((context, index) {
             final mosque = controller.filteredMosqueList[index];
-            final double progressValue = (mosque.percentage / 100).clamp(0.0, 1.0);
+            final double progressValue = (mosque.percentage / 100).clamp(
+              0.0,
+              1.0,
+            );
             return GestureDetector(
               onTap: () => Get.toNamed(
                 Routes.mosqueCharityShow,
@@ -256,7 +266,8 @@ class MosqueCharityScreen extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           height: 110,
-                          color: context.theme.colorScheme.surfaceContainerHighest,
+                          color:
+                              context.theme.colorScheme.surfaceContainerHighest,
                           child: const Icon(IconlyLight.image),
                         ),
                       ),
@@ -271,43 +282,37 @@ class MosqueCharityScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        mosque.name,
-                                        style: pSemiBold12.copyWith(
-                                          color: context.theme.colorScheme.onSurface,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.verified_rounded,
-                                      color: Colors.blue,
-                                      size: 12,
-                                    ),
-                                  ],
+                                Text(
+                                  mosque.name,
+                                  style: pSemiBold12.copyWith(
+                                    color: context.theme.colorScheme.onSurface,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 6),
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Icon(
                                       IconlyLight.location,
                                       size: 10,
-                                      color: context.theme.colorScheme.onSurfaceVariant,
+                                      color: context
+                                          .theme
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     ),
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
                                         mosque.address,
                                         style: pRegular10.copyWith(
-                                          color: context.theme.colorScheme.onSurfaceVariant,
+                                          color: context
+                                              .theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                         ),
-                                        maxLines: 1,
+                                        maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -326,23 +331,22 @@ class MosqueCharityScreen extends StatelessWidget {
                                     backgroundColor: context.isDarkMode
                                         ? Colors.grey.shade900
                                         : Colors.grey.shade100,
-                                    valueColor: const AlwaysStoppedAnimation<Color>(
-                                      AppColor.primaryColorDark,
-                                    ),
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                          AppColor.primaryColorDark,
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Terkumpul',
-                                      style: pRegular10,
-                                    ),
+                                    Text('Terkumpul', style: pRegular10),
                                     Text(
                                       mosque.collectedAmount,
-                                      style: pSemiBold12.copyWith(
-                                        color: context.theme.colorScheme.onSurface,
+                                      style: pSemiBold10.copyWith(
+                                        color:
+                                            context.theme.colorScheme.onSurface,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

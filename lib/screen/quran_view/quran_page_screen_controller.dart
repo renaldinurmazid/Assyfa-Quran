@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:quran_app/controller/home_screen_controller.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/dropdown_juz_model.dart';
@@ -92,6 +93,7 @@ class QuranPageScreenController extends GetxController {
   final audioPlayer = AudioPlayer();
   final isPlaying = false.obs;
   final playingAyahId = 0.obs;
+  ProcessingState? _previousProcessingState;
 
   final reciters = <Map<String, String>>[
     {"code": "01", "name": "Abdullah Al-Juhany"},
@@ -159,9 +161,11 @@ class QuranPageScreenController extends GetxController {
     await fetchMarkers();
     await loadBookmarks();
     audioPlayer.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
+      if (state.processingState == ProcessingState.completed &&
+          _previousProcessingState != ProcessingState.completed) {
         _playNextAyah();
       }
+      _previousProcessingState = state.processingState;
     });
 
     searchAnchorController.addListener(() {
@@ -1171,10 +1175,36 @@ class QuranPageScreenController extends GetxController {
     isPlaying.value = true;
 
     try {
-      await audioPlayer.setUrl(audio.audioPath);
+      if (audio.audioPath.isEmpty) {
+        throw Exception("Audio path is empty");
+      }
+      String finalAudioPath = audio.audioPath;
+      if (!finalAudioPath.startsWith('http') && !finalAudioPath.startsWith('file://') && !finalAudioPath.startsWith('/')) {
+        finalAudioPath = '${Url.baseUrl}/$finalAudioPath';
+      } else if (finalAudioPath.startsWith('/')) {
+        finalAudioPath = '${Url.baseUrl}$finalAudioPath';
+      }
+      
+      final audioSource = AudioSource.uri(
+        Uri.parse(finalAudioPath),
+        tag: MediaItem(
+          id: finalAudioPath,
+          album: "Al-Quran",
+          title: "Surah ${ayah.surahId} Ayat ${ayah.ayahNumber}",
+          artist: audio.reciter?.name ?? "Reciter",
+        ),
+      );
+      
+      await audioPlayer.setAudioSource(audioSource);
       audioPlayer.play();
     } catch (e) {
-      _playNextAyah();
+      print("Error playing audio: $e");
+      stopAudio();
+      AppToast.error(
+        context: Get.context,
+        message: 'Gagal memutar audio. Periksa koneksi internet.',
+        title: 'Error',
+      );
     }
   }
 

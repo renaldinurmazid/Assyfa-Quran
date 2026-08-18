@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
+import 'package:quran_app/screen/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/models/group/group_show_model.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 

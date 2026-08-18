@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/pick_location_controller.dart';
-import 'package:quran_app/controller/prayer_time_detail_controller.dart';
+import 'package:quran_app/screen/mosque/pick_location_controller.dart';
+import 'package:quran_app/screen/prayer_time/prayer_time_detail_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 

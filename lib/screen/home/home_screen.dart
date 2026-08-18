@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/blog_controller.dart';
+import 'package:quran_app/screen/blog/blog_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
-import 'package:quran_app/controller/quran/tilawah_controller.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
+import 'package:quran_app/screen/quran_view/tilawah_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 
 import 'package:quran_app/theme/font.dart';
@@ -259,11 +259,11 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isLogin ? 'Assalamu’alaikum,' : 'Selamat Datang,',
+                'Assalamu’alaikum,',
                 style: pRegular12.copyWith(color: Colors.white),
               ),
               Text(
-                isLogin ? '${userData['name']}' : 'Orang Baik',
+                isLogin ? '${userData['name']}' : 'Sahabat Quranuna',
                 style: pSemiBold14.copyWith(color: Colors.white),
               ),
             ],
@@ -1293,11 +1293,11 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/share.png',
         'route': Routes.appShareLeaderboard,
       },
-      // {
-      //   'title': 'Arabic Quran',
-      //   'icon': 'assets/images/png/hafalan.png',
-      //   'route': Routes.memorizeQuran,
-      // },
+      {
+        'title': 'Arabic Quran',
+        'icon': 'assets/images/png/hafalan.png',
+        'route': Routes.arabicQuran,
+      },
       {
         'title': 'Kalkulator Zakat',
         'icon': 'assets/images/png/giving-zakat.png',
@@ -1351,7 +1351,7 @@ class HomeScreen extends StatelessWidget {
                   return;
                 }
 
-                if (menu[index]['route'] == Routes.memorizeQuran &&
+                if (menu[index]['route'] == Routes.arabicQuran &&
                     !AuthController.to.isLogin.value) {
                   Get.back();
                   controller.isEmailLogin.value = false;

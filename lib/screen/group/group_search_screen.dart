@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/group/group_search_controller.dart';
+import 'package:quran_app/screen/group/group_search_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 
 import 'package:quran_app/theme/font.dart';
@@ -133,9 +133,7 @@ class GroupSearchScreen extends StatelessWidget {
                       image: DecorationImage(
                         image: group.coverImage != null
                             ? NetworkImage(group.coverImage)
-                            : const AssetImage(
-                                    'assets/images/jpg/bg-group.jpg',
-                                  )
+                            : const AssetImage('assets/images/jpg/bg-group.jpg')
                                   as ImageProvider,
                         fit: BoxFit.cover,
                       ),
@@ -197,7 +195,8 @@ class GroupSearchScreen extends StatelessWidget {
                       ),
                     ),
                     child: ClipOval(
-                      child: group.createdBy.profilePicture != null &&
+                      child:
+                          group.createdBy.profilePicture != null &&
                               group.createdBy.profilePicture!.isNotEmpty
                           ? Image.network(
                               group.createdBy.profilePicture!,
@@ -278,16 +277,13 @@ class GroupSearchScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.group_outlined,
-            size: 64,
-            color: Get.context!.theme.colorScheme.onSurfaceVariant
-                .withOpacity(0.3),
+          Image.asset(
+            'assets/images/png/no-data-illustration.png',
+            height: 260,
           ),
-          const SizedBox(height: 16),
           Text(
             query.isEmpty
-                ? 'Cari Grup Ngaji'
+                ? 'Cari grup ngaji...'
                 : 'Tidak ditemukan grup untuk "$query"',
             style: pMedium14.copyWith(
               color: Get.context!.theme.colorScheme.onSurfaceVariant,

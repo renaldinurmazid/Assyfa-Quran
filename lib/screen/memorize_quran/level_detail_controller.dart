@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/controller/memorization_controller.dart';
+import 'package:quran_app/screen/memorize_quran/memorization_controller.dart';
 import 'package:quran_app/models/memorization_detail_model.dart';
 import 'package:quran_app/models/memorization_level_model.dart';
 import 'package:quran_app/widgets/app_toast.dart';

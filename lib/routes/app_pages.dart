@@ -1,5 +1,9 @@
 import 'package:get/get.dart';
-import 'package:quran_app/controller/event_registration_list_controller.dart';
+import 'package:quran_app/screen/arabic-quran/arabic_quran_screen.dart';
+import 'package:quran_app/screen/arabic-quran/arabic_lesson_screen.dart';
+import 'package:quran_app/screen/arabic-quran/arabic_quiz_screen.dart';
+import 'package:quran_app/bindings/arabic_quran_binding.dart';
+import 'package:quran_app/screen/event/event_registration_list_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
 import 'package:quran_app/bindings/blog_comment_binding.dart';
@@ -14,14 +18,13 @@ import 'package:quran_app/screen/event/event_registration_list_screen.dart';
 import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
-import 'package:quran_app/screen/charity/mosque_infaq_activity_detail_screen.dart';
+import 'package:quran_app/screen/charity/mosque/mosque_infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/haji&umrah/haji_and_umrah_screen.dart';
 import 'package:quran_app/screen/haji&umrah/detail/haji_and_umrah_detail_screen.dart';
 import 'package:quran_app/screen/haji&umrah/register/register_screen.dart';
 import 'package:quran_app/screen/leaderboard/leaderboard_screen.dart';
 import 'package:quran_app/screen/memorize_quran/level_detail_screen.dart';
 import 'package:quran_app/screen/memorize_quran/memorize_leaderboard_screen.dart';
-import 'package:quran_app/screen/memorize_quran/morize_quran_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_add_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_screen.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_show_screen.dart';
@@ -51,7 +54,7 @@ import 'package:quran_app/screen/group/group_ngaji_screen.dart';
 import 'package:quran_app/screen/group/group_search_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
 import 'package:quran_app/screen/main_screen.dart';
-import 'package:quran_app/screen/prayer_time_detail_screen.dart';
+import 'package:quran_app/screen/prayer_time/prayer_time_detail_screen.dart';
 import 'package:quran_app/screen/quran_mp3/quran_mp3_screen.dart';
 import 'package:quran_app/screen/quran_mp3/detail/quran_mp3_detail_screen.dart';
 import 'package:quran_app/screen/quran_view/quran_list_detail_screen.dart';
@@ -61,7 +64,7 @@ import 'package:quran_app/screen/quran_view/quran_page_screen.dart';
 import 'package:quran_app/screen/group/show_group_screen.dart';
 import 'package:quran_app/screen/charity/charity_payment_screen.dart';
 import 'package:quran_app/screen/charity/charity_payment_detail_screen.dart';
-import 'package:quran_app/screen/charity/infaq_activity_screen.dart';
+import 'package:quran_app/screen/charity/mosque/infaq_activity_screen.dart';
 import 'package:quran_app/screen/charity/infaq_activity_detail_screen.dart';
 import 'package:quran_app/screen/splash_screen.dart';
 import 'package:quran_app/screen/theme/theme_screen.dart';
@@ -340,8 +343,21 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
-      name: Routes.memorizeQuran,
-      page: () => const MorizeQuranScreen(),
+      name: Routes.arabicQuran,
+      page: () => const ArabicQuranScreen(),
+      binding: ArabicQuranBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.arabicLesson,
+      page: () => const ArabicLessonScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.arabicQuiz,
+      page: () => const ArabicQuizScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

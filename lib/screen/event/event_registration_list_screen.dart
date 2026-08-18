@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/event_registration_list_controller.dart';
+import 'package:quran_app/screen/event/event_registration_list_controller.dart';
 import 'package:quran_app/models/event_registration_list_model.dart';
 import 'package:quran_app/models/event_payment_response_model.dart';
 import 'package:quran_app/routes/app_routes.dart';

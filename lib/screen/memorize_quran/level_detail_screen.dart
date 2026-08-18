@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/level_detail_controller.dart';
+import 'package:quran_app/screen/memorize_quran/level_detail_controller.dart';
 import 'package:quran_app/models/memorization_detail_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';

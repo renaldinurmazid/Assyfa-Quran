@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/memorize_leaderboard_controller.dart';
+import 'package:quran_app/screen/memorize_quran/memorize_leaderboard_controller.dart';
 import 'package:quran_app/models/memorization_leaderboard_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';

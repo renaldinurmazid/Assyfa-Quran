@@ -193,7 +193,7 @@ class QuranMp3Controller extends GetxController {
         }
       }
     } catch (e) {
-      print("Error fetching reciters: $e");
+      AppToast.warning(message: 'Gagal memuat qori');
     } finally {
       isRecitersLoading.value = false;
     }
@@ -252,7 +252,6 @@ class QuranMp3Controller extends GetxController {
         );
       }
     } catch (e) {
-      print("Error fetching surah list: $e");
       AppToast.error(message: 'Terjadi kesalahan koneksi');
     } finally {
       isLoading.value = false;

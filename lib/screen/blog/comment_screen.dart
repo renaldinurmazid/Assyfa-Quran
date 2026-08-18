@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/blog_comment_controller.dart';
+import 'package:quran_app/screen/blog/blog_comment_controller.dart';
 import 'package:quran_app/models/blog_comment_model.dart';
 import 'package:quran_app/theme/font.dart';
 

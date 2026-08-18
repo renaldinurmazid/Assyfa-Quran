@@ -4,7 +4,7 @@ import 'package:iconly/iconly.dart';
 import 'package:quran_app/models/campaign_category_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:quran_app/controller/charity/charity_screen_controller.dart';
+import 'package:quran_app/screen/charity/charity_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
 

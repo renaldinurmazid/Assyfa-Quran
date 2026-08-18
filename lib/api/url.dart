@@ -1,7 +1,10 @@
 class Url {
-  static const String baseUrl = 'https://quran.titiktolak.com';
+  // static const String baseUrl = 'https://quran.titiktolak.com';
   // static const String baseUrl = 'http://10.0.2.2:8000';
-  // static const String baseUrl = 'http://127.0.0.1:8000';
+  static const String baseUrl = 'http://127.0.0.1:8000';
+  //   static const String reverbWsUrl =
+  //       'wss://quran.titiktolak.com:8080/app/xgiojz5vzlaexs8rzjpj';
+  static const String reverbWsUrl = 'ws://127.0.0.1:8080/app/xgiojz5vzlaexs8rzjpj';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -50,7 +53,8 @@ class Url {
   static const String myEventRegistrations = '/api/events/my-registrations';
 
   static const String appShareLeaderboard = '/api/app-share/leaderboard';
-  static String appShareReferrals(int id) => '/api/app-share/leaderboard/$id/referrals';
+  static String appShareReferrals(int id) =>
+      '/api/app-share/leaderboard/$id/referrals';
   static const String blogs = '/api/blogs';
   static const String blogCategories = '/api/blog-categories';
   static String blogDetail(String slug) => '/api/blogs/$slug';
@@ -91,7 +95,16 @@ class Url {
   static const String reciters = '/api/reciters';
   static const String recitersFullAudio = '/api/reciters/full-audio';
   static const String surahAudio = '/api/surah-audio';
+  // Chatbot API
   static const String chatBotSessions = '/api/chatbot/sessions';
   static const String chatBotSend = '/api/chatbot/send';
-  
+
+  // Arabic Learning API
+  static const String arabicLevels = '/api/arabic-learning/levels';
+  static String arabicLessons(int levelId) =>
+      '/api/arabic-learning/levels/$levelId/lessons';
+  static String arabicQuizzes(int lessonId) =>
+      '/api/arabic-learning/lessons/$lessonId/quizzes';
+  static String arabicCompleteLesson(int lessonId) =>
+      '/api/arabic-learning/lessons/$lessonId/complete';
 }

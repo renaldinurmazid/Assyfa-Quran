@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/quran/quran_list_screen_controller.dart';
+import 'package:quran_app/screen/quran_view/quran_list_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';

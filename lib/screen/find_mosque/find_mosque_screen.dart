@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:quran_app/controller/find_mosque_controller.dart';
+import 'package:quran_app/screen/find_mosque/find_mosque_controller.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 

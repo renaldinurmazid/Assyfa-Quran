@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/dzikir_show_screen_controller.dart';
+import 'package:quran_app/screen/dzikir&doa/dzikir_show_screen_controller.dart';
 import 'package:quran_app/models/dzikir_model.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/app_toast.dart';

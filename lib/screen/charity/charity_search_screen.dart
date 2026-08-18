@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/theme/app_color.dart';
-import 'package:quran_app/controller/charity/charity_search_controller.dart';
+import 'package:quran_app/screen/charity/charity_search_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
@@ -25,13 +25,18 @@ class CharitySearchScreen extends StatelessWidget {
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(IconlyLight.arrow_left, color: context.theme.colorScheme.onSurface),
+          icon: Icon(
+            IconlyLight.arrow_left,
+            color: context.theme.colorScheme.onSurface,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+            color: context.isDarkMode
+                ? Colors.grey.shade900
+                : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(100),
           ),
           child: TextField(
@@ -65,7 +70,8 @@ class CharitySearchScreen extends StatelessWidget {
         return ListView.separated(
           controller: controller.scrollController,
           padding: const EdgeInsets.all(16),
-          itemCount: controller.searchResults.length +
+          itemCount:
+              controller.searchResults.length +
               (controller.isLoadingMore.value || !controller.hasMoreData.value
                   ? 1
                   : 0),
@@ -118,7 +124,8 @@ class CharitySearchScreen extends StatelessWidget {
 
   Widget _buildSearchItem(BuildContext context, dynamic charity) {
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.charityShow, arguments: {'id': charity.id}),
+      onTap: () =>
+          Get.toNamed(Routes.charityShow, arguments: {'id': charity.id}),
       child: Container(
         color: Colors.transparent,
         child: Row(
@@ -203,10 +210,7 @@ class CharitySearchScreen extends StatelessWidget {
                               color: context.theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          Text(
-                            charity.collectedAmount,
-                            style: pSemiBold12,
-                          ),
+                          Text(charity.collectedAmount, style: pSemiBold12),
                         ],
                       ),
                       Column(
@@ -244,8 +248,12 @@ class CharitySearchScreen extends StatelessWidget {
       itemCount: 5,
       padding: const EdgeInsets.all(16),
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-        highlightColor: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+        baseColor: context.isDarkMode
+            ? Colors.grey.shade900
+            : Colors.grey.shade200,
+        highlightColor: context.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.grey.shade100,
         child: Padding(
           padding: const EdgeInsets.only(bottom: 24.0),
           child: Row(
@@ -305,17 +313,17 @@ class CharitySearchScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            IconlyLight.search,
-            size: 64,
-            color: context.theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+          Image.asset(
+            'assets/images/png/no-data-illustration.png',
+            height: 280,
           ),
-          const SizedBox(height: 16),
           Text(
             query.isEmpty
-                ? 'Cari program kebaikan'
+                ? 'Cari program kebaikan...'
                 : 'Tidak ditemukan hasil untuk "$query"',
-            style: pMedium14.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
+            style: pMedium14.copyWith(
+              color: context.theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

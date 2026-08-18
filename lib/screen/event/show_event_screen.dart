@@ -3,13 +3,13 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/event_detail_controller.dart';
+import 'package:quran_app/screen/event/event_detail_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
-import 'package:quran_app/screen/home_screen.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
+import 'package:quran_app/screen/home/home_screen.dart';
 class ShowEventScreen extends StatelessWidget {
   const ShowEventScreen({super.key});
 

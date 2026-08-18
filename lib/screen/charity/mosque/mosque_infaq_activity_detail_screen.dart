@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/charity/mosque_infaq_activity_detail_controller.dart';
+import 'package:quran_app/screen/charity/mosque/mosque_infaq_activity_detail_controller.dart';
 import 'package:quran_app/models/mosque_donation_detail_model.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';
@@ -263,9 +263,9 @@ class MosqueInfaqActivityDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: payment.paymentMethode?.logo != null
-                    ? (payment.paymentMethode!.logo.contains('.svg')
-                          ? SvgPicture.network(payment.paymentMethode!.logo)
-                          : Image.network(payment.paymentMethode!.logo))
+                    ? (payment.paymentMethode!.logo!.contains('.svg')
+                          ? SvgPicture.network(payment.paymentMethode!.logo!)
+                          : Image.network(payment.paymentMethode!.logo!))
                     : const Icon(IconlyLight.wallet, color: Colors.grey),
               ),
               const SizedBox(width: 12),

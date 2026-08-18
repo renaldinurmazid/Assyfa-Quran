@@ -11,7 +11,7 @@ import 'package:quran_app/services/fcm_service.dart';
 import 'package:quran_app/services/notification_service.dart';
 
 import 'package:quran_app/services/deep_link_service.dart';
-import 'package:quran_app/controller/theme_controller.dart';
+import 'package:quran_app/screen/theme/theme_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 
 import 'package:toastification/toastification.dart';

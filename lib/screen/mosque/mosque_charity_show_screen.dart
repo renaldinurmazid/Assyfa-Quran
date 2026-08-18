@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:quran_app/controller/mosque_charity_show_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_show_controller.dart';
 import 'package:quran_app/models/mosque_charity_model.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';

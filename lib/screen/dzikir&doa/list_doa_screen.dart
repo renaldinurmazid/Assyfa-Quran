@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/list_doa_screen_controller.dart';
+import 'package:quran_app/screen/dzikir&doa/list_doa_screen_controller.dart';
 import 'package:quran_app/theme/font.dart';
 
 class ListDoaScreen extends StatelessWidget {

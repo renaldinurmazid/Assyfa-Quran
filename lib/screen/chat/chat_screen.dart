@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/notification_controller.dart';
+import 'package:quran_app/screen/notification/notification_controller.dart';
 import 'package:quran_app/models/notification_model.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/font.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/leaderboard_controller.dart';
+import 'package:quran_app/screen/leaderboard/leaderboard_controller.dart';
 import 'package:quran_app/theme/font.dart';
 
 class LeaderboardScreen extends StatelessWidget {

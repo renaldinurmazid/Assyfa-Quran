@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/group/show_group_controller.dart';
+import 'package:quran_app/screen/group/show_group_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 
 import 'package:quran_app/theme/font.dart';

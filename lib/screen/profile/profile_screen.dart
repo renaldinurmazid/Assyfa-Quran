@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/profile_screen_controller.dart';
+import 'package:quran_app/screen/profile/profile_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
 
@@ -52,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: context.isDarkMode
-              ? Colors.grey.shade800
+              ? Colors.grey.shade900
               : Colors.grey.shade100,
         ),
       ),
@@ -231,7 +231,7 @@ class ProfileScreen extends StatelessWidget {
             color: isDanger
                 ? Colors.red.withOpacity(0.1)
                 : context.isDarkMode
-                ? Colors.grey.shade800
+                ? Colors.grey.shade900
                 : Colors.grey.shade100,
           ),
         ),

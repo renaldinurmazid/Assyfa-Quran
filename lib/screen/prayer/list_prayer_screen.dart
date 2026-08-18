@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/prayer/list_prayer_controller.dart';
+import 'package:quran_app/screen/prayer/list_prayer_controller.dart';
 import 'package:quran_app/models/prayer_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/screen/home_screen.dart';
+import 'package:quran_app/screen/home/home_screen.dart';
 
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';

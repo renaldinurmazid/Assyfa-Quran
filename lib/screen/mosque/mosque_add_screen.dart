@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/mosque_add_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_add_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
 

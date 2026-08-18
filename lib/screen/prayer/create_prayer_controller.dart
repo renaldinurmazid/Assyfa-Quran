@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 
 class CreatePrayerController extends GetxController {

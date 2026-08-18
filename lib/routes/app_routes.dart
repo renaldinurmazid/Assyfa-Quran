@@ -43,8 +43,10 @@ abstract class Routes {
   static const notification = '/notification';
   static const comment = '/comment';
   static const theme = '/theme';
-  static const memorizeQuran = '/memorize_quran';
-  static const levelDetail = '/level_detail';
+  static const String arabicQuran = '/arabic_quran';
+  static const String arabicLesson = '/arabic_lesson';
+  static const String arabicQuiz = '/arabic_quiz';
+  static const String levelDetail = '/level_detail';
   static const charityCampaignTabs = '/charity_campaign_tabs';
   static const mosqueCharityTabs = '/mosque_charity_tabs';
   static const mosqueAdd = '/mosque_add';

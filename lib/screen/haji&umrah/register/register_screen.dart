@@ -812,10 +812,10 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                                 : Colors.grey.shade200,
                           ),
                         ),
-                        child: selected.logo.isNotEmpty
-                            ? (selected.logo.contains('.svg')
+                        child: selected.logo != null && selected.logo!.isNotEmpty
+                            ? (selected.logo!.contains('.svg')
                                   ? SvgPicture.network(
-                                      selected.logo,
+                                      selected.logo!,
                                       fit: BoxFit.contain,
                                       placeholderBuilder: (_) => const Center(
                                         child: SizedBox(
@@ -828,7 +828,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                                       ),
                                     )
                                   : Image.network(
-                                      selected.logo,
+                                      selected.logo!,
                                       fit: BoxFit.contain,
                                       errorBuilder: (_, __, ___) => const Icon(
                                         IconlyLight.wallet,
@@ -1322,10 +1322,10 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                                           : Colors.grey.shade200,
                                     ),
                                   ),
-                                  child: method.logo.isNotEmpty
-                                      ? (method.logo.contains('.svg')
+                                  child: method.logo != null && method.logo!.isNotEmpty
+                                      ? (method.logo!.contains('.svg')
                                             ? SvgPicture.network(
-                                                method.logo,
+                                                method.logo!,
                                                 fit: BoxFit.contain,
                                                 placeholderBuilder: (_) =>
                                                     const Center(
@@ -1340,7 +1340,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                                                     ),
                                               )
                                             : Image.network(
-                                                method.logo,
+                                                method.logo!,
                                                 fit: BoxFit.contain,
                                                 errorBuilder: (_, __, ___) =>
                                                     const Icon(
@@ -1742,7 +1742,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
         ),
         child: ElevatedButton.icon(
           onPressed: () async {
-            const String adminPhone = "6285797890027";
+            const String adminPhone = "6283196064151";
             final String waMessage =
                 "Assalamu'alaikum Admin Assyfa, saya ingin konfirmasi pembayaran untuk pendaftaran Umrah.\n\n"
                 "Kode Booking: $bookingCode\n"

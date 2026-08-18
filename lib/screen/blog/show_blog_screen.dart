@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
-import 'package:quran_app/controller/blog_detail_controller.dart';
+import 'package:quran_app/screen/blog/blog_detail_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/font.dart';

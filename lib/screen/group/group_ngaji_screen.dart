@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
+import 'package:quran_app/screen/group/group_ngaji_screen_controller.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/models/public_group_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/screen/home_screen.dart';
+import 'package:quran_app/screen/home/home_screen.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';

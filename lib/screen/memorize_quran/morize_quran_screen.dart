@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:quran_app/models/memorization_level_model.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:quran_app/controller/memorization_controller.dart';
+import 'package:quran_app/screen/memorize_quran/memorization_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';

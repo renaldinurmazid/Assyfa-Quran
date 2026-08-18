@@ -304,21 +304,10 @@ class HajiAndUmrahScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppColor.primaryColorDark.withOpacity(
-                                0.05,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              IconlyLight.info_square,
-                              size: 48,
-                              color: AppColor.primaryColorDark,
-                            ),
+                          Image.asset(
+                            'assets/images/png/no-data-illustration.png',
+                            height: 260,
                           ),
-                          const SizedBox(height: 16),
                           Text('Tidak Ada Paket', style: pBold16),
                           const SizedBox(height: 8),
                           Text(
@@ -1075,7 +1064,8 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
                     _buildCityListTile(
                       context: context,
                       name: 'Semua Kota',
-                      isSelected: widget.controller.selectedCityId.value == 'Semua',
+                      isSelected:
+                          widget.controller.selectedCityId.value == 'Semua',
                       onTap: () {
                         widget.controller.selectedCityId.value = 'Semua';
                         Get.back();
@@ -1085,7 +1075,8 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
                   ...filteredCities.map((city) {
                     final id = city['id']?.toString() ?? '';
                     final name = city['name']?.toString() ?? '';
-                    final isSelected = widget.controller.selectedCityId.value == id;
+                    final isSelected =
+                        widget.controller.selectedCityId.value == id;
                     return _buildCityListTile(
                       context: context,
                       name: name,

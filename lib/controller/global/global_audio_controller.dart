@@ -109,7 +109,7 @@ class GlobalAudioController extends GetxController {
           await audioPlayer.setAudioSource(audioSource);
           audioPlayer.play();
         } else {
-          AppToast.error(message: 'Audio surah tidak tersedia');
+          AppToast.info(message: 'Audio surah tidak tersedia');
           _resetState();
         }
       } else {

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/controller/prayer/show_prayer_controller.dart';
-import 'package:quran_app/controller/home_screen_controller.dart';
-import 'package:quran_app/screen/home_screen.dart';
+import 'package:quran_app/screen/prayer/show_prayer_controller.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
+import 'package:quran_app/screen/home/home_screen.dart';
 
 import 'package:quran_app/theme/font.dart';
 import 'package:shimmer/shimmer.dart';

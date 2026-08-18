@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/controller/group/group_ngaji_screen_controller.dart';
+import 'package:quran_app/screen/group/group_ngaji_screen_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 
 class CreateGroupController extends GetxController {

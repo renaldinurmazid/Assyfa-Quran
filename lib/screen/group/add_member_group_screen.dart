@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide TextInput;
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/group/add_member_group_controller.dart';
+import 'package:quran_app/screen/group/add_member_group_controller.dart';
 import 'package:quran_app/models/group/user_for_group_list.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/app_toast.dart';
