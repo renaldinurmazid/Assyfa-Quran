@@ -228,13 +228,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                               ? Icon(Icons.check_circle, color: primaryColor)
                               : null,
                           onTap: () {
-                            controller.selectedReciter.value = reciter;
-                            if (controller.playingSurahId.value != null) {
-                              controller.loadAndPlayAudio(
-                                controller.playingSurahId.value!,
-                                reciter.id,
-                              );
-                            }
+                            controller.onSelectReciter(reciter);
                             Get.back();
                           },
                         );

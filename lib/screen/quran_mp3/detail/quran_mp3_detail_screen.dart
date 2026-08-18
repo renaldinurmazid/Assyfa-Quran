@@ -608,13 +608,11 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
                               ? Icon(Icons.check_circle, color: primaryColor)
                               : null,
                           onTap: () {
-                            controller.selectedReciter.value = reciter;
+                            controller.onSelectReciter(reciter);
                             Get.back();
                             AppToast.success(
                               message: 'Qori diubah ke ${reciter.name}',
                             );
-                            // Reload audio with new reciter
-                            controller.loadAndPlayAudio(activeSurah.id, reciter.id);
                           },
                         );
                       },

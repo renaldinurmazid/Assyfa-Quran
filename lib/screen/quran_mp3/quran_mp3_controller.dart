@@ -174,7 +174,12 @@ class QuranMp3Controller extends GetxController {
   }
 
   Future<void> fetchReciters() async {
-    if (reciters.isNotEmpty) return;
+    if (reciters.isNotEmpty) {
+      if (surahList.isEmpty) {
+        fetchSurahList(isRefresh: true);
+      }
+      return;
+    }
     try {
       isRecitersLoading.value = true;
       final response = await Request().get(Url.recitersFullAudio);
@@ -191,11 +196,25 @@ class QuranMp3Controller extends GetxController {
               ) ??
               reciters.first;
         }
+        fetchSurahList(isRefresh: true);
       }
     } catch (e) {
       AppToast.warning(message: 'Gagal memuat qori');
+      fetchSurahList(isRefresh: true);
     } finally {
       isRecitersLoading.value = false;
+    }
+  }
+
+  void onSelectReciter(ReciterModel reciter) {
+    if (selectedReciter.value?.id == reciter.id) return;
+    selectedReciter.value = reciter;
+    fetchSurahList(isRefresh: true);
+    if (playingSurahId.value != null) {
+      loadAndPlayAudio(
+        playingSurahId.value!,
+        reciter.id,
+      );
     }
   }
 
@@ -218,6 +237,9 @@ class QuranMp3Controller extends GetxController {
         'page': _currentPage,
         'per_page': 20,
       };
+      if (selectedReciter.value != null) {
+        queryParams['reciter_id'] = selectedReciter.value!.id;
+      }
       if (searchQuery.value.isNotEmpty) {
         queryParams['search'] = searchQuery.value;
       }
