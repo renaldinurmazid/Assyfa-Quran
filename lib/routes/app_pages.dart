@@ -41,6 +41,7 @@ import 'package:quran_app/bindings/mosque_add_binding.dart';
 import 'package:quran_app/bindings/find_mosque_binding.dart';
 import 'package:quran_app/screen/event/event_payment_screen.dart';
 import 'package:quran_app/screen/event/event_payment_detail_screen.dart';
+import 'package:quran_app/screen/event/event_registration_form_screen.dart';
 
 import 'package:quran_app/screen/profile/change_profile_screen.dart';
 import 'package:quran_app/screen/charity/charity_screen.dart';
@@ -206,6 +207,12 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.put(EventRegistrationListController());
       }),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.eventRegistrationForm,
+      page: () => const EventRegistrationFormScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

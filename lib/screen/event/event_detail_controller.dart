@@ -43,32 +43,6 @@ class EventDetailController extends GetxController {
   Future<void> registerEvent() async {
     if (event.value == null) return;
 
-    if (event.value!.price != null && event.value!.price! > 0) {
-      Get.toNamed(Routes.eventPayment, arguments: event.value);
-      return;
-    }
-
-    isRegistering.value = true;
-    try {
-      final response = await Request().post(
-        '${Url.events}/${event.value!.id}/register',
-      );
-      if (response.statusCode == 200) {
-        AppToast.success(
-          message: response.data['message'] ?? 'Berhasil mendaftar event',
-        );
-        // Refresh event details to update quota and registration status
-        fetchEventDetail(event.value!.id);
-      } else {
-        AppToast.error(
-          message: response.data['message'] ?? 'Gagal mendaftar event',
-        );
-      }
-    } catch (e) {
-      print(e);
-      AppToast.error(message: 'Gagal mendaftar event');
-    } finally {
-      isRegistering.value = false;
-    }
+    Get.toNamed(Routes.eventRegistrationForm, arguments: event.value);
   }
 }

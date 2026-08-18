@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
@@ -16,11 +18,16 @@ class EventPaymentController extends GetxController {
   final paymentMethods = <PaymentMethod>[].obs;
   final selectedPaymentMethod = Rxn<PaymentMethod>();
 
+  Map<String, dynamic>? formData;
+
   @override
   void onInit() {
     super.onInit();
     final args = Get.arguments;
-    if (args is EventModel) {
+    if (args is Map<String, dynamic>) {
+      event.value = args['event'] as EventModel?;
+      formData = args['formData'] as Map<String, dynamic>?;
+    } else if (args is EventModel) {
       event.value = args;
     }
     fetchPaymentMethods();
@@ -55,13 +62,30 @@ class EventPaymentController extends GetxController {
 
     isRegistering.value = true;
     try {
-      final data = {
-        'payment_methode_id': selectedPaymentMethod.value!.id,
+      final submitData = <String, dynamic>{
+        'payment_methode_id': selectedPaymentMethod.value!.id.toString(),
       };
+      
+      if (formData != null) {
+        submitData.addAll(formData!);
+      }
+
+      final dioFormData = dio.FormData.fromMap({});
+      
+      for (final entry in submitData.entries) {
+        if (entry.value is File) {
+           dioFormData.files.add(MapEntry(
+            entry.key,
+            await dio.MultipartFile.fromFile((entry.value as File).path),
+          ));
+        } else {
+          dioFormData.fields.add(MapEntry(entry.key, entry.value.toString()));
+        }
+      }
 
       final response = await Request().post(
         '${Url.events}/${event.value!.id}/register',
-        data: data,
+        data: dioFormData,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

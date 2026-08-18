@@ -21,6 +21,7 @@ abstract class Routes {
   static const eventRegistrationList = '/event-registration-list';
   static const eventPayment = '/event_payment';
   static const eventPaymentDetail = '/event_payment_detail';
+  static const eventRegistrationForm = '/event_registration_form';
   static const charityPayment = '/charity_payment';
   static const charityPaymentDetail = '/charity_payment_detail';
   static const infaqActivity = '/infaq_activity';
