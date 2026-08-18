@@ -238,16 +238,21 @@ class EventPaymentDetailScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: method.logo.isNotEmpty
-                ? SvgPicture.network(
-                    method.logo,
-                    placeholderBuilder: (_) => const Center(
-                      child: SizedBox(
-                        width: 12, height: 12,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorBuilder: (_, __, ___) => const Icon(IconlyLight.image, size: 16),
-                  )
+                ? (method.logo.contains('.svg')
+                      ? SvgPicture.network(
+                          method.logo,
+                          placeholderBuilder: (_) => const Center(
+                            child: SizedBox(
+                              width: 12, height: 12,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorBuilder: (_, __, ___) => const Icon(IconlyLight.image, size: 16),
+                        )
+                      : Image.network(
+                          method.logo,
+                          errorBuilder: (_, __, ___) => const Icon(IconlyLight.image, size: 16),
+                        ))
                 : const Icon(IconlyLight.wallet, size: 20),
           ),
           const SizedBox(width: 16),

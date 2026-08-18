@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/mosque_charity_payment_controller.dart';
+import 'package:quran_app/screen/mosque/mosque_charity_payment_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -282,20 +282,29 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
                                           : Colors.grey.shade200,
                                     ),
                                   ),
-                                  child: selected.logo.isNotEmpty
-                                      ? SvgPicture.network(
-                                          selected.logo,
-                                          placeholderBuilder: (context) =>
-                                              const Center(
-                                                child: SizedBox(
-                                                  width: 12,
-                                                  height: 12,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
+                                  child: selected.logo != null && selected.logo!.isNotEmpty
+                                      ? (selected.logo!.contains('.svg')
+                                            ? SvgPicture.network(
+                                                selected.logo!,
+                                                placeholderBuilder: (context) =>
+                                                    const Center(
+                                                      child: SizedBox(
+                                                        width: 12,
+                                                        height: 12,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                        ),
+                                                      ),
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                selected.logo!,
+                                                errorBuilder: (_, __, ___) => const Icon(
+                                                  IconlyLight.wallet,
+                                                  size: 20,
+                                                  color: Colors.grey,
                                                 ),
-                                              ),
-                                        )
+                                              ))
                                       : const Icon(
                                           IconlyLight.wallet,
                                           size: 20,
@@ -684,31 +693,43 @@ void _showPaymentMethodBottomSheet(
                                         .surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: method.logo.isNotEmpty
-                                      ? SvgPicture.network(
-                                          method.logo,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return const Center(
-                                              child: Icon(
-                                                IconlyLight.image,
-                                                color: Colors.grey,
-                                                size: 16,
-                                              ),
-                                            );
-                                          },
-                                          placeholderBuilder: (context) =>
-                                              const Center(
-                                                child: SizedBox(
-                                                  width: 12,
-                                                  height: 12,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
-                                                ),
-                                              ),
-                                        )
+                                  child: method.logo != null && method.logo!.isNotEmpty
+                                      ? (method.logo!.contains('.svg')
+                                            ? SvgPicture.network(
+                                                method.logo!,
+                                                errorBuilder:
+                                                    (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      IconlyLight.image,
+                                                      color: Colors.grey,
+                                                      size: 16,
+                                                    ),
+                                                  );
+                                                },
+                                                placeholderBuilder: (context) =>
+                                                    const Center(
+                                                      child: SizedBox(
+                                                        width: 12,
+                                                        height: 12,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                        ),
+                                                      ),
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                method.logo!,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      IconlyLight.image,
+                                                      color: Colors.grey,
+                                                      size: 16,
+                                                    ),
+                                                  );
+                                                },
+                                              ))
                                       : const Icon(
                                           IconlyLight.wallet,
                                           size: 20,

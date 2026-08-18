@@ -370,9 +370,9 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
               ),
             ),
             child: payment.paymentMethode?.logo != null
-                ? (payment.paymentMethode!.logo.contains('.svg')
-                      ? SvgPicture.network(payment.paymentMethode!.logo)
-                      : Image.network(payment.paymentMethode!.logo))
+                ? (payment.paymentMethode!.logo!.contains('.svg')
+                      ? SvgPicture.network(payment.paymentMethode!.logo!)
+                      : Image.network(payment.paymentMethode!.logo!))
                 : const Icon(IconlyLight.wallet, color: AppColor.primaryColor),
           ),
           const SizedBox(width: 16),
@@ -396,7 +396,7 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
                 if (payment.paymentMethode?.accountName != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    payment.paymentMethode!.accountName,
+                    payment.paymentMethode!.accountName!,
                     style: pRegular12.copyWith(
                       color: context.theme.colorScheme.onSurfaceVariant,
                     ),
@@ -501,7 +501,7 @@ class MosqueCharityPaymentDetailScreen extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () async {
-          const String phoneNumber = "6285797890027";
+          const String phoneNumber = "6283196064151";
           const String message =
               "Halo Admin, saya ingin konfirmasi pembayaran untuk infaq masjid saya.";
           final Uri whatsappUrl = Uri.parse(

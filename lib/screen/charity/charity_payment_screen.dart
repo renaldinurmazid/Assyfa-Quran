@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import 'package:quran_app/controller/charity/charity_payment_controller.dart';
+import 'package:quran_app/screen/charity/charity_payment_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -330,21 +330,30 @@ class CharityPaymentScreen extends StatelessWidget {
                                           : Colors.grey.shade200,
                                     ),
                                   ),
-                                  child: selected.logo.isNotEmpty
-                                      ? SvgPicture.network(
-                                          selected.logo,
-                                          placeholderBuilder: (context) =>
-                                              const Center(
-                                                child: SizedBox(
-                                                  width: 12,
-                                                  height: 12,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                        strokeWidth: 2,
+                                  child: selected.logo != null && selected.logo!.isNotEmpty
+                                      ? (selected.logo!.contains('.svg')
+                                            ? SvgPicture.network(
+                                                selected.logo!,
+                                                placeholderBuilder: (context) =>
+                                                    const Center(
+                                                      child: SizedBox(
+                                                        width: 12,
+                                                        height: 12,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
                                                       ),
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                selected.logo!,
+                                                errorBuilder: (_, __, ___) => const Icon(
+                                                  IconlyLight.wallet,
+                                                  size: 20,
+                                                  color: Colors.grey,
                                                 ),
-                                              ),
-                                        )
+                                              ))
                                       : const Icon(
                                           IconlyLight.wallet,
                                           size: 20,
@@ -487,79 +496,24 @@ class CharityPaymentScreen extends StatelessWidget {
 
   Widget _buildStepCard({
     required BuildContext context,
-    required String stepNumber,
+    required String stepNumber, // Kept for backwards compatibility but not used in UI
     required String title,
     required Widget child,
   }) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade800
-              : Colors.grey.shade200,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(context.isDarkMode ? 0.2 : 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      margin: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFD4AF37), Color(0xFFC5A880)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFD4AF37).withOpacity(0.3),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    stepNumber,
-                    style: pBold12.copyWith(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: pBold14.copyWith(
-                      color: context.theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ],
+          Text(
+            title,
+            style: pBold16.copyWith(
+              color: context.theme.colorScheme.onSurface,
             ),
           ),
-          Divider(
-            height: 1,
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade100,
-          ),
-          Padding(padding: const EdgeInsets.all(16), child: child),
+          const SizedBox(height: 16),
+          child,
         ],
       ),
     );
@@ -599,20 +553,6 @@ class CharityPaymentScreen extends StatelessWidget {
                         : Colors.grey.shade200),
               width: 1,
             ),
-            boxShadow: [
-              if (isSelected)
-                BoxShadow(
-                  color: AppColor.primaryColor.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                )
-              else
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.01),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-            ],
           ),
           child: Text(
             label,
@@ -691,20 +631,6 @@ class CharityPaymentScreen extends StatelessWidget {
                                     : Colors.grey.shade200),
                           width: isSelected ? 2 : 1,
                         ),
-                        boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: AppColor.primaryColor.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            )
-                          else
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.01),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -804,13 +730,6 @@ class CharityPaymentScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColor.primaryColor,
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColor.primaryColor.withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: const Icon(
                         Icons.add,
@@ -983,16 +902,9 @@ void _showPaymentMethodBottomSheet(
                               border: Border.all(
                                 color: isSelected
                                     ? context.theme.colorScheme.primary
-                                    : Colors.transparent,
-                                width: 2,
+                                    : (context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200),
+                                width: isSelected ? 2 : 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.03),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
                             ),
                             child: Row(
                               children: [
@@ -1006,31 +918,44 @@ void _showPaymentMethodBottomSheet(
                                         .surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: method.logo.isNotEmpty
-                                      ? SvgPicture.network(
-                                          method.logo,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return const Center(
-                                                  child: Icon(
-                                                    IconlyLight.image,
-                                                    color: Colors.grey,
-                                                    size: 16,
-                                                  ),
-                                                );
-                                              },
-                                          placeholderBuilder: (context) =>
-                                              const Center(
-                                                child: SizedBox(
-                                                  width: 12,
-                                                  height: 12,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                        strokeWidth: 2,
+                                  child: method.logo != null && method.logo!.isNotEmpty
+                                      ? (method.logo!.contains('.svg')
+                                            ? SvgPicture.network(
+                                                method.logo!,
+                                                errorBuilder:
+                                                    (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      IconlyLight.image,
+                                                      color: Colors.grey,
+                                                      size: 16,
+                                                    ),
+                                                  );
+                                                },
+                                                placeholderBuilder: (context) =>
+                                                    const Center(
+                                                      child: SizedBox(
+                                                        width: 12,
+                                                        height: 12,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
                                                       ),
-                                                ),
-                                              ),
-                                        )
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                method.logo!,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      IconlyLight.image,
+                                                      color: Colors.grey,
+                                                      size: 16,
+                                                    ),
+                                                  );
+                                                },
+                                              ))
                                       : const Icon(
                                           IconlyLight.wallet,
                                           size: 20,

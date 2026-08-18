@@ -5,8 +5,8 @@ import 'package:quran_app/models/event_model.dart';
 import 'package:quran_app/models/payment_method_model.dart';
 import 'package:quran_app/models/event_payment_response_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
-import 'package:quran_app/screen/event/event_detail_controller.dart';
 import 'package:quran_app/widgets/app_toast.dart';
+import 'package:quran_app/screen/event/event_detail_controller.dart';
 
 class EventPaymentController extends GetxController {
   final event = Rxn<EventModel>();
@@ -47,7 +47,7 @@ class EventPaymentController extends GetxController {
 
   Future<void> registerAndPay() async {
     if (event.value == null) return;
-
+    
     if (selectedPaymentMethod.value == null) {
       AppToast.warning(message: 'Silakan pilih metode pembayaran');
       return;
@@ -55,7 +55,9 @@ class EventPaymentController extends GetxController {
 
     isRegistering.value = true;
     try {
-      final data = {'payment_methode_id': selectedPaymentMethod.value!.id};
+      final data = {
+        'payment_methode_id': selectedPaymentMethod.value!.id,
+      };
 
       final response = await Request().post(
         '${Url.events}/${event.value!.id}/register',
@@ -64,7 +66,7 @@ class EventPaymentController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = EventPaymentResponseModel.fromJson(response.data);
-
+        
         AppToast.success(
           message: response.data['message'] ?? 'Berhasil mendaftar event',
         );

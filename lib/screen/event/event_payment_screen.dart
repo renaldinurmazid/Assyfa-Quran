@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:quran_app/controller/event/event_payment_controller.dart';
+import 'package:quran_app/screen/event/event_payment_controller.dart';
 import 'package:quran_app/theme/font.dart';
 
 class EventPaymentScreen extends StatelessWidget {
@@ -101,7 +101,7 @@ class EventPaymentScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       if (controller.selectedPaymentMethod.value != null) ...[
-                        if (controller.selectedPaymentMethod.value!.logo.isNotEmpty)
+                        if (controller.selectedPaymentMethod.value!.logo != null && controller.selectedPaymentMethod.value!.logo!.isNotEmpty)
                           Container(
                             width: 48,
                             height: 32,
@@ -110,16 +110,21 @@ class EventPaymentScreen extends StatelessWidget {
                               color: context.theme.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: SvgPicture.network(
-                              controller.selectedPaymentMethod.value!.logo,
-                              placeholderBuilder: (_) => const Center(
-                                child: SizedBox(
-                                  width: 12,
-                                  height: 12,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                            ),
+                            child: controller.selectedPaymentMethod.value!.logo!.contains('.svg')
+                                ? SvgPicture.network(
+                                    controller.selectedPaymentMethod.value!.logo!,
+                                    placeholderBuilder: (_) => const Center(
+                                      child: SizedBox(
+                                        width: 12,
+                                        height: 12,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    controller.selectedPaymentMethod.value!.logo!,
+                                    errorBuilder: (_, __, ___) => const Icon(IconlyLight.wallet, size: 24, color: Colors.grey),
+                                  ),
                           )
                         else
                           const Icon(IconlyLight.wallet, size: 24, color: Colors.grey),
@@ -315,19 +320,26 @@ void _showPaymentMethodBottomSheet(
                                     color: context.theme.colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: method.logo.isNotEmpty
-                                      ? SvgPicture.network(
-                                          method.logo,
-                                          errorBuilder: (context, error, stackTrace) => const Center(
-                                            child: Icon(IconlyLight.image, color: Colors.grey, size: 16),
-                                          ),
-                                          placeholderBuilder: (context) => const Center(
-                                            child: SizedBox(
-                                              width: 12, height: 12,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
-                                            ),
-                                          ),
-                                        )
+                                  child: method.logo != null && method.logo!.isNotEmpty
+                                      ? (method.logo!.contains('.svg')
+                                            ? SvgPicture.network(
+                                                method.logo!,
+                                                errorBuilder: (context, error, stackTrace) => const Center(
+                                                  child: Icon(IconlyLight.image, color: Colors.grey, size: 16),
+                                                ),
+                                                placeholderBuilder: (context) => const Center(
+                                                  child: SizedBox(
+                                                    width: 12, height: 12,
+                                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                                  ),
+                                                ),
+                                              )
+                                            : Image.network(
+                                                method.logo!,
+                                                errorBuilder: (context, error, stackTrace) => const Center(
+                                                  child: Icon(IconlyLight.image, color: Colors.grey, size: 16),
+                                                ),
+                                              ))
                                       : const Icon(IconlyLight.wallet, size: 20, color: Colors.grey),
                                 ),
                                 const SizedBox(width: 16),
