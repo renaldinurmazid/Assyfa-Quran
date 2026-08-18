@@ -75,6 +75,9 @@ class EventPayment {
   int paymentMethodeId;
   String amount;
   String payCode;
+  String? qrString;
+  String? qrCodeUrl;
+  String? transactionId;
   String instructions;
   String status;
   DateTime expiredAt;
@@ -88,6 +91,9 @@ class EventPayment {
     required this.paymentMethodeId,
     required this.amount,
     required this.payCode,
+    this.qrString,
+    this.qrCodeUrl,
+    this.transactionId,
     required this.instructions,
     required this.status,
     required this.expiredAt,
@@ -101,8 +107,11 @@ class EventPayment {
     eventRegistrationId: json["event_registration_id"] is int ? json["event_registration_id"] : int.tryParse(json["event_registration_id"]?.toString() ?? '0') ?? 0,
     paymentMethodeId: json["payment_methode_id"] is int ? json["payment_methode_id"] : int.tryParse(json["payment_methode_id"]?.toString() ?? '0') ?? 0,
     amount: json["amount"].toString(),
-    payCode: json["pay_code"],
-    instructions: json["instructions"],
+    payCode: json["pay_code"] ?? '',
+    qrString: json["qr_string"],
+    qrCodeUrl: json["qr_code_url"],
+    transactionId: json["transaction_id"],
+    instructions: json["instructions"] is String ? json["instructions"] : (json["instructions"] != null ? json["instructions"].toString() : '[]'),
     status: json["status"],
     expiredAt: DateTime.parse(json["expired_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
@@ -112,4 +121,6 @@ class EventPayment {
         ? null
         : PaymentMethod.fromJson(json["payment_methode"]),
   );
+
+  bool get isQris => qrCodeUrl != null && qrCodeUrl!.isNotEmpty;
 }

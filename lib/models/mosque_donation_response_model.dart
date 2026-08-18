@@ -82,6 +82,8 @@ class MosquePayment {
   int paymentMethodeId;
   String amount;
   String payCode;
+  String? qrString;
+  String? qrCodeUrl;
   String instructions;
   String status;
   DateTime expiredAt;
@@ -96,6 +98,8 @@ class MosquePayment {
     required this.paymentMethodeId,
     required this.amount,
     required this.payCode,
+    this.qrString,
+    this.qrCodeUrl,
     required this.instructions,
     required this.status,
     required this.expiredAt,
@@ -110,8 +114,10 @@ class MosquePayment {
     mosqueDonationId: json["mosque_donation_id"],
     paymentMethodeId: json["payment_methode_id"],
     amount: json["amount"],
-    payCode: json["pay_code"],
-    instructions: json["instructions"],
+    payCode: json["pay_code"] ?? '',
+    qrString: json["qr_string"],
+    qrCodeUrl: json["qr_url"] ?? json["qr_code_url"],
+    instructions: json["instructions"] is String ? json["instructions"] : (json["instructions"] != null ? json["instructions"].toString() : '[]'),
     status: json["status"],
     expiredAt: DateTime.parse(json["expired_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
@@ -122,6 +128,8 @@ class MosquePayment {
         ? null
         : PaymentMethod.fromJson(json["payment_methode"]),
   );
+
+  bool get isQris => qrCodeUrl != null && qrCodeUrl!.isNotEmpty;
 }
 
 class Instruction {

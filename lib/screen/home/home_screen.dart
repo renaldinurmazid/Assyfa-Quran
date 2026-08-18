@@ -1293,11 +1293,11 @@ class HomeScreen extends StatelessWidget {
         'icon': 'assets/images/png/share.png',
         'route': Routes.appShareLeaderboard,
       },
-      {
-        'title': 'Arabic Quran',
-        'icon': 'assets/images/png/hafalan.png',
-        'route': Routes.arabicQuran,
-      },
+      // {
+      //   'title': 'Arabic Quran',
+      //   'icon': 'assets/images/png/hafalan.png',
+      //   'route': Routes.arabicQuran,
+      // },
       {
         'title': 'Kalkulator Zakat',
         'icon': 'assets/images/png/giving-zakat.png',

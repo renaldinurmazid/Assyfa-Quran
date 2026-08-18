@@ -1,7 +1,7 @@
 class Url {
-  // static const String baseUrl = 'https://quran.titiktolak.com';
+  static const String baseUrl = 'https://quran.titiktolak.com';
   // static const String baseUrl = 'http://10.0.2.2:8000';
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  // static const String baseUrl = 'http://127.0.0.1:8000';
   //   static const String reverbWsUrl =
   //       'wss://quran.titiktolak.com:8080/app/xgiojz5vzlaexs8rzjpj';
   static const String reverbWsUrl = 'ws://127.0.0.1:8080/app/xgiojz5vzlaexs8rzjpj';
