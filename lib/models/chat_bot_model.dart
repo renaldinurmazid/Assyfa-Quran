@@ -37,6 +37,7 @@ class ChatMessage {
   final int? chatSessionId;
   final String role; // 'user' or 'model'
   final String content;
+  final bool isEscalated;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final bool isUser;
@@ -46,6 +47,7 @@ class ChatMessage {
     this.chatSessionId,
     required this.role,
     required this.content,
+    this.isEscalated = false,
     this.createdAt,
     this.updatedAt,
     required this.isUser,
@@ -53,11 +55,15 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     final role = json['role'] ?? 'user';
+    final isEscalated = json['is_escalated'] == true ||
+        json['is_escalated'] == 1 ||
+        json['is_escalated'] == '1';
     return ChatMessage(
       id: json['id'],
       chatSessionId: json['chat_session_id'],
       role: role,
       content: json['content'] ?? '',
+      isEscalated: isEscalated,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
       isUser: role == 'user',

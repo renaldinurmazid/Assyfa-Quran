@@ -106,42 +106,6 @@ class ChatBotScreen extends StatelessWidget {
               );
             }),
           ),
-          Obx(() {
-            if (!controller.showContactAdmin.value) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Butuh bantuan lebih lanjut? hubungi admin Quranuna.',
-                    style: pRegular12.copyWith(color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      side: BorderSide(color: Colors.grey.shade200),
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    ),
-                    onPressed: () async {
-                      final Uri url = Uri.parse('https://wa.me/6283196064151');
-                      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                        debugPrint('Could not launch \$url');
-                      }
-                    },
-                    child: Text(
-                      'Chat admin Quranuna',
-                      style: pMedium12.copyWith(color: Colors.grey.shade800),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
           _buildMessageInput(controller),
         ],
       ),
@@ -399,6 +363,11 @@ class ChatBotScreen extends StatelessWidget {
   }
 
   Widget _buildChatBubble(ChatMessage message) {
+    final isEscalatedMessage = !message.isUser &&
+        (message.isEscalated ||
+            message.content.toLowerCase().contains('dialihkan ke admin') ||
+            message.content.toLowerCase().contains('admin quranuna'));
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -430,7 +399,7 @@ class ChatBotScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: message.isUser
                     ? AppColor.primaryColor
-                    : Colors.grey[100],
+                    : Colors.grey.shade100,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -438,23 +407,77 @@ class ChatBotScreen extends StatelessWidget {
                   bottomRight: Radius.circular(message.isUser ? 4 : 16),
                 ),
               ),
-              child: MarkdownBody(
-                data: message.content,
-                styleSheet: MarkdownStyleSheet(
-                  p: pRegular14.copyWith(
-                    color: message.isUser ? Colors.white : AppColor.textColor,
-                    height: 1.4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MarkdownBody(
+                    data: message.content,
+                    styleSheet: MarkdownStyleSheet(
+                      p: pRegular14.copyWith(
+                        color: message.isUser
+                            ? Colors.white
+                            : AppColor.textColor,
+                        height: 1.4,
+                      ),
+                      strong: pBold14.copyWith(
+                        color: message.isUser
+                            ? Colors.white
+                            : AppColor.textColor,
+                        height: 1.4,
+                      ),
+                      em: pRegular14.copyWith(
+                        color: message.isUser
+                            ? Colors.white
+                            : AppColor.textColor,
+                        height: 1.4,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   ),
-                  strong: pBold14.copyWith(
-                    color: message.isUser ? Colors.white : AppColor.textColor,
-                    height: 1.4,
-                  ),
-                  em: pRegular14.copyWith(
-                    color: message.isUser ? Colors.white : AppColor.textColor,
-                    height: 1.4,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+                  if (isEscalatedMessage) ...[
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () async {
+                        const String phoneNumber = "6283196064151";
+                        final Uri url = Uri.parse('https://wa.me/$phoneNumber');
+                        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                          debugPrint('Could not launch $url');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(50),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColor.primaryColor,
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColor.primaryColor.withOpacity(0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Chat Admin Quranuna',
+                              style: pMedium12.copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),

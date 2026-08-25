@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
-import 'package:quran_app/screen/home/home_screen_controller.dart';
+import 'package:quran_app/screen/blog/blog_controller.dart';
 import 'package:quran_app/screen/chat/chat_screen.dart';
 import 'package:quran_app/screen/home/home_screen.dart';
+import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/screen/profile/profile_screen.dart';
 import 'package:quran_app/screen/tilawahku_screen.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -21,7 +22,26 @@ class MainController extends GetxController {
       _showLoginDialog();
       return;
     }
+
+    // Scroll to top if clicking Home tab when already on Home tab
+    if (index == 0 && tabIndex.value == 0) {
+      _scrollToTopHome();
+    }
+
     tabIndex.value = index;
+  }
+
+  void _scrollToTopHome() {
+    if (Get.isRegistered<BlogController>()) {
+      final blogController = Get.find<BlogController>();
+      if (blogController.scrollController.hasClients) {
+        blogController.scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    }
   }
 
   void _showLoginDialog() {

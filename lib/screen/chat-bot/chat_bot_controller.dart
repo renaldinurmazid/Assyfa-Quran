@@ -92,6 +92,7 @@ class ChatBotController extends GetxController {
       if (response.statusCode == 200 && response.data['data'] != null) {
         final sessionData = ChatSession.fromJson(response.data['data']);
         messages.value = sessionData.messages;
+        _checkIfAdminNeeded();
         _scrollToBottom();
         // _connectWebSocket(sessionId); // WebSocket - dinonaktifkan sementara
       }
@@ -101,6 +102,15 @@ class ChatBotController extends GetxController {
     } finally {
       isLoadingHistory.value = false;
     }
+  }
+
+  void _checkIfAdminNeeded() {
+    showContactAdmin.value = messages.any(
+      (m) =>
+          m.isEscalated ||
+          m.content.toLowerCase().contains('dialihkan ke admin') ||
+          m.content.toLowerCase().contains('admin quranuna'),
+    );
   }
 
   Future<void> deleteSession(int sessionId) async {
@@ -190,19 +200,28 @@ class ChatBotController extends GetxController {
           }
         }
 
-        // Cek flag is_escalated dari API
-        final isEscalated = responseData['is_escalated'] == true;
+        // Cek flag is_escalated dari API (dukung boolean, int 1, string '1')
+        final rawEscalated = responseData['is_escalated'];
+        final isEscalated = rawEscalated == true ||
+            rawEscalated == 1 ||
+            rawEscalated == '1' ||
+            rawEscalated == 'true';
 
+        String replyContent = '';
         if (responseData['reply_message'] != null) {
           final reply = ChatMessage.fromJson(responseData['reply_message']);
+          replyContent = reply.content;
           if (!messages.any((m) => m.id == reply.id)) {
             messages.add(reply);
             _scrollToBottom();
           }
         }
 
-        // Tampilkan banner kontak admin jika: AI eskalasi atau tidak ada balasan
-        if (isEscalated || responseData['reply_message'] == null) {
+        final isEscalationText = replyContent.toLowerCase().contains('dialihkan ke admin') ||
+            replyContent.toLowerCase().contains('admin quranuna');
+
+        // Tampilkan banner kontak admin jika: AI eskalasi atau teks pengalihan atau tidak ada balasan
+        if (isEscalated || isEscalationText || responseData['reply_message'] == null) {
           showContactAdmin.value = true;
         }
       } else {
