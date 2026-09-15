@@ -79,6 +79,7 @@ dependencies:
   flutter_markdown: ^0.7.7+1
   web_socket_channel: ^3.0.3
   disable_battery_optimization: ^1.1.2
+  lucide_icons_flutter: ^3.1.19
 
 dev_dependencies:
   flutter_test:

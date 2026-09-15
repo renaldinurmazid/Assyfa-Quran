@@ -26,6 +26,9 @@ class MosqueCharityShowScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.isRegistered<MosqueCharityShowController>()) {
+      Get.delete<MosqueCharityShowController>();
+    }
     final controller = Get.put(MosqueCharityShowController());
 
     return Scaffold(

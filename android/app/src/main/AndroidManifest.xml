@@ -87,6 +87,14 @@
                 <data android:scheme="quranuna" android:host="blog" />
             </intent-filter>
 
+            <!-- Deep linking: Event (quranuna://event/ID) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="quranuna" android:host="event" />
+            </intent-filter>
+
             <!-- App Links (Web HTTP/HTTPS) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

@@ -12,6 +12,9 @@ class ShowBlogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.isRegistered<BlogDetailController>()) {
+      Get.delete<BlogDetailController>();
+    }
     final controller = Get.put(BlogDetailController());
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

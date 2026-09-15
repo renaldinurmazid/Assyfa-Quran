@@ -15,6 +15,7 @@ import 'package:quran_app/screen/event/event_detail_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/screen/home/home_screen.dart';
+import 'package:quran_app/services/deep_link_service.dart';
 import 'package:quran_app/theme/font.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -33,9 +34,10 @@ class ShowEventScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<EventDetailController>()
-        ? Get.find<EventDetailController>()
-        : Get.put(EventDetailController());
+    if (Get.isRegistered<EventDetailController>()) {
+      Get.delete<EventDetailController>();
+    }
+    final controller = Get.put(EventDetailController());
     final isDark = context.isDarkMode;
 
     return Scaffold(
@@ -108,12 +110,33 @@ class ShowEventScreen extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           child: _glassButton(
             icon: IconlyLight.send,
-            onTap: () => SharePlus.instance.share(
-              ShareParams(
-                text:
-                    'Yuk ikuti event "${event.title}" di Quranuna!\n\nSimak info selengkapnya di aplikasi.',
-              ),
-            ),
+            onTap: () {
+              final shareUrl = DeepLinkService.createEventShareLink(
+                event.slug.isNotEmpty ? event.slug : event.id.toString(),
+              );
+              final dateStr = event.startDate != null
+                  ? '${DateFormat('dd MMMM yyyy, HH:mm').format(event.startDate!)} WIB'
+                  : null;
+
+              final shareText = StringBuffer();
+              shareText.writeln('📢 Ikuti Event "${event.title}" di Quranuna!');
+              if (dateStr != null) {
+                shareText.writeln('🗓️ Waktu: $dateStr');
+              }
+              if (event.location != null && event.location!.isNotEmpty) {
+                shareText.writeln('📍 Lokasi: ${event.location}');
+              }
+              shareText.writeln();
+              shareText.writeln('Buka atau daftar langsung melalui link berikut:');
+              shareText.write(shareUrl);
+
+              SharePlus.instance.share(
+                ShareParams(
+                  text: shareText.toString(),
+                  subject: event.title,
+                ),
+              );
+            },
             hasThumbnail: hasThumbnail,
             isDark: isDark,
           ),

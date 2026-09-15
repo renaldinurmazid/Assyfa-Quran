@@ -25,9 +25,10 @@ class CharityShowScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.isRegistered<CharityShowController>()
-        ? Get.find<CharityShowController>()
-        : Get.put(CharityShowController());
+    if (Get.isRegistered<CharityShowController>()) {
+      Get.delete<CharityShowController>();
+    }
+    final controller = Get.put(CharityShowController());
 
     final isDark = context.isDarkMode;
 

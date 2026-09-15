@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/blog/blog_controller.dart';
 import 'package:quran_app/screen/chat/chat_screen.dart';
@@ -97,24 +97,24 @@ class MainScreen extends StatelessWidget {
             ),
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(IconlyLight.home),
-                label: 'Home',
-                activeIcon: Icon(IconlyBold.home),
+                icon: Icon(LucideIcons.layoutDashboard),
+                label: 'Beranda',
+                activeIcon: Icon(LucideIcons.layoutDashboard),
               ),
               BottomNavigationBarItem(
-                icon: Icon(IconlyLight.bookmark),
+                icon: Icon(LucideIcons.bookmark),
                 label: 'Tilawahku',
-                activeIcon: Icon(IconlyBold.bookmark),
+                activeIcon: Icon(LucideIcons.bookmark),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.chat_outlined),
+                icon: Icon(LucideIcons.mail),
                 label: 'Pesan',
-                activeIcon: Icon(Icons.chat),
+                activeIcon: Icon(LucideIcons.mail),
               ),
               BottomNavigationBarItem(
-                icon: Icon(IconlyLight.profile),
+                icon: Icon(LucideIcons.circleUser),
                 label: 'Profile',
-                activeIcon: Icon(IconlyBold.profile),
+                activeIcon: Icon(LucideIcons.circleUser),
               ),
             ],
           );

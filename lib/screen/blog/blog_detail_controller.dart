@@ -6,7 +6,7 @@ import 'package:quran_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BlogDetailController extends GetxController {
-  final slug = Get.arguments as String;
+  late final String slug;
   final blog = Rxn<BlogItem>();
   final isLoading = true.obs;
   final isLiking = false.obs;
@@ -15,7 +15,20 @@ class BlogDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchBlogDetail();
+    final dynamic args = Get.arguments;
+    if (args is String) {
+      slug = args;
+    } else if (args is Map && args['slug'] != null) {
+      slug = args['slug'].toString();
+    } else {
+      slug = args?.toString() ?? '';
+    }
+
+    if (slug.isNotEmpty) {
+      fetchBlogDetail();
+    } else {
+      isLoading.value = false;
+    }
   }
 
   Future<void> fetchBlogDetail({bool showLoading = true}) async {

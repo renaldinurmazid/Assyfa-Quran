@@ -12,6 +12,9 @@ class ShowGroupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.isRegistered<ShowGroupController>()) {
+      Get.delete<ShowGroupController>();
+    }
     final controller = Get.put(ShowGroupController());
     return Obx(
       () => Scaffold(

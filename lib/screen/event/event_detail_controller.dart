@@ -14,30 +14,30 @@ class EventDetailController extends GetxController {
   void onInit() {
     super.onInit();
     final args = Get.arguments;
-    int? eventId;
+    dynamic identifier;
     if (args is int) {
-      eventId = args;
+      identifier = args;
     } else if (args is String) {
-      eventId = int.tryParse(args);
+      identifier = args;
     } else if (args is EventModel) {
-      eventId = args.id;
+      identifier = args.slug.isNotEmpty ? args.slug : args.id;
       event.value = args;
-    } else if (args is Map && args['id'] != null) {
-      eventId = int.tryParse(args['id'].toString());
+    } else if (args is Map) {
+      identifier = args['slug'] ?? args['id'];
     }
 
-    if (eventId != null) {
-      fetchEventDetail(eventId);
+    if (identifier != null && identifier.toString().isNotEmpty) {
+      fetchEventDetail(identifier);
     } else {
       isLoading.value = false;
-      AppToast.error(message: 'ID Event tidak ditemukan');
+      AppToast.error(message: 'Event tidak ditemukan');
     }
   }
 
-  Future<void> fetchEventDetail(int id) async {
+  Future<void> fetchEventDetail(dynamic identifier) async {
     isLoading.value = true;
     try {
-      final response = await Request().get('${Url.events}/$id');
+      final response = await Request().get('${Url.events}/$identifier');
       if (response.statusCode == 200) {
         event.value = EventModel.fromJson(response.data['data']);
       } else {
