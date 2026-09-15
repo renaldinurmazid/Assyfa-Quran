@@ -11,12 +11,11 @@ import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/widgets/app_toast.dart';
 
 class CharityPaymentController extends GetxController {
-  final int campaignId = Get.arguments['id'];
-  final String formType = Get.arguments['formType'];
-  final int? qurbanPrice = Get.arguments['qurbanPrice'];
-  final List<CampaignOption>? campaignOptions =
-      Get.arguments['campaignOptions'];
-  final int? withOption = Get.arguments['withOption'];
+  late final int campaignId;
+  late final String formType;
+  late final int? qurbanPrice;
+  late final List<CampaignOption>? campaignOptions;
+  late final int? withOption;
 
   var selectedOption = Rxn<CampaignOption>();
 
@@ -42,6 +41,7 @@ class CharityPaymentController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _initArgs();
 
     if (withOption == 1 &&
         campaignOptions != null &&
@@ -74,6 +74,62 @@ class CharityPaymentController extends GetxController {
       qurbanNameControllers[0].text = nameController.text;
     }
     fetchPaymentMethods();
+  }
+
+  void _initArgs() {
+    try {
+      final dynamic args = Get.arguments;
+      if (args is Map) {
+        final dynamic rawId = args['id'] ?? args['campaignId'];
+        if (rawId is int) {
+          campaignId = rawId;
+        } else if (rawId is String) {
+          campaignId = int.tryParse(rawId) ?? 0;
+        } else {
+          campaignId = 0;
+        }
+
+        formType = (args['formType'] as String?) ?? 'general';
+        final dynamic rawQurban = args['qurbanPrice'];
+        if (rawQurban is int) {
+          qurbanPrice = rawQurban;
+        } else if (rawQurban is String) {
+          qurbanPrice = int.tryParse(rawQurban);
+        } else {
+          qurbanPrice = null;
+        }
+
+        if (args['campaignOptions'] is List<CampaignOption>) {
+          campaignOptions = args['campaignOptions'];
+        } else if (args['campaignOptions'] is List) {
+          campaignOptions = (args['campaignOptions'] as List)
+              .whereType<CampaignOption>()
+              .toList();
+        } else {
+          campaignOptions = null;
+        }
+
+        withOption = args['withOption'] is int ? args['withOption'] : null;
+      } else if (args is int) {
+        campaignId = args;
+        formType = 'general';
+        qurbanPrice = null;
+        campaignOptions = null;
+        withOption = null;
+      } else {
+        campaignId = 0;
+        formType = 'general';
+        qurbanPrice = null;
+        campaignOptions = null;
+        withOption = null;
+      }
+    } catch (_) {
+      campaignId = 0;
+      formType = 'general';
+      qurbanPrice = null;
+      campaignOptions = null;
+      withOption = null;
+    }
   }
 
   void incrementQuantity() {

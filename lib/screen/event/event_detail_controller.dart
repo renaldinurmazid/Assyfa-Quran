@@ -13,9 +13,21 @@ class EventDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final id = Get.arguments;
-    if (id != null) {
-      fetchEventDetail(id);
+    final args = Get.arguments;
+    int? eventId;
+    if (args is int) {
+      eventId = args;
+    } else if (args is String) {
+      eventId = int.tryParse(args);
+    } else if (args is EventModel) {
+      eventId = args.id;
+      event.value = args;
+    } else if (args is Map && args['id'] != null) {
+      eventId = int.tryParse(args['id'].toString());
+    }
+
+    if (eventId != null) {
+      fetchEventDetail(eventId);
     } else {
       isLoading.value = false;
       AppToast.error(message: 'ID Event tidak ditemukan');

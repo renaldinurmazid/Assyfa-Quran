@@ -20,7 +20,10 @@ class InfaqActivityDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int donationId = Get.arguments;
+    final dynamic rawArg = Get.arguments;
+    final int donationId = rawArg is int
+        ? rawArg
+        : (int.tryParse(rawArg?.toString() ?? '') ?? 0);
     final controller = Get.put(
       InfaqActivityDetailController(donationId: donationId),
     );

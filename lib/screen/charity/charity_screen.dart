@@ -22,7 +22,7 @@ class CharityScreen extends StatelessWidget {
       appBar: _buildAppBar(context),
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppColor.primaryColorDark,
+          color: AppColor.primaryColor,
           backgroundColor: context.theme.colorScheme.surface,
           onRefresh: () async {
             await Future.wait([
@@ -80,62 +80,15 @@ class CharityScreen extends StatelessWidget {
       backgroundColor: context.theme.scaffoldBackgroundColor,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      actions: [
-        IconButton(
-          onPressed: () => Get.toNamed(Routes.charitySearch),
-          icon: Icon(
-            IconlyLight.search,
-            color: context.theme.colorScheme.onSurface,
-            size: 22,
-          ),
-          tooltip: 'Cari Program',
-        ),
-        const SizedBox(width: 4),
-      ],
     );
   }
 
   Widget _buildHeaderSection(BuildContext context) {
-    final isDark = context.isDarkMode;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Trust Badge Tag
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColor.primaryColorDark.withOpacity(0.15)
-                  : AppColor.primaryColorDark.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColor.primaryColorDark.withOpacity(0.25),
-                width: 0.8,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.verified_user_rounded,
-                  size: 13,
-                  color: AppColor.primaryColorDark,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '100% Amanah & Transparan',
-                  style: pSemiBold10.copyWith(
-                    color: AppColor.primaryColorDark,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
           Text(
             'Tebar Kebaikan & Infaq',
             style: pBold20.copyWith(
@@ -182,15 +135,8 @@ class CharityScreen extends StatelessWidget {
                   color: context.theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Row(
                   children: [
@@ -356,26 +302,17 @@ class CharityScreen extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColor.primaryColorDark
+              ? AppColor.primaryColor
               : context.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
             color: isSelected
-                ? AppColor.primaryColorDark
+                ? AppColor.primaryColor
                 : isDark
                 ? Colors.grey.shade800
                 : Colors.grey.shade200,
             width: 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColor.primaryColorDark.withOpacity(0.28),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
         ),
         child: Text(
           label,
@@ -407,7 +344,7 @@ class CharityScreen extends StatelessWidget {
                     width: 3.5,
                     height: 16,
                     decoration: BoxDecoration(
-                      color: AppColor.primaryColorDark,
+                      color: AppColor.primaryColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -421,27 +358,6 @@ class CharityScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              Obx(() {
-                if (controller.latestCharityList.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColor.primaryColorDark.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(
-                    'Terbaru',
-                    style: pSemiBold10.copyWith(
-                      color: AppColor.primaryColorDark,
-                    ),
-                  ),
-                );
-              }),
             ],
           ),
         ),
@@ -617,27 +533,27 @@ class CharityScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Progress Bar & Percentage
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Progress',
-                              style: pRegular10.copyWith(
-                                color: isDark
-                                    ? Colors.grey.shade500
-                                    : Colors.grey.shade800,
-                              ),
-                            ),
-                            Text(
-                              '${charity.percentage}%',
-                              style: pBold10.copyWith(
-                                color: AppColor.primaryColorDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
+                        // // Progress Bar & Percentage
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //     Text(
+                        //       'Progress',
+                        //       style: pRegular10.copyWith(
+                        //         color: isDark
+                        //             ? Colors.grey.shade500
+                        //             : Colors.grey.shade800,
+                        //       ),
+                        //     ),
+                        //     Text(
+                        //       '${charity.percentage}%',
+                        //       style: pBold10.copyWith(
+                        //         color: AppColor.primaryColorDark,
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                        // const SizedBox(height: 4),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
@@ -742,7 +658,7 @@ class CharityScreen extends StatelessWidget {
                     width: 3.5,
                     height: 16,
                     decoration: BoxDecoration(
-                      color: AppColor.primaryColorDark,
+                      color: AppColor.primaryColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -889,7 +805,7 @@ class CharityScreen extends StatelessWidget {
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Left Thumbnail
             ClipRRect(
@@ -931,30 +847,6 @@ class CharityScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category & Verified Badge
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          charity.category?.name ?? "Program Kebaikan",
-                          style: pBold10.copyWith(
-                            color: AppColor.primaryColorDark,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified_rounded,
-                        color: Colors.blueAccent,
-                        size: 13,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Title
                   Text(
                     charity.title,
                     style: pSemiBold12.copyWith(
@@ -964,7 +856,7 @@ class CharityScreen extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 14),
 
                   // Progress Bar
                   ClipRRect(
@@ -1069,7 +961,7 @@ class CharityScreen extends StatelessWidget {
             child: const Icon(
               IconlyLight.document,
               size: 36,
-              color: AppColor.primaryColorDark,
+              color: AppColor.primaryColor,
             ),
           ),
           const SizedBox(height: 14),
@@ -1091,7 +983,7 @@ class CharityScreen extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () => controller.filterByCategory(null),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.primaryColorDark,
+              backgroundColor: AppColor.primaryColor,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -1107,184 +999,184 @@ class CharityScreen extends StatelessWidget {
     );
   }
 
-  void _showFilterBottomSheet(
-    BuildContext context,
-    CharityScreenController controller,
-  ) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        decoration: BoxDecoration(
-          color: context.theme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.35),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Filter Kategori',
-                      style: pBold16.copyWith(
-                        color: context.theme.colorScheme.onSurface,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Pilih program kebaikan sesuai minat Anda',
-                      style: pRegular12.copyWith(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () {
-                    controller.filterByCategory(null);
-                    Get.back();
-                  },
-                  child: Text(
-                    'Reset',
-                    style: pBold14.copyWith(color: Colors.red.shade600),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            Obx(() {
-              if (controller.isLoadingCategory.value) {
-                return const Padding(
-                  padding: EdgeInsets.all(24.0),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColor.primaryColorDark,
-                      ),
-                    ),
-                  ),
-                );
-              }
+  // void _showFilterBottomSheet(
+  //   BuildContext context,
+  //   CharityScreenController controller,
+  // ) {
+  //   Get.bottomSheet(
+  //     Container(
+  //       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+  //       decoration: BoxDecoration(
+  //         color: context.theme.scaffoldBackgroundColor,
+  //         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black.withOpacity(0.1),
+  //             blurRadius: 20,
+  //             offset: const Offset(0, -4),
+  //           ),
+  //         ],
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Center(
+  //             child: Container(
+  //               width: 44,
+  //               height: 4,
+  //               margin: const EdgeInsets.only(bottom: 16),
+  //               decoration: BoxDecoration(
+  //                 color: Colors.grey.withOpacity(0.35),
+  //                 borderRadius: BorderRadius.circular(2),
+  //               ),
+  //             ),
+  //           ),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     'Filter Kategori',
+  //                     style: pBold16.copyWith(
+  //                       color: context.theme.colorScheme.onSurface,
+  //                       letterSpacing: -0.2,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 2),
+  //                   Text(
+  //                     'Pilih program kebaikan sesuai minat Anda',
+  //                     style: pRegular12.copyWith(
+  //                       color: context.isDarkMode
+  //                           ? Colors.grey.shade400
+  //                           : Colors.grey.shade600,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //               TextButton(
+  //                 onPressed: () {
+  //                   controller.filterByCategory(null);
+  //                   Get.back();
+  //                 },
+  //                 child: Text(
+  //                   'Reset',
+  //                   style: pBold14.copyWith(color: Colors.red.shade600),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //           const Divider(height: 24),
+  //           Obx(() {
+  //             if (controller.isLoadingCategory.value) {
+  //               return const Padding(
+  //                 padding: EdgeInsets.all(24.0),
+  //                 child: Center(
+  //                   child: CircularProgressIndicator(
+  //                     valueColor: AlwaysStoppedAnimation<Color>(
+  //                       AppColor.primaryColorDark,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               );
+  //             }
 
-              if (controller.campaignCategories.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Center(child: Text("Tidak ada kategori")),
-                );
-              }
+  //             if (controller.campaignCategories.isEmpty) {
+  //               return const Padding(
+  //                 padding: EdgeInsets.all(20.0),
+  //                 child: Center(child: Text("Tidak ada kategori")),
+  //               );
+  //             }
 
-              return Wrap(
-                spacing: 10,
-                runSpacing: 12,
-                children: [
-                  // 'Semua' option
-                  _buildBottomSheetCategoryChip(
-                    context: context,
-                    label: 'Semua Kategori',
-                    isSelected: controller.selectedCategoryId.value == null,
-                    onTap: () {
-                      controller.filterByCategory(null);
-                      Get.back();
-                    },
-                  ),
-                  ...controller.campaignCategories.map((category) {
-                    final isSelected =
-                        controller.selectedCategoryId.value == category.id;
-                    return _buildBottomSheetCategoryChip(
-                      context: context,
-                      label: category.name,
-                      isSelected: isSelected,
-                      onTap: () {
-                        controller.filterByCategory(category.id);
-                        Get.back();
-                      },
-                    );
-                  }),
-                ],
-              );
-            }),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
+  //             return Wrap(
+  //               spacing: 10,
+  //               runSpacing: 12,
+  //               children: [
+  //                 // 'Semua' option
+  //                 _buildBottomSheetCategoryChip(
+  //                   context: context,
+  //                   label: 'Semua Kategori',
+  //                   isSelected: controller.selectedCategoryId.value == null,
+  //                   onTap: () {
+  //                     controller.filterByCategory(null);
+  //                     Get.back();
+  //                   },
+  //                 ),
+  //                 ...controller.campaignCategories.map((category) {
+  //                   final isSelected =
+  //                       controller.selectedCategoryId.value == category.id;
+  //                   return _buildBottomSheetCategoryChip(
+  //                     context: context,
+  //                     label: category.name,
+  //                     isSelected: isSelected,
+  //                     onTap: () {
+  //                       controller.filterByCategory(category.id);
+  //                       Get.back();
+  //                     },
+  //                   );
+  //                 }),
+  //               ],
+  //             );
+  //           }),
+  //           const SizedBox(height: 16),
+  //         ],
+  //       ),
+  //     ),
+  //     isScrollControlled: true,
+  //   );
+  // }
 
-  Widget _buildBottomSheetCategoryChip({
-    required BuildContext context,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final isDark = context.isDarkMode;
+  // Widget _buildBottomSheetCategoryChip({
+  //   required BuildContext context,
+  //   required String label,
+  //   required bool isSelected,
+  //   required VoidCallback onTap,
+  // }) {
+  //   final isDark = context.isDarkMode;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColor.primaryColorDark
-              : isDark
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-            color: isSelected
-                ? AppColor.primaryColorDark
-                : isDark
-                ? Colors.grey.shade800
-                : Colors.grey.shade300,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColor.primaryColorDark.withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: pMedium12.copyWith(
-            color: isSelected
-                ? Colors.white
-                : context.theme.colorScheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
+  //   return InkWell(
+  //     onTap: onTap,
+  //     borderRadius: BorderRadius.circular(100),
+  //     child: AnimatedContainer(
+  //       duration: const Duration(milliseconds: 200),
+  //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  //       decoration: BoxDecoration(
+  //         color: isSelected
+  //             ? AppColor.primaryColorDark
+  //             : isDark
+  //             ? Colors.grey.shade900
+  //             : Colors.grey.shade100,
+  //         borderRadius: BorderRadius.circular(100),
+  //         border: Border.all(
+  //           color: isSelected
+  //               ? AppColor.primaryColorDark
+  //               : isDark
+  //               ? Colors.grey.shade800
+  //               : Colors.grey.shade300,
+  //         ),
+  //         boxShadow: isSelected
+  //             ? [
+  //                 BoxShadow(
+  //                   color: AppColor.primaryColorDark.withOpacity(0.25),
+  //                   blurRadius: 8,
+  //                   offset: const Offset(0, 4),
+  //                 ),
+  //               ]
+  //             : null,
+  //       ),
+  //       child: Text(
+  //         label,
+  //         style: pMedium12.copyWith(
+  //           color: isSelected
+  //               ? Colors.white
+  //               : context.theme.colorScheme.onSurface,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildCategoryShimmer(BuildContext context) {
     final isDark = context.isDarkMode;

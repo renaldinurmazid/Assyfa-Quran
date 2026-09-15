@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:quran_app/models/payment_method_model.dart';
 
 class DonationResponseModel {
@@ -62,14 +63,18 @@ class Donation {
     userId: json["user_id"],
     campaignId: json["campaign_id"],
     paymentMethodeId: json["payment_methode_id"],
-    orderId: json["order_id"],
-    guestName: json["guest_name"],
-    guestPhone: json["guest_phone"],
-    amount: json["amount"],
-    status: json["status"],
-    updatedAt: DateTime.parse(json["updated_at"]),
-    createdAt: DateTime.parse(json["created_at"]),
-    id: json["id"],
+    orderId: json["order_id"]?.toString() ?? '',
+    guestName: json["guest_name"]?.toString(),
+    guestPhone: json["guest_phone"]?.toString(),
+    amount: json["amount"]?.toString() ?? '',
+    status: json["status"]?.toString() ?? '',
+    updatedAt: json["updated_at"] != null
+        ? (DateTime.tryParse(json["updated_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    createdAt: json["created_at"] != null
+        ? (DateTime.tryParse(json["created_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    id: json["id"] ?? 0,
   );
 }
 
@@ -105,13 +110,15 @@ class Payment {
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
-    donationId: json["donation_id"],
-    paymentMethodeId: json["payment_methode_id"],
-    amount: json["amount"],
-    payCode: json["pay_code"] ?? '',
+    donationId: json["donation_id"] ?? 0,
+    paymentMethodeId: json["payment_methode_id"] ?? 0,
+    amount: json["amount"]?.toString() ?? '',
+    payCode: json["pay_code"]?.toString() ?? '',
     qrString: json["qr_string"],
     qrCodeUrl: json["qr_url"] ?? json["qr_code_url"],
-    instructions: json["instructions"] is String ? json["instructions"] : (json["instructions"] != null ? json["instructions"].toString() : '[]'),
+    instructions: json["instructions"] is String
+        ? json["instructions"]
+        : (json["instructions"] != null ? jsonEncode(json["instructions"]) : '[]'),
     status: json["status"],
     expiredAt: DateTime.parse(json["expired_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),

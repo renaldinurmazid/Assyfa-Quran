@@ -4,7 +4,8 @@ class Url {
   // static const String baseUrl = 'http://127.0.0.1:8000';
   //   static const String reverbWsUrl =
   //       'wss://quran.titiktolak.com:8080/app/xgiojz5vzlaexs8rzjpj';
-  static const String reverbWsUrl = 'ws://127.0.0.1:8080/app/xgiojz5vzlaexs8rzjpj';
+  static const String reverbWsUrl =
+      'ws://127.0.0.1:8080/app/xgiojz5vzlaexs8rzjpj';
   static const String quranPage = '/api/quran';
   static const String dropdownSurah = '/api/quran/dropdown-surah';
   static const String dropdownJuz = '/api/quran/dropdown-juz';
@@ -39,6 +40,8 @@ class Url {
   static const String publicGroups = '/api/public-groups';
 
   static const String donations = '/api/donations';
+  static String checkDonationStatus(dynamic identifier) =>
+      '/api/donations/$identifier/status';
   static const String saveFcmToken = '/api/save-fcm-token';
 
   static const String mosqueCharity = '/api/mosque-charities';
@@ -46,6 +49,8 @@ class Url {
   static const String events = '/api/events';
 
   static const String mosqueCharityPayment = '/api/mosque-donations';
+  static String checkMosqueDonationStatus(dynamic identifier) =>
+      '/api/mosque-donations/$identifier/status';
   static const String leaderboard = '/api/reading-history/leaderboard';
   static const String myReferral = '/api/my-referral';
 

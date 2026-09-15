@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:quran_app/models/payment_method_model.dart';
 
 class MosqueDonationResponseModel {
@@ -13,9 +14,9 @@ class MosqueDonationResponseModel {
 
   factory MosqueDonationResponseModel.fromJson(Map<String, dynamic> json) =>
       MosqueDonationResponseModel(
-        status: json["status"],
-        message: json["message"],
-        data: MosqueDonationData.fromJson(json["data"]),
+        status: json["status"]?.toString() ?? '',
+        message: json["message"]?.toString() ?? '',
+        data: MosqueDonationData.fromJson(json["data"] ?? {}),
       );
 }
 
@@ -27,8 +28,8 @@ class MosqueDonationData {
 
   factory MosqueDonationData.fromJson(Map<String, dynamic> json) =>
       MosqueDonationData(
-        donation: MosqueDonation.fromJson(json["donation"]),
-        payment: MosquePayment.fromJson(json["payment"]),
+        donation: MosqueDonation.fromJson(json["donation"] ?? {}),
+        payment: MosquePayment.fromJson(json["payment"] ?? {}),
       );
 }
 
@@ -63,17 +64,21 @@ class MosqueDonation {
 
   factory MosqueDonation.fromJson(Map<String, dynamic> json) => MosqueDonation(
     userId: json["user_id"],
-    mosqueCharityId: json["mosque_charity_id"],
-    paymentMethodeId: json["payment_methode_id"],
-    orderId: json["order_id"],
-    guestName: json["guest_name"],
-    guestPhone: json["guest_phone"],
-    amount: json["amount"],
-    status: json["status"],
-    updatedAt: DateTime.parse(json["updated_at"]),
-    createdAt: DateTime.parse(json["created_at"]),
-    id: json["id"],
-    formattedAmount: json["formatted_amount"],
+    mosqueCharityId: json["mosque_charity_id"] ?? 0,
+    paymentMethodeId: json["payment_methode_id"] ?? 0,
+    orderId: json["order_id"]?.toString() ?? '',
+    guestName: json["guest_name"]?.toString(),
+    guestPhone: json["guest_phone"]?.toString(),
+    amount: json["amount"]?.toString() ?? '',
+    status: json["status"]?.toString() ?? '',
+    updatedAt: json["updated_at"] != null
+        ? (DateTime.tryParse(json["updated_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    createdAt: json["created_at"] != null
+        ? (DateTime.tryParse(json["created_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    id: json["id"] ?? 0,
+    formattedAmount: json["formatted_amount"]?.toString() ?? '',
   );
 }
 
@@ -111,19 +116,30 @@ class MosquePayment {
   });
 
   factory MosquePayment.fromJson(Map<String, dynamic> json) => MosquePayment(
-    mosqueDonationId: json["mosque_donation_id"],
-    paymentMethodeId: json["payment_methode_id"],
-    amount: json["amount"],
-    payCode: json["pay_code"] ?? '',
-    qrString: json["qr_string"],
-    qrCodeUrl: json["qr_url"] ?? json["qr_code_url"],
-    instructions: json["instructions"] is String ? json["instructions"] : (json["instructions"] != null ? json["instructions"].toString() : '[]'),
-    status: json["status"],
-    expiredAt: DateTime.parse(json["expired_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    createdAt: DateTime.parse(json["created_at"]),
-    id: json["id"],
-    formattedAmount: json["formatted_amount"],
+    mosqueDonationId: json["mosque_donation_id"] ?? 0,
+    paymentMethodeId: json["payment_methode_id"] ?? 0,
+    amount: json["amount"]?.toString() ?? '',
+    payCode: json["pay_code"]?.toString() ?? '',
+    qrString: json["qr_string"]?.toString(),
+    qrCodeUrl: json["qr_url"]?.toString() ?? json["qr_code_url"]?.toString(),
+    instructions: json["instructions"] is String
+        ? json["instructions"]
+        : (json["instructions"] != null
+            ? jsonEncode(json["instructions"])
+            : '[]'),
+    status: json["status"]?.toString() ?? '',
+    expiredAt: json["expired_at"] != null
+        ? (DateTime.tryParse(json["expired_at"].toString()) ??
+            DateTime.now().add(const Duration(days: 1)))
+        : DateTime.now().add(const Duration(days: 1)),
+    updatedAt: json["updated_at"] != null
+        ? (DateTime.tryParse(json["updated_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    createdAt: json["created_at"] != null
+        ? (DateTime.tryParse(json["created_at"].toString()) ?? DateTime.now())
+        : DateTime.now(),
+    id: json["id"] ?? 0,
+    formattedAmount: json["formatted_amount"]?.toString() ?? '',
     paymentMethode: json["payment_methode"] == null
         ? null
         : PaymentMethod.fromJson(json["payment_methode"]),
@@ -139,7 +155,9 @@ class Instruction {
   Instruction({required this.title, required this.steps});
 
   factory Instruction.fromJson(Map<String, dynamic> json) => Instruction(
-    title: json["title"],
-    steps: List<String>.from(json["steps"].map((x) => x)),
+    title: json["title"]?.toString() ?? '',
+    steps: json["steps"] != null
+        ? List<String>.from(json["steps"].map((x) => x?.toString() ?? ''))
+        : [],
   );
 }

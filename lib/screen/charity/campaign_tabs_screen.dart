@@ -9,6 +9,14 @@ import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:shimmer/shimmer.dart';
 
+// ─── Color tokens ─────────────────────────────────────────────────────────────
+const _kBgDark = Color(0xFF0F0F10);
+const _kBgLight = Color(0xFFF8FAFC);
+const _kSurfaceDark = Color(0xFF18181B);
+const _kSurfaceLight = Colors.white;
+const _kBorderDark = Color(0xFF27272A);
+const _kBorderLight = Color(0xFFE2E8F0);
+
 class CampaignTabsScreen extends StatefulWidget {
   const CampaignTabsScreen({super.key});
 
@@ -40,37 +48,70 @@ class _CampaignTabsScreenState extends State<CampaignTabsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    final primary = isDark ? AppColor.primaryColorDark : AppColor.primaryColor;
+
     return Scaffold(
-      backgroundColor: context.theme.scaffoldBackgroundColor,
+      backgroundColor: isDark ? _kBgDark : _kBgLight,
       appBar: AppBar(
-        backgroundColor: context.theme.colorScheme.surface,
+        backgroundColor: isDark ? _kSurfaceDark : _kSurfaceLight,
         elevation: 0,
+        scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left,
-            color: context.theme.colorScheme.onSurface,
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.04),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              IconlyLight.arrow_left,
+              size: 18,
+              color: context.theme.colorScheme.onSurface,
+            ),
           ),
           onPressed: () => Get.back(),
         ),
         title: Text(
-          "Detail Penggalangan",
-          style: pSemiBold16.copyWith(color: context.theme.colorScheme.onSurface),
+          'Detail Penggalangan',
+          style: pSemiBold16.copyWith(
+            color: context.theme.colorScheme.onSurface,
+            letterSpacing: -0.3,
+          ),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColor.primaryColorDark,
-          labelColor: AppColor.primaryColorDark,
-          unselectedLabelColor: Colors.grey,
-          labelStyle: pSemiBold14,
-          unselectedLabelStyle: pRegular14,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: "Donasi"),
-            Tab(text: "Kabar Terbaru"),
-            Tab(text: "Fundraiser"),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(44),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? _kBorderDark : _kBorderLight,
+                ),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: primary,
+              labelColor: primary,
+              unselectedLabelColor: isDark
+                  ? Colors.grey.shade600
+                  : Colors.grey.shade400,
+              labelStyle: pSemiBold12,
+              unselectedLabelStyle: pRegular12,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorWeight: 2,
+              dividerColor: Colors.transparent,
+              tabs: const [
+                Tab(text: 'Donasi'),
+                Tab(text: 'Kabar Terbaru'),
+                Tab(text: 'Fundraiser'),
+              ],
+            ),
+          ),
         ),
       ),
       body: TabBarView(
@@ -85,12 +126,17 @@ class _CampaignTabsScreenState extends State<CampaignTabsScreen>
   }
 }
 
+// ─── Donation Tab ─────────────────────────────────────────────────────────────
+
 class _DonationTab extends StatelessWidget {
   final int campaignId;
   const _DonationTab({required this.campaignId});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    final primary = isDark ? AppColor.primaryColorDark : AppColor.primaryColor;
+
     final controller = Get.put(
       CharityDonaturController(),
       tag: 'tab_$campaignId',
@@ -98,43 +144,57 @@ class _DonationTab extends StatelessWidget {
 
     return Obx(() {
       if (controller.isLoading.value) {
-        return _buildShimmerLoading();
+        return _buildShimmerLoading(isDark);
       }
 
       if (controller.donaturList.isEmpty) {
-        return _buildEmptyState("Belum Ada Donasi", IconlyLight.heart);
+        return _buildEmptyState(
+          context,
+          message: 'Belum Ada Donasi',
+          icon: IconlyLight.heart,
+        );
       }
 
       return ListView.separated(
-        padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         itemCount: controller.donaturList.length,
         separatorBuilder: (_, __) => Divider(
           height: 24,
-          thickness: 0.5,
-          color: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+          thickness: 1,
+          color: isDark ? _kBorderDark : _kBorderLight,
         ),
         itemBuilder: (context, index) {
           final donatur = controller.donaturList[index];
           return Row(
             children: [
-              _buildAvatar(donatur),
+              _buildAvatar(donatur, primary, isDark),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(donatur.name, style: pSemiBold14),
-                    const SizedBox(height: 4),
+                    Text(
+                      donatur.name,
+                      style: pSemiBold12.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
                     Text(
                       donatur.time,
-                      style: pRegular10.copyWith(color: Colors.grey),
+                      style: pRegular10.copyWith(
+                        color: isDark
+                            ? Colors.grey.shade500
+                            : Colors.grey.shade500,
+                      ),
                     ),
                   ],
                 ),
               ),
               Text(
                 donatur.amount,
-                style: pBold14.copyWith(color: AppColor.primaryColorDark),
+                style: pBold12.copyWith(color: primary, letterSpacing: -0.2),
               ),
             ],
           );
@@ -143,42 +203,59 @@ class _DonationTab extends StatelessWidget {
     });
   }
 
-  Widget _buildAvatar(DonaturItem donatur) {
+  Widget _buildAvatar(DonaturItem donatur, Color primary, bool isDark) {
     final initials = donatur.name.isNotEmpty
         ? donatur.name[0].toUpperCase()
         : '?';
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: AppColor.primaryColorDark.withOpacity(0.1),
-      child: Text(
-        initials,
-        style: pBold14.copyWith(color: AppColor.primaryColorDark),
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(color: primary.withValues(alpha: 0.2)),
       ),
+      alignment: Alignment.center,
+      child: Text(initials, style: pBold12.copyWith(color: primary)),
     );
   }
 
-  Widget _buildShimmerLoading() {
+  Widget _buildShimmerLoading(bool isDark) {
     return Shimmer.fromColors(
-      baseColor: Get.context!.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-      highlightColor: Get.context!.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+      baseColor: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
+      highlightColor: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         itemCount: 8,
         itemBuilder: (_, __) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.only(bottom: 20),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Get.context!.theme.colorScheme.surface,
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Container(
-                  height: 12,
-                  color: Get.context!.theme.colorScheme.surface,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 12,
+                      width: double.infinity,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 6),
+                    Container(height: 10, width: 80, color: Colors.white),
+                  ],
                 ),
               ),
+              const SizedBox(width: 12),
+              Container(height: 12, width: 60, color: Colors.white),
             ],
           ),
         ),
@@ -187,68 +264,85 @@ class _DonationTab extends StatelessWidget {
   }
 }
 
+// ─── Updates Tab ──────────────────────────────────────────────────────────────
+
 class _UpdatesTab extends StatelessWidget {
   final int campaignId;
   const _UpdatesTab({required this.campaignId});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    final primary = isDark ? AppColor.primaryColorDark : AppColor.primaryColor;
+
     final showController = Get.find<CharityShowController>();
     final updates = showController.campaign.value?.updates ?? [];
 
     if (updates.isEmpty) {
       return _buildEmptyState(
-        "Belum Ada Kabar Terbaru",
-        IconlyLight.info_square,
+        context,
+        message: 'Belum Ada Kabar Terbaru',
+        icon: IconlyLight.info_square,
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: updates.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 24),
+      separatorBuilder: (_, __) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
         final update = updates[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Date header
             Row(
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColor.primaryColorDark,
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: primary,
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Text(
                   update.createdAtFormatted,
-                  style: pBold12.copyWith(color: AppColor.primaryColorDark),
+                  style: pSemiBold10.copyWith(color: primary),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+            // Content card
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: context.theme.colorScheme.surface,
+                color: isDark ? _kSurfaceDark : _kSurfaceLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+                  color: isDark ? _kBorderDark : _kBorderLight,
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(update.title, style: pBold14),
-                  const SizedBox(height: 8),
+                  Text(
+                    update.title,
+                    style: pSemiBold14.copyWith(
+                      color: context.theme.colorScheme.onSurface,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   HtmlWidget(
                     update.content,
                     textStyle: pRegular12.copyWith(
-                      color: context.isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
-                      height: 1.5,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade700,
+                      height: 1.6,
                     ),
                   ),
                 ],
@@ -261,47 +355,86 @@ class _UpdatesTab extends StatelessWidget {
   }
 }
 
+// ─── Fundraiser Tab ───────────────────────────────────────────────────────────
+
 class _FundraiserTab extends StatelessWidget {
   final int campaignId;
   const _FundraiserTab({required this.campaignId});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    final primary = isDark ? AppColor.primaryColorDark : AppColor.primaryColor;
+
     final showController = Get.find<CharityShowController>();
     final fundraisers = showController.campaign.value?.fundraisers ?? [];
 
     if (fundraisers.isEmpty) {
-      return _buildEmptyState("Belum Ada Fundraiser", IconlyLight.star);
+      return _buildEmptyState(
+        context,
+        message: 'Belum Ada Fundraiser',
+        icon: IconlyLight.star,
+      );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: fundraisers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final fundraiser = fundraisers[index];
+        final rank = index + 1;
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: context.theme.colorScheme.surface,
+            color: isDark ? _kSurfaceDark : _kSurfaceLight,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
-            ),
+            border: Border.all(color: isDark ? _kBorderDark : _kBorderLight),
           ),
           child: Row(
             children: [
-              _buildFundraiserAvatar(fundraiser.name),
+              // Rank badge
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: rank <= 3
+                      ? primary.withValues(alpha: 0.12)
+                      : (isDark ? _kBorderDark : _kBorderLight),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$rank',
+                  style: pSemiBold10.copyWith(
+                    color: rank <= 3
+                        ? primary
+                        : (isDark
+                              ? Colors.grey.shade500
+                              : Colors.grey.shade500),
+                  ),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(fundraiser.name, style: pSemiBold14),
-                    const SizedBox(height: 4),
+                    Text(
+                      fundraiser.name,
+                      style: pSemiBold12.copyWith(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
                     Text(
                       '${fundraiser.totalReferral} orang diajak',
-                      style: pRegular10.copyWith(color: Colors.grey),
+                      style: pRegular10.copyWith(
+                        color: isDark
+                            ? Colors.grey.shade500
+                            : Colors.grey.shade500,
+                      ),
                     ),
                   ],
                 ),
@@ -312,12 +445,13 @@ class _FundraiserTab extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColor.primaryColorDark.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  color: primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: primary.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   fundraiser.totalCollected,
-                  style: pBold10.copyWith(color: AppColor.primaryColorDark),
+                  style: pSemiBold10.copyWith(color: primary),
                 ),
               ),
             ],
@@ -326,35 +460,39 @@ class _FundraiserTab extends StatelessWidget {
       },
     );
   }
-
-  Widget _buildFundraiserAvatar(String name) {
-    final initials = name.isNotEmpty ? name[0].toUpperCase() : '?';
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: Colors.orange.shade50,
-      child: Text(
-        initials,
-        style: pBold14.copyWith(color: Colors.orange.shade700),
-      ),
-    );
-  }
 }
 
-Widget _buildEmptyState(String message, IconData icon) {
+// ─── Shared empty state ───────────────────────────────────────────────────────
+
+Widget _buildEmptyState(
+  BuildContext context, {
+  required String message,
+  required IconData icon,
+}) {
+  final isDark = context.isDarkMode;
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          size: 64,
-          color: Get.context!.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF27272A) : const Color(0xFFF8FAFC),
+            shape: BoxShape.circle,
+            border: Border.all(color: isDark ? _kBorderDark : _kBorderLight),
+          ),
+          child: Icon(
+            icon,
+            size: 28,
+            color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
           message,
-          style: pMedium14.copyWith(
-            color: Get.context!.isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400,
+          style: pSemiBold12.copyWith(
+            color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
           ),
         ),
       ],

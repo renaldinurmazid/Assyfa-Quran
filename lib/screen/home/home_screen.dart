@@ -801,7 +801,7 @@ class HomeScreen extends StatelessWidget {
     final controller = Get.find<HomeScreenController>();
     return Obx(() {
       if (controller.isLoadingEvents.value) {
-        return _buildBannerShimmer(); // Using banner shimmer for simplicity
+        return _buildBannerShimmer();
       }
 
       if (controller.events.isEmpty) {
@@ -817,14 +817,12 @@ class HomeScreen extends StatelessWidget {
       }
 
       return SizedBox(
-        height: 260,
+        height: 220,
         child: ListView.separated(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 0,
-          ), // Already has horizontal padding in sliver
+          padding: EdgeInsets.zero,
           scrollDirection: Axis.horizontal,
           itemCount: controller.events.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 16),
+          separatorBuilder: (context, index) => const SizedBox(width: 12),
           itemBuilder: (context, index) {
             final event = controller.events[index];
             return _buildEventCard(context, event);
@@ -835,24 +833,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildEventCard(BuildContext context, EventModel event) {
-    String dateText = '-';
+    String dayText = '-';
+    String monthYear = '';
     if (event.startDate != null) {
-      final startStr = DateFormat(
-        'dd MMM yyyy, HH:mm',
-      ).format(event.startDate!);
-      if (event.endDate == null) {
-        dateText = startStr;
-      } else {
-        if (event.startDate!.year == event.endDate!.year &&
-            event.startDate!.month == event.endDate!.month &&
-            event.startDate!.day == event.endDate!.day) {
-          dateText =
-              '$startStr - ${DateFormat('HH:mm').format(event.endDate!)}';
-        } else {
-          dateText =
-              '$startStr - ${DateFormat('dd MMM yyyy, HH:mm').format(event.endDate!)}';
-        }
-      }
+      dayText = DateFormat('dd').format(event.startDate!);
+      monthYear = DateFormat('MMM yyyy').format(event.startDate!);
     }
 
     return GestureDetector(
@@ -860,99 +845,142 @@ class HomeScreen extends StatelessWidget {
         Get.toNamed(Routes.showEvent, arguments: event.id);
       },
       child: Container(
-        width: 240,
+        width: 200,
         decoration: BoxDecoration(
-          color: context.theme.cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: CachedNetworkImage(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background image
+              CachedNetworkImage(
                 imageUrl: event.thumbnail ?? '',
-                height: 130,
-                width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  height: 130,
-                  color: Colors.grey[200],
-                  child: const Center(child: CircularProgressIndicator()),
+                  color: context.theme.colorScheme.surfaceContainer,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      color: context.theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  height: 130,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                  color: context.theme.colorScheme.surfaceContainer,
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: context.theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.title,
-                    style: pSemiBold14,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+
+              // Gradient overlay
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.35, 1.0],
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black87,
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  if (event.startDate != null) ...[
-                    Row(
-                      children: [
-                        Icon(
-                          IconlyLight.calendar,
-                          size: 14,
-                          color: context.theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            dateText,
-                            style: pMedium12.copyWith(color: Colors.grey[600]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  if (event.location != null) ...[
-                    Row(
-                      children: [
-                        Icon(
-                          IconlyLight.location,
-                          size: 14,
-                          color: context.theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            event.location!,
-                            style: pMedium12.copyWith(color: Colors.grey[600]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-          ],
+
+              // Date badge (top-left)
+              if (event.startDate != null)
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          dayText,
+                          style: pSemiBold14.copyWith(
+                            color: context.theme.colorScheme.primary,
+                            height: 1.1,
+                          ),
+                        ),
+                        Text(
+                          monthYear,
+                          style: pRegular10.copyWith(
+                            color: Colors.grey[600],
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Bottom content
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        event.title,
+                        style: pSemiBold14.copyWith(color: Colors.white),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (event.location != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              IconlyLight.location,
+                              size: 12,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                event.location!,
+                                style: pRegular10.copyWith(
+                                  color: Colors.white70,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
