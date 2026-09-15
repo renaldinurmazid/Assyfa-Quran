@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/quran_view/quran_page_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -148,6 +149,8 @@ class QuranPageScreen extends StatelessWidget {
                   : kToolbarHeight + MediaQuery.of(context).padding.top,
               child: SingleChildScrollView(
                 child: AppBar(
+                  centerTitle: false,
+                  titleSpacing: 0,
                   title: Obx(() {
                     if (controller.dataPage.isEmpty) {
                       return Text('Al-Quran', style: pBold18);
@@ -216,9 +219,28 @@ class QuranPageScreen extends StatelessWidget {
                         Get.dialog(_buildSearchAyah(context, controller));
                       },
                       icon: Icon(
-                        IconlyLight.search,
+                        LucideIcons.search,
                         color: Theme.of(context).primaryColor,
                         size: 22,
+                      ),
+                    ),
+                    Obx(
+                      () => IconButton(
+                        onPressed: () => controller.toggleTranslation(),
+                        style: IconButton.styleFrom(
+                          backgroundColor: controller.isTranslationVisible.value
+                              ? Theme.of(context).primaryColor.withOpacity(0.12)
+                              : Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        tooltip: 'Terjemahan',
+                        icon: Icon(
+                          LucideIcons.bookOpen,
+                          color: Theme.of(context).primaryColor,
+                          size: 22,
+                        ),
                       ),
                     ),
                     PopupMenuButton<String>(
@@ -248,7 +270,7 @@ class QuranPageScreen extends StatelessWidget {
                         }
                       },
                       icon: Icon(
-                        IconlyLight.more_square,
+                        LucideIcons.moreVertical,
                         color: Theme.of(context).primaryColor,
                         size: 22,
                       ),
@@ -844,7 +866,11 @@ class QuranPageScreen extends StatelessWidget {
                     ? const SizedBox.shrink()
                     : AnimatedPositioned(
                         duration: const Duration(milliseconds: 300),
-                        bottom: controller.isFocus.value ? -160 : 20,
+                        bottom:
+                            (controller.isFocus.value ||
+                                controller.isTranslationVisible.value)
+                            ? -160
+                            : 20,
                         right: 20,
                         left: 20,
                         child: Container(
@@ -1392,6 +1418,14 @@ class QuranPageScreen extends StatelessWidget {
                   ),
                 );
               }),
+
+              // Translation Panel
+              Obx(() {
+                if (!controller.isTranslationVisible.value) {
+                  return const SizedBox.shrink();
+                }
+                return _buildTranslationPanel(context, controller);
+              }),
             ],
           ),
         ),
@@ -1448,7 +1482,8 @@ class QuranPageScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonHideUnderline(
@@ -1491,7 +1526,8 @@ class QuranPageScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonHideUnderline(
@@ -1559,7 +1595,8 @@ class QuranPageScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonHideUnderline(
@@ -1602,7 +1639,8 @@ class QuranPageScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonHideUnderline(
@@ -2483,6 +2521,384 @@ class QuranPageScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTranslationPanel(
+    BuildContext context,
+    QuranPageScreenController controller,
+  ) {
+    final isDark = context.isDarkMode;
+    final surfaceColor = isDark
+        ? Theme.of(context).colorScheme.surface
+        : const Color(0xFFFBF9F5);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.42,
+      minChildSize: 0.18,
+      maxChildSize: 0.85,
+      snap: true,
+      snapSizes: const [0.18, 0.42, 0.85],
+      builder: (context, scrollController) {
+        return GestureDetector(
+          onTap: () {}, // Prevent tap propagation to background PageView
+          child: Container(
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.4 : 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, -6),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Drag Handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 8),
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.grey.shade700
+                          : const Color(0xFFD8D0C4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // Controls Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        onTap: () => _showFontSizeSettings(context, controller),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                'T',
+                                style: pBold16.copyWith(
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF2C2C2C),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                'ᴛ',
+                                style: pBold14.copyWith(
+                                  color: isDark
+                                      ? Colors.redAccent.shade100
+                                      : const Color(0xFFD32F2F),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // ✕ Close Button
+                      InkWell(
+                        onTap: () =>
+                            controller.isTranslationVisible.value = false,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: isDark
+                                ? Colors.grey.shade400
+                                : const Color(0xFF555555),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: isDark
+                      ? Colors.grey.shade800
+                      : const Color(0xFFEBE5DB),
+                ),
+
+                // Ayahs Translation List
+                Expanded(
+                  child: Obx(() {
+                    if (controller.dataPage.isEmpty ||
+                        controller.currentPageIndex.value >=
+                            controller.dataPage.length) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                          strokeWidth: 2.5,
+                        ),
+                      );
+                    }
+
+                    final currentPage =
+                        controller.dataPage[controller.currentPageIndex.value];
+                    final ayahs = currentPage.ayahs;
+
+                    if (ayahs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Tidak ada data terjemahan untuk halaman ini.',
+                          style: pRegular14.copyWith(
+                            color: isDark
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      key: ValueKey('trans_page_${currentPage.pageNumber}'),
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      itemCount: ayahs.length,
+                      itemBuilder: (context, index) {
+                        final ayahElement = ayahs[index];
+                        final ayah = ayahElement.ayah;
+                        final ayahNum = ayah?.ayahNumber ?? (index + 1);
+                        final translation = ayah?.translation ?? '';
+                        final isPlaying =
+                            controller.playingAyahId.value != 0 &&
+                            ayah?.id == controller.playingAyahId.value;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 22),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Ayah Number Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isPlaying
+                                      ? Theme.of(
+                                          context,
+                                        ).primaryColor.withOpacity(0.15)
+                                      : (isDark
+                                            ? const Color(0xFF2C2C30)
+                                            : const Color(0xFFF3EFE6)),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: isPlaying
+                                      ? Border.all(
+                                          color: Theme.of(context).primaryColor,
+                                          width: 1,
+                                        )
+                                      : null,
+                                ),
+                                child: Text(
+                                  '$ayahNum',
+                                  style: pBold12.copyWith(
+                                    color: isPlaying
+                                        ? Theme.of(context).primaryColor
+                                        : (isDark
+                                              ? Colors.white70
+                                              : const Color(0xFF4A4035)),
+                                  ),
+                                ),
+                              ),
+
+                              // Optional Arabic / Transliteration Text when toggled
+                              if (controller.showTransliteration.value &&
+                                  ayah?.textArabic != null &&
+                                  ayah!.textArabic!.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    ayah.textArabic!,
+                                    textAlign: TextAlign.right,
+                                    style: pBold18.copyWith(
+                                      height: 1.8,
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E1E1E),
+                                    ),
+                                  ),
+                                ),
+                              ],
+
+                              const SizedBox(height: 8),
+
+                              // Translation Text
+                              Obx(
+                                () => SelectableText(
+                                  translation.trim().isNotEmpty
+                                      ? translation
+                                      : 'Terjemahan tidak tersedia untuk ayat ini.',
+                                  style: pRegular14.copyWith(
+                                    fontSize:
+                                        controller.translationFontSize.value,
+                                    height: 1.65,
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.88)
+                                        : const Color(0xFF2D2D2D),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFontSizeSettings(
+    BuildContext context,
+    QuranPageScreenController controller,
+  ) {
+    final isDark = context.isDarkMode;
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Ukuran Font Terjemahan', style: pSemiBold16),
+                Obx(
+                  () => Text(
+                    '${controller.translationFontSize.value.toInt()} pt',
+                    style: pBold14.copyWith(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Live Preview Box
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).primaryColor.withOpacity(0.15),
+                ),
+              ),
+              child: Obx(
+                () => Text(
+                  'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.',
+                  style: pRegular14.copyWith(
+                    fontSize: controller.translationFontSize.value,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Slider Row with - and + buttons
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    if (controller.translationFontSize.value > 12) {
+                      controller.setTranslationFontSize(
+                        controller.translationFontSize.value - 1,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.remove_circle_outline),
+                  color: Theme.of(context).primaryColor,
+                ),
+                Expanded(
+                  child: Obx(
+                    () => Slider(
+                      value: controller.translationFontSize.value,
+                      min: 12.0,
+                      max: 22.0,
+                      divisions: 10,
+                      label: '${controller.translationFontSize.value.toInt()}',
+                      activeColor: Theme.of(context).primaryColor,
+                      onChanged: (val) {
+                        controller.setTranslationFontSize(val);
+                      },
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    if (controller.translationFontSize.value < 22) {
+                      controller.setTranslationFontSize(
+                        controller.translationFontSize.value + 1,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.add_circle_outline),
+                  color: Theme.of(context).primaryColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

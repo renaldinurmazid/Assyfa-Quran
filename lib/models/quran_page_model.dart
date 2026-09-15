@@ -135,6 +135,8 @@ class AyahAyah {
   int surahId;
   int ayahNumber;
   int juzNumber;
+  String? textArabic;
+  String? translation;
   DateTime? createdAt;
   DateTime? updatedAt;
   Surah? surah;
@@ -145,6 +147,8 @@ class AyahAyah {
     required this.surahId,
     required this.ayahNumber,
     required this.juzNumber,
+    this.textArabic,
+    this.translation,
     this.createdAt,
     this.updatedAt,
     this.surah,
@@ -156,6 +160,8 @@ class AyahAyah {
     surahId: json["surah_id"] ?? 0,
     ayahNumber: json["ayah_number"] ?? 0,
     juzNumber: json["juz_number"] ?? 0,
+    textArabic: json["text_arabic"],
+    translation: json["translation"],
     createdAt: json["created_at"] != null
         ? DateTime.parse(json["created_at"])
         : null,
@@ -173,6 +179,8 @@ class AyahAyah {
     "surah_id": surahId,
     "ayah_number": ayahNumber,
     "juz_number": juzNumber,
+    "text_arabic": textArabic,
+    "translation": translation,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
     "surah": surah?.toJson(),

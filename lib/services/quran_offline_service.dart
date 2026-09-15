@@ -231,6 +231,8 @@ class QuranOfflineService {
               surahId: a['surah_id'] ?? 0,
               ayahNumber: a['ayah_number'] ?? 0,
               juzNumber: a['juz_number'] ?? 0,
+              textArabic: a['text_arabic'] ?? (a['ayah'] != null ? a['ayah']['text_arabic'] : null),
+              translation: a['translation'] ?? (a['ayah'] != null ? a['ayah']['translation'] : null),
               audio: [],
               surah: surahData != null
                   ? Surah(

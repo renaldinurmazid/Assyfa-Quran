@@ -137,11 +137,46 @@ class QuranPageScreenController extends GetxController {
   final selectedMarkerId = Rxn<int>();
 
   /* =======================
+   * TRANSLATION STATE
+   * ======================= */
+  final isTranslationVisible = false.obs;
+  final translationFontSize = 14.0.obs;
+  final showTransliteration = false.obs;
+
+  void toggleTranslation() {
+    isTranslationVisible.value = !isTranslationVisible.value;
+    if (isTranslationVisible.value) {
+      isFocus.value = false;
+    }
+  }
+
+  Future<void> loadTranslationFontSize() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedSize = prefs.getDouble('quran_translation_font_size');
+      if (savedSize != null && savedSize >= 12.0 && savedSize <= 26.0) {
+        translationFontSize.value = savedSize;
+      }
+    } catch (_) {}
+  }
+
+  Future<void> setTranslationFontSize(double size) async {
+    translationFontSize.value = size;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('quran_translation_font_size', size);
+    } catch (_) {}
+  }
+
+  /* =======================
    * LIFECYCLE
    * ======================= */
   @override
   void onInit() async {
     super.onInit();
+
+    // Load saved translation font size
+    loadTranslationFontSize();
 
     // Fetch reciters from the API
     fetchReciters();
