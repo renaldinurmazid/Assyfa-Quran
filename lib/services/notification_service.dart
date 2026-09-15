@@ -129,8 +129,30 @@ class NotificationService {
       androidSoundRawResourceName = 'adzan_general';
     }
 
-    String channelId = 'prayer_channel_$soundName';
+    String channelId = 'prayer_channel_v2_$soundName';
     String channelName = 'Prayer Times ($soundName)';
+
+    // Register notification channel explicitly on Android with audio attributes
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin != null) {
+      await androidPlugin.createNotificationChannel(
+        AndroidNotificationChannel(
+          channelId,
+          channelName,
+          description: 'Notifikasi jadwal waktu sholat dan adzan',
+          importance: Importance.max,
+          playSound: androidSoundRawResourceName != null,
+          sound: androidSoundRawResourceName != null
+              ? RawResourceAndroidNotificationSound(androidSoundRawResourceName)
+              : null,
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+          enableVibration: true,
+        ),
+      );
+    }
 
     AndroidNotificationDetails androidUniqueDetails =
         AndroidNotificationDetails(
@@ -143,6 +165,7 @@ class NotificationService {
           sound: androidSoundRawResourceName != null
               ? RawResourceAndroidNotificationSound(androidSoundRawResourceName)
               : null,
+          audioAttributesUsage: AudioAttributesUsage.alarm,
           // Ensure notification appears even in Do Not Disturb on some devices
           category: AndroidNotificationCategory.alarm,
           fullScreenIntent: true,
@@ -150,10 +173,11 @@ class NotificationService {
 
     NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidUniqueDetails,
-      iOS: const DarwinNotificationDetails(
+      iOS: DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
+        sound: soundName == 'silent' ? null : '$soundName.mp3',
       ),
     );
 
@@ -170,13 +194,12 @@ class NotificationService {
       'NotificationService: Scheduling "$title" at $tzScheduledTime (id=$id, sound=$soundName)',
     );
 
-    // Cek apakah exact alarm permission sudah di-grant oleh user.
-    // Di debug (install via ADB) selalu granted, tapi di production
-    // (install dari Play Store) user harus approve manual dari Settings.
-    // Jika tidak di-cek, zonedSchedule akan throw PlatformException di production.
+    // Menggunakan AndroidScheduleMode.alarmClock jika izin exact alarm aktif.
+    // Mode alarmClock adalah prioritas tertinggi di Android (setara jam weker sistem),
+    // menjamin perangkat terbangun dari mode tidur / Doze mode.
     final bool exactAlarmsGranted = await canScheduleExactAlarms();
     final AndroidScheduleMode scheduleMode = exactAlarmsGranted
-        ? AndroidScheduleMode.exactAllowWhileIdle
+        ? AndroidScheduleMode.alarmClock
         : AndroidScheduleMode.inexact;
 
     if (!exactAlarmsGranted) {

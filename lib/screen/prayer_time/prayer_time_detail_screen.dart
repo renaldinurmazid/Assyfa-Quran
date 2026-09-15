@@ -104,38 +104,40 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(100),
                                     border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
                                     ),
                                   ),
                                   child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      IconlyBold.location,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Obx(
-                                      () => Text(
-                                        controller.kabKota.value,
-                                        style: pSemiBold12.copyWith(
-                                          color: Colors.white,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        IconlyBold.location,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Obx(
+                                        () => Text(
+                                          controller.kabKota.value,
+                                          style: pSemiBold12.copyWith(
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    const Icon(
-                                      IconlyLight.swap,
-                                      color: Colors.white,
-                                      size: 12,
-                                    ),
-                                  ],
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        IconlyLight.swap,
+                                        color: Colors.white,
+                                        size: 12,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
                         ),
                         const SizedBox(height: 40),
                         // Next Prayer Info
@@ -228,15 +230,15 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: context.theme.colorScheme.primary.withValues(alpha: 
-                          0.1,
+                        color: context.theme.colorScheme.primary.withValues(
+                          alpha: 0.1,
                         ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         IconlyLight.calendar,
                         color: context.theme.colorScheme.primary,
-                        size: 22,
+                        size: 20,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -247,7 +249,7 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                           Obx(
                             () => Text(
                               controller.calendarToday.value,
-                              style: pSemiBold16.copyWith(
+                              style: pSemiBold14.copyWith(
                                 color: context.theme.colorScheme.primary,
                               ),
                             ),
@@ -270,6 +272,100 @@ class PrayerTimeDetailScreen extends StatelessWidget {
               ),
             ),
 
+            // Battery & Alarm Optimization Banner (if restricted on Android)
+            Obx(() {
+              final needsBattery = controller.isBatteryOptimized.value;
+              final needsAlarm = !controller.isExactAlarmGranted.value;
+
+              if (!needsBattery && !needsAlarm) {
+                return const SizedBox.shrink();
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Optimasi Notifikasi Adzan',
+                            style: pSemiBold14.copyWith(
+                              color: context.isDarkMode
+                                  ? Colors.amber.shade200
+                                  : Colors.amber.shade900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Agar suara adzan selalu bunyi tepat waktu meski aplikasi ditutup, matikan penghemat baterai dan izinkan alarm tepat.',
+                        style: pRegular12.copyWith(
+                          color: context.theme.colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (needsBattery)
+                            ElevatedButton.icon(
+                              onPressed: () => controller
+                                  .requestDisableBatteryOptimization(),
+                              icon: const Icon(Icons.battery_saver, size: 16),
+                              label: const Text('Matikan Hemat Baterai'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    context.theme.colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                textStyle: pMedium12,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          if (needsAlarm)
+                            OutlinedButton.icon(
+                              onPressed: () =>
+                                  controller.checkAndRequestExactAlarm(),
+                              icon: const Icon(Icons.alarm, size: 16),
+                              label: const Text('Izinkan Alarm Tepat'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor:
+                                    context.theme.colorScheme.primary,
+                                textStyle: pMedium12,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
             const SizedBox(height: 24),
 
             // Prayer Times Title
@@ -286,172 +382,213 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text('Jadwal Waktu Sholat', style: pSemiBold16),
+                  Text('Jadwal Waktu Sholat', style: pSemiBold14),
                 ],
               ),
             ),
 
             const SizedBox(height: 16),
 
-            // Prayer Times List
+            // Prayer Times List Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Obx(() {
-                final jadwal = controller.jadwalToday;
-                final prayerTimes = [
-                  {
-                    'name': 'Imsak',
-                    'icon': IconlyLight.time_circle,
-                    'time': jadwal['imsak'] ?? '-',
-                  },
-                  {
-                    'name': 'Subuh',
-                    'icon': Icons.wb_twilight_rounded,
-                    'time': jadwal['fajr'] ?? '-',
-                  },
-                  {
-                    'name': 'Terbit',
-                    'icon': Icons.wb_sunny_outlined,
-                    'time': jadwal['sunrise'] ?? '-',
-                  },
-                  {
-                    'name': 'Dhuhur',
-                    'icon': Icons.wb_sunny_rounded,
-                    'time': jadwal['dhuhr'] ?? '-',
-                  },
-                  {
-                    'name': 'Asar',
-                    'icon': Icons.wb_cloudy_rounded,
-                    'time': jadwal['asr'] ?? '-',
-                  },
-                  {
-                    'name': 'Maghrib',
-                    'icon': Icons.wb_twilight_outlined,
-                    'time': jadwal['maghrib'] ?? '-',
-                  },
-                  {
-                    'name': 'Isya',
-                    'icon': IconlyLight.discovery,
-                    'time': jadwal['isha'] ?? '-',
-                  },
-                ];
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: context.isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade200,
+                  ),
+                ),
+                child: Obx(() {
+                  final jadwal = controller.jadwalToday;
+                  final prayerTimes = [
+                    {
+                      'name': 'Imsak',
+                      'icon': IconlyLight.time_circle,
+                      'time': jadwal['imsak'] ?? '-',
+                    },
+                    {
+                      'name': 'Subuh',
+                      'icon': Icons.wb_twilight_rounded,
+                      'time': jadwal['fajr'] ?? '-',
+                    },
+                    {
+                      'name': 'Terbit',
+                      'icon': Icons.wb_sunny_outlined,
+                      'time': jadwal['sunrise'] ?? '-',
+                    },
+                    {
+                      'name': 'Dhuhur',
+                      'icon': Icons.alarm_rounded,
+                      'time': jadwal['dhuhr'] ?? '-',
+                    },
+                    {
+                      'name': 'Asar',
+                      'icon': Icons.cloud_outlined,
+                      'time': jadwal['asr'] ?? '-',
+                    },
+                    {
+                      'name': 'Maghrib',
+                      'icon': Icons.nightlight_round,
+                      'time': jadwal['maghrib'] ?? '-',
+                    },
+                    {
+                      'name': 'Isya',
+                      'icon': IconlyLight.discovery,
+                      'time': jadwal['isha'] ?? '-',
+                    },
+                  ];
 
-                return ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: prayerTimes.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final prayerTime = prayerTimes[index];
-                    final isNext =
-                        controller.nextPrayerName.value.toLowerCase() ==
-                        (prayerTime['name'] as String).toLowerCase();
+                  return Column(
+                    children: List.generate(prayerTimes.length, (index) {
+                      final prayerTime = prayerTimes[index];
+                      final prayerName = prayerTime['name'] as String;
+                      final isLast = index == prayerTimes.length - 1;
 
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isNext
-                            ? context.theme.colorScheme.primary.withValues(alpha: 
-                                0.05,
-                              )
-                            : context.theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: isNext
-                              ? context.theme.colorScheme.primary.withValues(alpha: 
-                                  0.3,
-                                )
-                              : context.isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade100,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
+                      final defaultValue =
+                          controller.isImsakOrTerbit(prayerName)
+                          ? 'silent'
+                          : 'adzan';
+                      final currentSetting =
+                          controller.notificationSettings[prayerName] ??
+                          defaultValue;
+                      final isEnabled = currentSetting != 'silent';
+
+                      return Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isNext
-                                  ? context.theme.colorScheme.primary
-                                  : context.theme.colorScheme.primary
-                                        .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                          InkWell(
+                            onTap: () {
+                              Get.dialog(
+                                _selectNotification(context, prayerName),
+                              );
+                            },
+                            borderRadius: BorderRadius.vertical(
+                              top: index == 0
+                                  ? const Radius.circular(24)
+                                  : Radius.zero,
+                              bottom: isLast
+                                  ? const Radius.circular(24)
+                                  : Radius.zero,
                             ),
-                            child: Icon(
-                              prayerTime['icon'] as IconData,
-                              color: isNext
-                                  ? Colors.white
-                                  : context.theme.colorScheme.primary,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            prayerTime['name'] as String,
-                            style: pSemiBold14.copyWith(
-                              color: isNext
-                                  ? context.theme.colorScheme.primary
-                                  : context.theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            prayerTime['time'] as String,
-                            style: pSemiBold14.copyWith(
-                              color: isNext
-                                  ? context.theme.colorScheme.primary
-                                  : context.theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Obx(() {
-                            final prayerName = prayerTime['name'] as String;
-                            final defaultValue =
-                                controller.isImsakOrTerbit(prayerName)
-                                ? 'silent'
-                                : 'adzan';
-                            final setting =
-                                controller.notificationSettings[prayerName] ??
-                                defaultValue;
-
-                            IconData iconData;
-                            if (setting == 'silent') {
-                              iconData = IconlyBold.volume_off;
-                            } else if (setting == 'beep') {
-                              iconData = IconlyBold.volume_up;
-                            } else {
-                              iconData = IconlyBold.voice;
-                            }
-
-                            return IconButton(
-                              onPressed: () {
-                                Get.dialog(
-                                  _selectNotification(context, prayerName),
-                                );
-                              },
-                              icon: Icon(
-                                iconData,
-                                color: context.theme.colorScheme.primary,
-                                size: 20,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 14,
                               ),
-                              constraints: const BoxConstraints(
-                                minWidth: 44,
-                                minHeight: 44,
+                              child: Row(
+                                children: [
+                                  // Squircle Icon
+                                  Container(
+                                    height: 44,
+                                    width: 44,
+                                    decoration: BoxDecoration(
+                                      color: isEnabled
+                                          ? context.theme.colorScheme.primary
+                                                .withValues(alpha: 0.1)
+                                          : (context.isDarkMode
+                                                ? Colors.grey.shade800
+                                                : const Color(0xFFF3F4F6)),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      prayerTime['icon'] as IconData,
+                                      color: isEnabled
+                                          ? context.theme.colorScheme.primary
+                                          : (context.isDarkMode
+                                                ? Colors.grey.shade500
+                                                : Colors.grey.shade400),
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  // Prayer Name and Time
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          prayerName,
+                                          style: pSemiBold14.copyWith(
+                                            color: context
+                                                .theme
+                                                .colorScheme
+                                                .onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          prayerTime['time'] as String,
+                                          style: pMedium12.copyWith(
+                                            color: context
+                                                .theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Toggle Switch
+                                  Transform.scale(
+                                    scale: 0.88,
+                                    child: Switch(
+                                      value: isEnabled,
+                                      activeColor: Colors.white,
+                                      activeTrackColor:
+                                          context.theme.colorScheme.primary,
+                                      inactiveThumbColor: Colors.white,
+                                      inactiveTrackColor: context.isDarkMode
+                                          ? Colors.grey.shade700
+                                          : const Color(0xFFE5E7EB),
+                                      trackOutlineColor:
+                                          WidgetStateProperty.all(
+                                            Colors.transparent,
+                                          ),
+                                      onChanged: (val) {
+                                        if (val) {
+                                          controller.saveNotificationSetting(
+                                            prayerName,
+                                            controller.isImsakOrTerbit(
+                                                  prayerName,
+                                                )
+                                                ? 'beep'
+                                                : 'adzan',
+                                          );
+                                        } else {
+                                          controller.saveNotificationSetting(
+                                            prayerName,
+                                            'silent',
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
-                              padding: EdgeInsets.zero,
-                              tooltip: 'Atur Notifikasi',
-                            );
-                          }),
+                            ),
+                          ),
+                          if (!isLast)
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 76,
+                              endIndent: 18,
+                              color: context.isDarkMode
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade100,
+                            ),
                         ],
-                      ),
-                    );
-                  },
-                );
-              }),
+                      );
+                    }),
+                  );
+                }),
+              ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -481,7 +618,9 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: context.theme.colorScheme.primary.withValues(alpha: 0.1),
+                      color: context.theme.colorScheme.primary.withValues(
+                        alpha: 0.1,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -609,37 +748,37 @@ class PrayerTimeDetailScreen extends StatelessWidget {
             ),
           ),
           child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected
-                  ? context.theme.colorScheme.primary
-                  : context.theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                style: isSelected
-                    ? pSemiBold14.copyWith(
-                        color: context.theme.colorScheme.primary,
-                      )
-                    : pMedium14.copyWith(
-                        color: context.theme.colorScheme.onSurface,
-                      ),
-              ),
-            ),
-            if (isSelected)
+            children: [
               Icon(
-                Icons.check_circle_rounded,
-                color: context.theme.colorScheme.primary,
+                icon,
                 size: 18,
+                color: isSelected
+                    ? context.theme.colorScheme.primary
+                    : context.theme.colorScheme.onSurfaceVariant,
               ),
-          ],
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: isSelected
+                      ? pSemiBold14.copyWith(
+                          color: context.theme.colorScheme.primary,
+                        )
+                      : pMedium14.copyWith(
+                          color: context.theme.colorScheme.onSurface,
+                        ),
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: context.theme.colorScheme.primary,
+                  size: 18,
+                ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

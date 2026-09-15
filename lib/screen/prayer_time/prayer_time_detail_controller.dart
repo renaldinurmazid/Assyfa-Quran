@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app/services/notification_service.dart';
@@ -29,6 +31,33 @@ class PrayerTimeDetailController extends GetxController {
     loadNotificationSettings();
     _startTimer();
     _checkExactAlarmPermission();
+    _checkBatteryOptimization();
+  }
+
+  final isBatteryOptimized = false.obs;
+
+  Future<void> _checkBatteryOptimization() async {
+    if (Platform.isAndroid) {
+      try {
+        final isOptimized =
+            await DisableBatteryOptimization.isBatteryOptimizationDisabled;
+        isBatteryOptimized.value = !(isOptimized ?? false);
+      } catch (e) {
+        print('BatteryOptimization check error: $e');
+      }
+    }
+  }
+
+  Future<void> requestDisableBatteryOptimization() async {
+    if (Platform.isAndroid) {
+      try {
+        await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+        await Future.delayed(const Duration(seconds: 1));
+        await _checkBatteryOptimization();
+      } catch (e) {
+        print('BatteryOptimization request error: $e');
+      }
+    }
   }
 
   Future<void> _checkExactAlarmPermission() async {
