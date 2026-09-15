@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_app/models/quran_list_detail_model.dart';
 import 'package:flutter/services.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -113,9 +114,21 @@ class QuranListDetailScreenController extends GetxController {
   }) async {
     if (data.value == null) return;
 
+    final reciterName = reciters.firstWhereOrNull(
+          (r) => r['code'] == selectedReciter.value,
+        )?['name'] ?? 'Qari';
+
     final playlist = ConcatenatingAudioSource(
       children: data.value!.ayat.map((ayat) {
-        return AudioSource.uri(Uri.parse(ayat.audio[selectedReciter.value]!));
+        return AudioSource.uri(
+          Uri.parse(ayat.audio[selectedReciter.value]!),
+          tag: MediaItem(
+            id: '${data.value!.nomor}_${ayat.nomorAyat}_${selectedReciter.value}',
+            album: 'QS. ${data.value!.namaLatin}',
+            title: 'QS. ${data.value!.namaLatin} : Ayat ${ayat.nomorAyat}',
+            artist: reciterName,
+          ),
+        );
       }).toList(),
     );
 

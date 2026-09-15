@@ -39,29 +39,29 @@ class TextInput extends StatelessWidget {
       decoration: InputDecoration(
         suffixIcon: suffixIcon,
         hintText: hintText,
-        hintStyle: pRegular12,
+        hintStyle: pRegular12.copyWith(color: Colors.grey.shade500),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
             color: context.isDarkMode
                 ? Colors.grey.shade800
-                : Colors.grey.shade200,
+                : Colors.grey.shade300,
           ),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
             color: context.isDarkMode
                 ? Colors.grey.shade800
-                : Colors.grey.shade200,
+                : Colors.grey.shade300,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
             color: context.isDarkMode
                 ? Colors.grey.shade800
-                : Colors.grey.shade200,
+                : Colors.grey.shade300,
           ),
         ),
       ),

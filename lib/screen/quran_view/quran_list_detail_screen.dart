@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:quran_app/screen/quran_view/quran_list_detail_screen_controller.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app/models/quran_list_detail_model.dart';
@@ -11,46 +12,53 @@ class QuranListDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(QuranListDetailScreenController());
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: primaryColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
+        centerTitle: false,
         title: Obx(
           () => Text(
-            controller.data.value?.namaLatin ?? 'Memuat...',
-            style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
+            controller.data.value?.namaLatin ?? '',
+            style: pSemiBold18.copyWith(color: Colors.white),
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {
-        //       // Share or bookmark logic could go here
-        //     },
-        //     icon: const Icon(Icons.share_outlined),
-        //   ),
-        // ],
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Obx(() {
+                final data = controller.data.value;
+                if (data == null) return const SizedBox();
+                return Text(
+                  '${data.jumlahAyat} Aya, ${data.tempatTurun}',
+                  style: pMedium14.copyWith(color: Colors.white),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
       body: Obx(
         () => controller.isLoading.value
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).primaryColor,
-                ),
-              )
+            ? Center(child: CircularProgressIndicator(color: primaryColor))
             : Stack(
                 children: [
                   ScrollablePositionedList.builder(
                     itemScrollController: controller.itemScrollController,
                     itemPositionsListener: controller.itemPositionsListener,
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
                     itemCount: (controller.data.value?.ayat.length ?? 0) + 1,
                     itemBuilder: (context, index) {
                       if (index == 0) {
-                        return _buildHeader(controller.data.value!);
+                        return _buildBismillahHeader(controller.data.value!);
                       }
 
                       final ayahIndex = index - 1;
@@ -59,113 +67,89 @@ class QuranListDetailScreen extends StatelessWidget {
                         final isCurrent =
                             controller.currentAyahIndex.value == ayahIndex &&
                             controller.isPlaying.value;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
+
+                        return Container(
                           decoration: BoxDecoration(
                             color: isCurrent
-                                ? Theme.of(
-                                    context,
-                                  ).primaryColor.withOpacity(0.08)
-                                : Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: isCurrent
-                                    ? Theme.of(
-                                        context,
-                                      ).primaryColor.withOpacity(0.1)
-                                    : Colors.black.withOpacity(
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? 0.2
-                                            : 0.02,
-                                      ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                ? primaryColor.withOpacity(0.08)
+                                : Colors.transparent,
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).dividerColor.withOpacity(0.12),
+                                width: 1,
                               ),
-                            ],
-                            border: Border.all(
-                              color: isCurrent
-                                  ? Theme.of(
-                                      context,
-                                    ).primaryColor.withOpacity(0.2)
-                                  : Theme.of(
-                                      context,
-                                    ).primaryColor.withOpacity(0.05),
                             ),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // Arabic Text + Ayah Number in Frame
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Container(
-                                    height: 36,
-                                    width: 36,
-                                    decoration: BoxDecoration(
-                                      color: isCurrent
-                                          ? Theme.of(context).primaryColor
-                                          : Theme.of(
-                                              context,
-                                            ).primaryColor.withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      ayat?.nomorAyat.toString() ?? '',
-                                      style: pBold12.copyWith(
-                                        color: isCurrent
-                                            ? Colors.white
-                                            : Theme.of(context).primaryColor,
-                                      ),
+                                  // Frame with ayah number
+                                  SizedBox(
+                                    height: 32,
+                                    width: 32,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/png/frame.png',
+                                          height: 32,
+                                          width: 32,
+                                          fit: BoxFit.contain,
+                                        ),
+                                        Text(
+                                          ayat?.nomorAyat.toString() ?? '',
+                                          style: pBold10.copyWith(
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const Spacer(),
-                                  IconButton(
-                                    onPressed: () {
-                                      // Individual ayah audio or bookmark
-                                    },
-                                    icon: Icon(
-                                      Icons.more_vert,
-                                      color: Theme.of(
-                                        context,
-                                      ).hintColor.withOpacity(0.4),
-                                      size: 20,
+                                  const SizedBox(width: 10),
+                                  // Arabic text
+                                  Expanded(
+                                    child: Text(
+                                      ayat?.teksArab ?? '',
+                                      style: GoogleFonts.amiri(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        height: 2.0,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                      textDirection: TextDirection.rtl,
                                     ),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                ayat?.teksArab ?? '',
-                                style: pBold24.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                  height: 1.8,
-                                ),
-                                textAlign: TextAlign.end,
-                              ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
+                              // Latin / Transliteration
                               Text(
                                 ayat?.teksLatin ?? '',
                                 style: pMedium14.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontStyle: FontStyle.italic,
+                                  color: primaryColor,
+                                  height: 1.4,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
+                              // Indonesian Translation with Number prefix
                               Text(
-                                ayat?.teksIndonesia ?? '',
+                                '${ayat?.nomorAyat}. ${ayat?.teksIndonesia ?? ''}',
                                 style: pRegular14.copyWith(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.onSurface.withOpacity(0.8),
+                                  ).colorScheme.onSurface.withOpacity(0.85),
+                                  height: 1.5,
                                 ),
                               ),
                             ],
@@ -181,79 +165,31 @@ class QuranListDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(Data data) {
+  Widget _buildBismillahHeader(Data data) {
+    // Surah At-Taubah (nomor 9) tidak diawali bismillah
+    if (data.nomor == 9) return const SizedBox(height: 8);
+
     return Builder(
       builder: (context) {
         return Container(
-          margin: const EdgeInsets.only(top: 16, bottom: 24),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
-              ],
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor.withOpacity(0.12),
+                width: 1,
+              ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
           ),
-          child: Column(
-            children: [
-              Text(
-                data.namaLatin,
-                style: pSemiBold20.copyWith(color: Colors.white),
+          child: Center(
+            child: Text(
+              'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+              style: GoogleFonts.amiri(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              Text(
-                data.arti,
-                style: pMedium14.copyWith(color: Colors.white.withOpacity(0.8)),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Divider(color: Colors.white24, thickness: 1),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    data.tempatTurun.toUpperCase(),
-                    style: pMedium12.copyWith(
-                      color: Colors.white,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    height: 4,
-                    width: 4,
-                    decoration: const BoxDecoration(
-                      color: Colors.white54,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${data.jumlahAyat} AYAT',
-                    style: pMedium12.copyWith(
-                      color: Colors.white,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-                style: pBold24.copyWith(color: Colors.white, fontSize: 28),
-              ),
-            ],
+            ),
           ),
         );
       },
