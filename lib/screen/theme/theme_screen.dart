@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/theme/theme_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
@@ -34,25 +35,12 @@ class ThemeScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        backgroundColor: isDark ? _kSurfaceDark : _kSurfaceLight,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.04),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              IconlyLight.arrow_left,
-              size: 18,
-              color: context.theme.colorScheme.onSurface,
-            ),
+          icon: Icon(
+            LucideIcons.arrowLeft,
+            size: 18,
+            color: context.theme.colorScheme.onSurface,
           ),
         ),
       ),
@@ -140,25 +128,17 @@ class ThemeScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     Row(
                       children: [
-                        Container(
-                          width: 3,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: primary,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
                         Text(
                           'Background Pilihan',
                           style: pSemiBold14.copyWith(
                             color: context.theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.w800,
                             letterSpacing: -0.2,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Expanded(
                       child: Obx(() {
                         if (controller.isLoadingBackgrounds.value &&

@@ -5,6 +5,7 @@ import 'package:iconly/iconly.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/dzikir&doa/list_doa_screen.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_screen_controller.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/circular_progress_painter.dart';
 import 'package:quran_app/widgets/text_input.dart';
@@ -20,20 +21,31 @@ class DzikirScreen extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Panduan Dzikir', style: pSemiBold16),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
+        centerTitle: true,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        physics: const BouncingScrollPhysics(),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Pilihan Dzikir & Doa',
+              style: pBold18.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 16),
             _buildMenuVarianDzikir(context),
-            const Spacer(),
+            const SizedBox(height: 32),
             _buildTasbih(context, controller),
-            const Spacer(),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -53,114 +65,7 @@ class DzikirScreen extends StatelessWidget {
         'data': 'assets/data/dzikir-panjang.json',
       },
     ];
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              height: 4,
-              width: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(context).dividerColor,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Get.find<DzikirScreenController>().recordDzikirView(
-                    data[index]['slug'] as String,
-                    data[index]['title'] as String,
-                  );
-                  Get.toNamed(
-                    Routes.dzikirShow,
-                    arguments: {
-                      'title': data[index]['title'],
-                      'data': data[index]['data'],
-                    },
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade400,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: const Icon(
-                          IconlyBold.bookmark,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          data[index]['title'] as String,
-                          style: pMedium14.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(IconlyBold.show, size: 18),
-                          const SizedBox(width: 4),
-                          Obx(() {
-                            final stats = Get.find<DzikirScreenController>()
-                                .dzikirStats;
-                            final slug = data[index]['slug'] as String;
-                            return Text(
-                              '${stats[slug] ?? 0}',
-                              style: pMedium10,
-                            );
-                          }),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 12);
-            },
-            itemCount: data.length,
-          ),
-        ],
-      ),
-    );
+    return _buildBottomSheetLayout(context, 'Dzikir Shalat', data);
   }
 
   Widget _bottomSheetAlmasurat(BuildContext context) {
@@ -186,112 +91,137 @@ class DzikirScreen extends StatelessWidget {
         'data': 'assets/data/kubro-petang.json',
       },
     ];
+    return _buildBottomSheetLayout(context, 'Al-Matsurat', data);
+  }
+
+  Widget _buildBottomSheetLayout(
+    BuildContext context,
+    String title,
+    List<Map<String, String>> data,
+  ) {
     return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              height: 4,
-              width: 40,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 5,
+              width: 50,
               decoration: BoxDecoration(
-                color: Theme.of(context).dividerColor,
+                color: Theme.of(context).dividerColor.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Get.find<DzikirScreenController>().recordDzikirView(
-                    data[index]['slug'] as String,
-                    data[index]['title'] as String,
-                  );
-                  Get.toNamed(
-                    Routes.dzikirShow,
-                    arguments: {
-                      'title': data[index]['title'],
-                      'data': data[index]['data'],
-                    },
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: context.isDarkMode
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade400,
-                      ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: pBold18.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    Get.find<DzikirScreenController>().recordDzikirView(
+                      data[index]['slug']!,
+                      data[index]['title']!,
+                    );
+                    Get.toNamed(
+                      Routes.dzikirShow,
+                      arguments: {
+                        'title': data[index]['title'],
+                        'data': data[index]['data'],
+                      },
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColor.globalBorder),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: const Icon(
-                          IconlyBold.bookmark,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          data[index]['title'] as String,
-                          style: pMedium14.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            IconlyBold.document,
+                            color: Theme.of(context).primaryColor,
+                            size: 20,
                           ),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(IconlyBold.show, size: 18),
-                          const SizedBox(width: 4),
-                          Obx(() {
-                            final stats = Get.find<DzikirScreenController>()
-                                .dzikirStats;
-                            final slug = data[index]['slug'] as String;
-                            return Text(
-                              '${stats[slug] ?? 0}',
-                              style: pMedium10,
-                            );
-                          }),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            data[index]['title']!,
+                            style: pSemiBold14.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                IconlyBold.show,
+                                size: 14,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Obx(() {
+                                final stats = Get.find<DzikirScreenController>()
+                                    .dzikirStats;
+                                final slug = data[index]['slug']!;
+                                return Text(
+                                  '${stats[slug] ?? 0}',
+                                  style: pBold12.copyWith(
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 12);
-            },
-            itemCount: data.length,
-          ),
-        ],
+                );
+              },
+              separatorBuilder: (context, index) {
+                return const SizedBox(height: 12);
+              },
+              itemCount: data.length,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -301,177 +231,254 @@ class DzikirScreen extends StatelessWidget {
       {
         'assets': 'assets/images/svg/ic-doa.svg',
         'title': 'Dzikir Shalat',
+        'subtitle': 'Panduan dzikir setelah shalat',
         'isBottomSheet': true,
         'bottomSheet': _bottomSheetDzikir(context),
       },
       {
         'assets': 'assets/images/svg/ic-alma.svg',
         'title': 'Al-Matsurat',
+        'subtitle': 'Pagi & Petang',
         'isBottomSheet': true,
         'bottomSheet': _bottomSheetAlmasurat(context),
       },
       {
         'assets': 'assets/images/svg/ic-prayer.svg',
-        'title': 'Doa',
+        'title': 'Doa Harian',
+        'subtitle': 'Kumpulan doa',
         'isBottomSheet': false,
         'bottomSheet': ListDoaScreen(),
       },
     ];
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 2,
-      ),
-      itemCount: menu.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            if (menu[index]['isBottomSheet'] as bool) {
-              Get.bottomSheet(menu[index]['bottomSheet'] as Widget);
-            } else {
-              Get.toNamed(Routes.listDoa);
-            }
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(
-                  height: 20,
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    border: Border.all(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      menu[index]['title'] as String,
-                      style: pSemiBold14.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: -28,
-                  bottom: -28,
-                  child: SvgPicture.asset(
-                    menu[index]['assets'] as String,
-                    height: 110,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+
+    return Column(
+      children: [
+        _buildMenuCard(context, menu[0], isFullWidth: true),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _buildMenuCard(context, menu[1])),
+            const SizedBox(width: 12),
+            Expanded(child: _buildMenuCard(context, menu[2])),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildTasbih(BuildContext context, DzikirScreenController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'TASBIH DIGITAL',
-          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
+  Widget _buildMenuCard(
+    BuildContext context,
+    Map<String, dynamic> item, {
+    bool isFullWidth = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        if (item['isBottomSheet'] as bool) {
+          Get.bottomSheet(
+            item['bottomSheet'] as Widget,
+            isScrollControlled: true,
+          );
+        } else {
+          Get.toNamed(Routes.listDoa);
+        }
+      },
+      child: Container(
+        height: isFullWidth ? 130 : 160,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
           children: [
-            IconButton.filled(
-              onPressed: () {
-                controller.dzikirCount.value = 0;
-              },
-              icon: const Icon(Icons.replay_rounded, size: 24),
-              style: IconButton.styleFrom(
-                fixedSize: const Size(40, 40),
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
+            Positioned(
+              right: isFullWidth ? -20 : -30,
+              bottom: isFullWidth ? -20 : -30,
+              child: Opacity(
+                opacity: 0.4,
+                child: SvgPicture.asset(
+                  item['assets'] as String,
+                  height: isFullWidth ? 140 : 120,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            Obx(() {
-              final progress = controller.maxDzikirCount.value > 0
-                  ? controller.dzikirCount.value /
-                        controller.maxDzikirCount.value
-                  : 0.0;
-              return SizedBox(
-                height: 160,
-                width: 160,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CustomPaint(
-                      size: const Size(160, 160),
-                      painter: CircularProgressPainter(
-                        progress: progress,
-                        progressColor: Theme.of(context).primaryColor,
-                        backgroundColor: Theme.of(context).dividerColor,
-                        strokeWidth: 3.0,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 136,
-                      width: 136,
-                      child: TextButton(
-                        onPressed: () {
-                          controller.increment();
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                          alignment: Alignment.center,
-                          shape: const CircleBorder(),
-                        ),
-                        child: Text(
-                          controller.dzikirCount.value.toString(),
-                          style: pSemiBold24.copyWith(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(width: 12),
-            Obx(
-              () => TextButton(
-                onPressed: () {
-                  controller.dzikirInputController.clear();
-                  Get.dialog(_buildListDzikir(context, controller));
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  fixedSize: const Size(40, 40),
-                  alignment: Alignment.center,
-                  shape: const CircleBorder(),
-                ),
-                child: Text(
-                  controller.maxDzikirCount.value.toString(),
-                  style: pSemiBold14.copyWith(color: Colors.white),
-                ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: isFullWidth
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
+                children: [
+                  if (!isFullWidth) const SizedBox(height: 8),
+                  Text(
+                    item['title'] as String,
+                    style: pBold16.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item['subtitle'] as String,
+                    style: pMedium12.copyWith(color: Colors.white70),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildTasbih(BuildContext context, DzikirScreenController controller) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Tasbih Digital',
+            style: pBold18.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Obx(
+            () => Text(
+              'Target: ${controller.maxDzikirCount.value}',
+              style: pMedium14.copyWith(color: AppColor.globalTextSecondary),
+            ),
+          ),
+          const SizedBox(height: 32),
+          Obx(() {
+            final progress = controller.maxDzikirCount.value > 0
+                ? controller.dzikirCount.value / controller.maxDzikirCount.value
+                : 0.0;
+            return SizedBox(
+              height: 200,
+              width: 200,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: CustomPaint(
+                      painter: CircularProgressPainter(
+                        progress: progress,
+                        progressColor: Theme.of(context).primaryColor,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).primaryColor.withOpacity(0.1),
+                        strokeWidth: 12.0,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 160,
+                    width: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).primaryColor.withOpacity(0.8),
+                          Theme.of(context).primaryColor,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          controller.increment();
+                        },
+                        child: Center(
+                          child: Text(
+                            controller.dzikirCount.value.toString(),
+                            style: pBold24.copyWith(
+                              color: Colors.white,
+                              fontSize: 48,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 40),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildTasbihActionButton(
+                context,
+                icon: Icons.refresh_rounded,
+                label: 'Reset',
+                onTap: () => controller.dzikirCount.value = 0,
+              ),
+              _buildTasbihActionButton(
+                context,
+                icon: Icons.track_changes_rounded,
+                label: 'Target',
+                onTap: () {
+                  controller.dzikirInputController.clear();
+                  Get.dialog(_buildListDzikir(context, controller));
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTasbihActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: pMedium14.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -481,32 +488,41 @@ class DzikirScreen extends StatelessWidget {
   ) {
     return Dialog(
       alignment: Alignment.center,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Masukan Jumlah Dzikir',
-              style: pRegular14.copyWith(color: Theme.of(context).primaryColor),
+              'Target Tasbih',
+              style: pBold18.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Text(
+              'Masukkan jumlah target dzikir yang ingin dicapai',
+              style: pRegular14.copyWith(color: AppColor.globalTextSecondary),
+            ),
+            const SizedBox(height: 24),
             TextInput(
               controller: controller.dzikirInputController,
-              hintText: 'Exm. 100',
+              hintText: '150',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             SizedBox(
-              height: 40,
+              height: 44,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final data = controller.listData[index];
                   return Obx(
@@ -522,6 +538,7 @@ class DzikirScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       onPressed: () {
                         controller.dzikirInputText.value = data['value']
@@ -534,8 +551,8 @@ class DzikirScreen extends StatelessWidget {
                         style:
                             controller.dzikirInputText.value ==
                                 data['value'].toString()
-                            ? pSemiBold12.copyWith(color: Colors.white)
-                            : pSemiBold12.copyWith(
+                            ? pSemiBold14.copyWith(color: Colors.white)
+                            : pSemiBold14.copyWith(
                                 color: Theme.of(context).primaryColor,
                               ),
                       ),
@@ -548,29 +565,26 @@ class DzikirScreen extends StatelessWidget {
                 itemCount: controller.listData.length,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: TextButton(
                     onPressed: () {
                       controller.dzikirInputController.clear();
                       controller.dzikirInputText.value = '';
                       Get.back();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      side: BorderSide(color: Theme.of(context).primaryColor),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       'Batal',
-                      style: pRegular14.copyWith(
-                        color: Theme.of(context).primaryColor,
+                      style: pSemiBold14.copyWith(
+                        color: AppColor.globalTextSecondary,
                       ),
                     ),
                   ),
@@ -579,23 +593,26 @@ class DzikirScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      controller.maxDzikirCount.value = int.parse(
-                        controller.dzikirInputController.text,
-                      );
+                      if (controller.dzikirInputController.text.isNotEmpty) {
+                        controller.maxDzikirCount.value = int.parse(
+                          controller.dzikirInputController.text,
+                        );
+                      }
                       controller.dzikirInputController.clear();
                       controller.dzikirInputText.value = '';
                       Get.back();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
-                      side: BorderSide(color: Theme.of(context).primaryColor),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       'Simpan',
-                      style: pRegular14.copyWith(color: Colors.white),
+                      style: pSemiBold14.copyWith(color: Colors.white),
                     ),
                   ),
                 ),

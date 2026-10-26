@@ -47,7 +47,9 @@ class QuranPageInfoScreen extends StatelessWidget {
             // Description Section
             Text(
               'Tentang Mushaf',
-              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+              style: pBold18.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 12),
             Container(
@@ -56,7 +58,9 @@ class QuranPageInfoScreen extends StatelessWidget {
                 color: context.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+                  color: context.isDarkMode
+                      ? Colors.grey.shade900
+                      : Colors.grey.shade100,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -79,7 +83,9 @@ class QuranPageInfoScreen extends StatelessWidget {
             // Features Section
             Text(
               'Fitur Utama',
-              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+              style: pBold18.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 16),
             ...List.generate(
@@ -89,7 +95,9 @@ class QuranPageInfoScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(
               'Spesifikasi',
-              style: pBold18.copyWith(color: context.theme.colorScheme.onSurface),
+              style: pBold18.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
@@ -98,16 +106,26 @@ class QuranPageInfoScreen extends StatelessWidget {
                 color: context.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+                  color: context.isDarkMode
+                      ? Colors.grey.shade900
+                      : Colors.grey.shade100,
                 ),
               ),
               child: Column(
                 children: [
-                   _buildInfoRow(context, 'Penerbit', info['publisher'] ?? '-'),
-                   const SizedBox(height: 12),
-                   _buildInfoRow(context, 'Jumlah Halaman', info['pages'] ?? '-'),
-                   const SizedBox(height: 12),
-                   _buildInfoRow(context, 'Jenis Khat', info['script_type'] ?? '-'),
+                  _buildInfoRow(context, 'Penerbit', info['publisher'] ?? '-'),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    context,
+                    'Jumlah Halaman',
+                    info['pages'] ?? '-',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    context,
+                    'Jenis Khat',
+                    info['script_type'] ?? '-',
+                  ),
                 ],
               ),
             ),
@@ -202,7 +220,9 @@ class QuranPageInfoScreen extends StatelessWidget {
           Expanded(
             child: Text(
               feature,
-              style: pMedium14.copyWith(color: context.theme.colorScheme.onSurface),
+              style: pMedium14.copyWith(
+                color: context.theme.colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -216,7 +236,9 @@ class QuranPageInfoScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: pMedium14.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
+          style: pMedium14.copyWith(
+            color: context.theme.colorScheme.onSurfaceVariant,
+          ),
         ),
         Text(
           value,

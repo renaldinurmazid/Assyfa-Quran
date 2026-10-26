@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/group/create_group_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
@@ -15,11 +16,12 @@ class CreateGroupNgajiScreen extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        title: Text(
-          'Buat Grup Ngaji',
-          style: pSemiBold16.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+        title: Text('Buat Grup Ngaji', style: pSemiBold16),
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(LucideIcons.arrowLeft),
         ),
         centerTitle: true,
       ),
@@ -98,9 +100,7 @@ class CreateGroupNgajiScreen extends StatelessWidget {
                       )
                     : Text(
                         'Simpan',
-                        style: pMedium14.copyWith(
-                          color: Colors.white,
-                        ),
+                        style: pMedium14.copyWith(color: Colors.white),
                       ),
               ),
             ),

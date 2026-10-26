@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/profile/profile_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/theme/app_color.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -16,7 +17,12 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Profil Saya', style: pSemiBold16),
+        title: Text(
+          'Profil Saya',
+          style: pSemiBold16.copyWith(
+            color: context.theme.colorScheme.onSurface,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
@@ -49,71 +55,63 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         children: [
           // Avatar
           CircleAvatar(
             radius: 44,
-            backgroundColor: context.theme.colorScheme.primary.withOpacity(0.1),
+            backgroundColor: AppColor.primaryColor.withOpacity(0.1),
             backgroundImage: userData['profile_picture'] != null
                 ? NetworkImage(userData['profile_picture']!)
                 : null,
             child: userData['profile_picture'] == null
                 ? Icon(
-                    IconlyBold.profile,
+                    LucideIcons.user,
                     size: 36,
-                    color: context.theme.colorScheme.primary.withOpacity(0.4),
+                    color: AppColor.primaryColor.withOpacity(0.4),
                   )
                 : null,
           ),
           const SizedBox(height: 16),
           Text(
             userData['name'] ?? 'Sahabat Assyfa',
-            style: pBold16.copyWith(color: context.theme.colorScheme.onSurface),
+            style: pSemiBold16.copyWith(
+              color: context.theme.colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             userData['email'] ?? 'belum_login@mail.com',
-            style: pRegular12.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
-            ),
+            style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
           ),
-          const SizedBox(height: 20),
+          // const SizedBox(height: 20),
 
           // Quote Card
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: context.theme.colorScheme.primary.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  IconlyBold.info_square,
-                  color: context.theme.colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '"Sudahkah hatimu menyapa Al-Quran hari ini?"',
-                    style: pMedium12.copyWith(
-                      color: context.theme.colorScheme.primary,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          //   decoration: BoxDecoration(
+          //     color: AppColor.primaryColor.withOpacity(0.05),
+          //     borderRadius: BorderRadius.circular(14),
+          //   ),
+          //   child: Row(
+          //     children: [
+          //       Icon(LucideIcons.info, color: AppColor.primaryColor, size: 20),
+          //       const SizedBox(width: 12),
+          //       Expanded(
+          //         child: Text(
+          //           '"Sudahkah hatimu menyapa Al-Quran hari ini?"',
+          //           style: pMedium12.copyWith(
+          //             color: AppColor.primaryColor,
+          //             fontStyle: FontStyle.italic,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
@@ -130,27 +128,25 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             'Pengaturan Akun',
-            style: pSemiBold12.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
-            ),
+            style: pSemiBold12.copyWith(color: AppColor.globalTextSecondary),
           ),
         ),
         _menuItem(
           context,
           title: 'Ubah Profil',
-          icon: IconlyLight.edit,
+          icon: LucideIcons.user,
           onTap: () => Get.toNamed(Routes.changeProfile),
         ),
         _menuItem(
           context,
           title: 'Aktivitas Infaq',
-          icon: IconlyLight.chart,
+          icon: LucideIcons.wallet,
           onTap: () => Get.toNamed(Routes.infaqActivity),
         ),
         _menuItem(
           context,
           title: 'Aktivitas Event',
-          icon: IconlyLight.ticket,
+          icon: LucideIcons.ticket,
           onTap: () {
             Get.toNamed(Routes.eventRegistrationList);
           },
@@ -158,7 +154,7 @@ class ProfileScreen extends StatelessWidget {
         _menuItem(
           context,
           title: 'Aktivitas Doa',
-          icon: Icons.handshake_outlined,
+          icon: LucideIcons.handHeart,
           onTap: () => Get.toNamed(Routes.listPrayer),
         ),
         const SizedBox(height: 20),
@@ -166,9 +162,7 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             'Lainnya',
-            style: pSemiBold12.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
-            ),
+            style: pSemiBold12.copyWith(color: AppColor.globalTextSecondary),
           ),
         ),
         Obx(
@@ -177,22 +171,26 @@ class ProfileScreen extends StatelessWidget {
             title: controller.isLoadingShare.value
                 ? 'Mempersiapkan...'
                 : 'Share Aplikasi',
-            icon: Icons.share_outlined,
+            icon: LucideIcons.share2,
             onTap: () => controller.shareApp(),
           ),
         ),
         _menuItem(
           context,
           title: 'Hapus Akun',
-          icon: Icons.delete_outline,
+          icon: LucideIcons.trash2,
           onTap: () => Get.toNamed(Routes.deleteAccount),
           isDanger: true,
         ),
         const SizedBox(height: 36),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 52),
-            backgroundColor: Colors.red.shade700,
+            minimumSize: const Size(double.infinity, 48),
+            backgroundColor: Colors.red.shade600,
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
           ),
           onPressed: () {
             AuthController.to.handleSignOut();
@@ -213,38 +211,28 @@ class ProfileScreen extends StatelessWidget {
     required VoidCallback onTap,
     bool isDanger = false,
   }) {
-    final color = isDanger
-        ? Colors.red.shade400
-        : context.theme.colorScheme.primary;
+    final color = isDanger ? Colors.red.shade500 : AppColor.globalTextSecondary;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: isDanger
-              ? Colors.red.withOpacity(0.03)
+              ? Colors.red.withOpacity(0.02)
               : context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isDanger
-                ? Colors.red.withOpacity(0.1)
-                : context.isDarkMode
-                ? Colors.grey.shade900
-                : Colors.grey.shade100,
+                ? Colors.red.withOpacity(0.2)
+                : AppColor.globalBorder,
+            width: 0.5,
           ),
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 18),
-            ),
+            Icon(icon, color: color, size: 18),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -255,11 +243,9 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             Icon(
-              IconlyLight.arrow_right_2,
-              color: context.theme.colorScheme.onSurfaceVariant.withOpacity(
-                0.4,
-              ),
-              size: 16,
+              LucideIcons.chevronRight,
+              color: AppColor.globalTextSecondary,
+              size: 18,
             ),
           ],
         ),

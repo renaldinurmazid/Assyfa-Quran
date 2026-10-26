@@ -2,21 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
-import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_payment_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-
-// ─── Color tokens (same as CharityPaymentDetailScreen) ───────────────────────
-const _kBgDark = Color(0xFF0F0F10);
-const _kBgLight = Color(0xFFF8FAFC);
-const _kSurfaceDark = Color(0xFF18181B);
-const _kSurfaceLight = Colors.white;
-const _kBorderDark = Color(0xFF27272A);
-const _kBorderLight = Color(0xFFE2E8F0);
+import 'package:quran_app/widgets/keyboard_avoiding_bar.dart';
 
 class CurrencyMosqueInputFormatter extends TextInputFormatter {
   @override
@@ -45,722 +36,442 @@ class MosqueCharityPaymentScreen extends StatelessWidget {
         ? Get.find<MosqueCharityPaymentController>()
         : Get.put(MosqueCharityPaymentController());
 
-    final isDark = context.isDarkMode;
-
     return Scaffold(
-      backgroundColor: isDark ? _kBgDark : _kBgLight,
       appBar: AppBar(
-        title: Text(
-          'Infaq Masjid',
-          style: pBold16.copyWith(
-            color: context.theme.colorScheme.onSurface,
-            letterSpacing: -0.3,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
+        title: Text("Infaq Masjid", style: pSemiBold16),
+        centerTitle: false,
         leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.04),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              IconlyLight.arrow_left,
-              size: 20,
-              color: context.theme.colorScheme.onSurface,
-            ),
-          ),
+          icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Get.back(),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Step 1: Nominal Infaq
-            _buildSection(
-              context: context,
-              label: '01',
-              title: 'Nominal Infaq',
-              child: _buildNominalSection(context, controller),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Step 2: Donor Data
-            _buildSection(
-              context: context,
-              label: '02',
-              title: 'Data Donatur',
-              child: _buildDonorSection(context, controller),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Step 3: Payment Method
-            _buildSection(
-              context: context,
-              label: '03',
-              title: 'Metode Pembayaran',
-              child: _buildPaymentMethodSection(context, controller),
-            ),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomBar(context, controller, isDark),
-    );
-  }
-
-  // ── Section wrapper ────────────────────────────────────────────────────────
-
-  Widget _buildSection({
-    required BuildContext context,
-    required String label,
-    required String title,
-    required Widget child,
-  }) {
-    final isDark = context.isDarkMode;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: isDark ? _kSurfaceDark : _kSurfaceLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? _kBorderDark : _kBorderLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            child: Text(
-              title,
-              style: pSemiBold14.copyWith(
-                color: context.theme.colorScheme.onSurface,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: isDark ? _kBorderDark : _kBorderLight,
-          ),
-          Padding(padding: const EdgeInsets.all(16), child: child),
-        ],
-      ),
-    );
-  }
-
-  // ── Input field ────────────────────────────────────────────────────────────
-
-  Widget _buildInputField({
-    required BuildContext context,
-    required TextEditingController controller,
-    required String hintText,
-    TextInputType? keyboardType,
-  }) {
-    final isDark = context.isDarkMode;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : _kBorderLight,
-        ),
-      ),
-      child: TextField(
-        controller: controller,
-        cursorColor: isDark ? AppColor.primaryColorDark : AppColor.primaryColor,
-        style: pSemiBold14.copyWith(color: context.theme.colorScheme.onSurface),
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: pRegular14.copyWith(
-            color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 13,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Nominal section ────────────────────────────────────────────────────────
-
-  Widget _buildNominalSection(
-    BuildContext context,
-    MosqueCharityPaymentController controller,
-  ) {
-    final isDark = context.isDarkMode;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF27272A) : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? const Color(0xFF3F3F46) : _kBorderLight,
-            ),
-          ),
-          child: Row(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
             children: [
-              Text(
-                'Rp',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColor.primaryColorDark
-                      : AppColor.primaryColor,
+              _buildNominalInfaq(),
+              const SizedBox(height: 18),
+              _buildInfoDonatur(),
+              const SizedBox(height: 18),
+              _buildMetodePembayaran(),
+              const SizedBox(height: 18),
+              Container(
+                width: Get.width,
+                margin: const EdgeInsets.symmetric(horizontal: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: context.isDarkMode
+                      ? Colors.orange.shade400.withValues(alpha: 0.3)
+                      : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade400),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: controller.nominalController,
-                  cursorColor: isDark
-                      ? AppColor.primaryColorDark
-                      : AppColor.primaryColor,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: context.theme.colorScheme.onSurface,
-                    letterSpacing: -0.5,
-                  ),
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.end,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    CurrencyMosqueInputFormatter(),
-                  ],
-                  decoration: InputDecoration(
-                    hintText: '0',
-                    hintStyle: GoogleFonts.plusJakartaSans(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? Colors.grey.shade700
-                          : Colors.grey.shade300,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
+                child: Text(
+                  "Dana disalurkan secara amanah untuk masjid, bebas dari pencucian uang, terorisme, dan tindak pidana lainnya.",
+                  style: pMedium10.copyWith(
+                    color: Colors.orange.shade500,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              Obx(() {
-                if (controller.selectedNominal.value.isNotEmpty) {
-                  return GestureDetector(
-                    onTap: () => controller.nominalController.clear(),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Icon(
-                        Icons.cancel_rounded,
-                        size: 18,
-                        color: isDark
-                            ? Colors.grey.shade600
-                            : Colors.grey.shade400,
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              }),
+              const SizedBox(height: 18),
             ],
           ),
         ),
-        const SizedBox(height: 14),
-        Text(
-          'Pilihan Cepat',
-          style: pRegular12.copyWith(
-            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildChip(context, controller, 'Rp10.000', '10000'),
-            _buildChip(context, controller, 'Rp25.000', '25000'),
-            _buildChip(context, controller, 'Rp50.000', '50000'),
-            _buildChip(context, controller, 'Rp100.000', '100000'),
-            _buildChip(context, controller, 'Rp250.000', '250000'),
-            _buildChip(context, controller, 'Rp500.000', '500000'),
-          ],
-        ),
-      ],
+      ),
+      bottomNavigationBar: KeyboardAvoidingBar(child: _buildCheckoutAction()),
     );
   }
 
-  Widget _buildChip(
-    BuildContext context,
-    MosqueCharityPaymentController controller,
-    String label,
-    String value,
-  ) {
-    final isDark = context.isDarkMode;
-    return Obx(() {
-      final isSelected =
-          controller.selectedNominal.value.replaceAll('.', '') == value;
-      return GestureDetector(
-        onTap: () {
-          final formatted = NumberFormat.decimalPattern(
-            'id',
-          ).format(double.parse(value));
-          controller.nominalController.text = formatted;
-          controller.nominalController.selection = TextSelection.collapsed(
-            offset: formatted.length,
-          );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? AppColor.primaryColorDark : AppColor.primaryColor)
-                : (isDark ? const Color(0xFF27272A) : Colors.white),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected
-                  ? (isDark ? AppColor.primaryColorDark : AppColor.primaryColor)
-                  : (isDark ? const Color(0xFF3F3F46) : _kBorderLight),
-            ),
-          ),
-          child: Text(
-            label,
-            style: pSemiBold12.copyWith(
-              color: isSelected
-                  ? Colors.white
-                  : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-            ),
-          ),
-        ),
-      );
-    });
-  }
-
-  // ── Donor section ──────────────────────────────────────────────────────────
-
-  Widget _buildDonorSection(
-    BuildContext context,
-    MosqueCharityPaymentController controller,
-  ) {
-    final isDark = context.isDarkMode;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildInputField(
-          context: context,
-          controller: controller.nameController,
-          hintText: 'Nama Lengkap',
-        ),
-        const SizedBox(height: 10),
-        Obx(
-          () => InkWell(
-            onTap: () =>
-                controller.isAnonymous.value = !controller.isAnonymous.value,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF27272A)
-                    : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: controller.isAnonymous.value
-                      ? (isDark
-                            ? AppColor.primaryColorDark
-                            : AppColor.primaryColor)
-                      : (isDark ? const Color(0xFF3F3F46) : _kBorderLight),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sembunyikan nama (Hamba Allah)',
-                          style: pSemiBold12.copyWith(
-                            color: context.theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Nama tidak akan ditampilkan ke publik',
-                          style: pRegular10.copyWith(
-                            color: isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Switch.adaptive(
-                    value: controller.isAnonymous.value,
-                    onChanged: (val) => controller.isAnonymous.value = val,
-                    activeColor: isDark
-                        ? AppColor.primaryColorDark
-                        : AppColor.primaryColor,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        _buildInputField(
-          context: context,
-          controller: controller.phoneController,
-          hintText: 'Nomor WhatsApp',
-          keyboardType: TextInputType.phone,
-        ),
-        if (AuthController.to.userData['phone_number'] == null) ...[
-          const SizedBox(height: 10),
-          _buildInfoBanner(
-            isDark: isDark,
-            message:
-                'Lengkapi nomor telepon di profil agar transaksi berikutnya lebih praktis.',
-            color: Colors.amber,
-          ),
-        ],
-      ],
-    );
-  }
-
-  // ── Payment method section ─────────────────────────────────────────────────
-
-  Widget _buildPaymentMethodSection(
-    BuildContext context,
-    MosqueCharityPaymentController controller,
-  ) {
-    final isDark = context.isDarkMode;
-    return Column(
-      children: [
-        Obx(() {
-          final selected = controller.selectedPaymentMethod.value;
-          return InkWell(
-            onTap: () => _showPaymentMethodBottomSheet(context, controller),
-            borderRadius: BorderRadius.circular(12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF27272A)
-                    : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected != null
-                      ? (isDark
-                            ? AppColor.primaryColorDark
-                            : AppColor.primaryColor)
-                      : (isDark ? const Color(0xFF3F3F46) : _kBorderLight),
-                  width: selected != null ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  if (selected != null) ...[
-                    _buildPaymentLogo(isDark, selected.logo),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            selected.name,
-                            style: pSemiBold14.copyWith(
-                              color: context.theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          Text(
-                            'Ketuk untuk mengubah',
-                            style: pRegular12.copyWith(
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            (isDark
-                                    ? AppColor.primaryColorDark
-                                    : AppColor.primaryColor)
-                                .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Ubah',
-                        style: pSemiBold10.copyWith(
-                          color: isDark
-                              ? AppColor.primaryColorDark
-                              : AppColor.primaryColor,
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Container(
-                      width: 40,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF3F3F46) : _kBorderLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.wallet_rounded,
-                        size: 16,
-                        color: isDark
-                            ? Colors.grey.shade500
-                            : Colors.grey.shade400,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pilih Metode Pembayaran',
-                            style: pSemiBold14.copyWith(
-                              color: context.theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          Text(
-                            'Virtual Account, QRIS, Transfer Bank',
-                            style: pRegular12.copyWith(
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: isDark
-                          ? Colors.grey.shade600
-                          : Colors.grey.shade400,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        }),
-        const SizedBox(height: 12),
-        _buildInfoBanner(
-          isDark: isDark,
-          message:
-              'Dana disalurkan secara amanah untuk masjid, bebas dari pencucian uang, terorisme, dan tindak pidana lainnya.',
-          color: Colors.orange,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentLogo(bool isDark, String? logoUrl) {
+  Widget _buildCheckoutAction() {
+    final controller = Get.find<MosqueCharityPaymentController>();
     return Container(
-      width: 44,
-      height: 32,
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272A) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : _kBorderLight,
-        ),
-      ),
-      child: logoUrl != null && logoUrl.isNotEmpty
-          ? (logoUrl.contains('.svg')
-                ? SvgPicture.network(
-                    logoUrl,
-                    fit: BoxFit.contain,
-                    placeholderBuilder: (_) => const Center(
-                      child: SizedBox(
-                        width: 10,
-                        height: 10,
-                        child: CircularProgressIndicator(strokeWidth: 1.5),
-                      ),
-                    ),
-                  )
-                : Image.network(
-                    logoUrl,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Icon(
-                      IconlyLight.wallet,
-                      size: 16,
-                      color: isDark
-                          ? Colors.grey.shade600
-                          : Colors.grey.shade400,
-                    ),
-                  ))
-          : Icon(
-              IconlyLight.wallet,
-              size: 16,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-            ),
-    );
-  }
-
-  // ── Info banner ────────────────────────────────────────────────────────────
-
-  Widget _buildInfoBanner({
-    required bool isDark,
-    required String message,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.08 : 0.06),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: isDark ? 0.2 : 0.15)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 14,
-            color: color.withValues(alpha: isDark ? 0.7 : 0.8),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: pRegular10.copyWith(
-                color: color.withValues(alpha: isDark ? 0.7 : 0.85),
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Bottom bar ─────────────────────────────────────────────────────────────
-
-  Widget _buildBottomBar(
-    BuildContext context,
-    MosqueCharityPaymentController controller,
-    bool isDark,
-  ) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        MediaQuery.of(context).padding.bottom + 12,
-      ),
-      decoration: BoxDecoration(
-        color: isDark ? _kSurfaceDark : Colors.white,
-        border: Border(
-          top: BorderSide(color: isDark ? _kBorderDark : _kBorderLight),
-        ),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Obx(() {
         final isReady = controller.isFormValid && !controller.isLoading.value;
+        final totalText = controller.selectedNominal.value.isEmpty
+            ? '0'
+            : controller.selectedNominal.value;
+
         return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Total Pembayaran',
-                    style: pRegular12.copyWith(
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
-                    ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Total Infaq",
+                  style: pSemiBold12.copyWith(
+                    color: AppColor.globalTextSecondary,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    controller.selectedNominal.value.isEmpty
-                        ? 'Rp 0'
-                        : 'Rp ${controller.selectedNominal.value}',
-                    style: pBold18.copyWith(
-                      color: isDark
-                          ? AppColor.primaryColorDark
-                          : AppColor.primaryColor,
-                      letterSpacing: -0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: isReady ? controller.submitDonation : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.primaryColor,
-                  disabledBackgroundColor: AppColor.primaryColor.withValues(
-                    alpha: 0.4,
-                  ),
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
                 ),
-                child: controller.isLoading.value
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Lanjutkan',
-                        style: pSemiBold14.copyWith(color: Colors.white),
-                      ),
+                Text(
+                  "Rp$totalText",
+                  style: pSemiBold14.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColor.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.primaryColor,
+                disabledBackgroundColor: AppColor.primaryColor.withValues(
+                  alpha: 0.4,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              onPressed: isReady ? controller.submitDonation : null,
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      "Lanjutkan Pembayaran",
+                      style: pMedium12.copyWith(color: Colors.white),
+                    ),
             ),
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildMetodePembayaran() {
+    final controller = Get.find<MosqueCharityPaymentController>();
+    return Container(
+      width: Get.width,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Metode Pembayaran",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            final selected = controller.selectedPaymentMethod.value;
+            return GestureDetector(
+              onTap: () =>
+                  _showPaymentMethodBottomSheet(Get.context!, controller),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColor.globalBorder, width: 0.5),
+                ),
+                child: Row(
+                  children: [
+                    if (selected != null && selected.logo != null) ...[
+                      selected.logo!.contains('.svg')
+                          ? SvgPicture.network(
+                              selected.logo!,
+                              width: 30,
+                              height: 20,
+                            )
+                          : Image.network(
+                              selected.logo!,
+                              width: 30,
+                              height: 20,
+                            ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          selected.name,
+                          style: pSemiBold14.copyWith(
+                            color: AppColor.globalTextSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "Ubah",
+                        style: pSemiBold12.copyWith(
+                          color: AppColor.primaryColor,
+                        ),
+                      ),
+                    ] else ...[
+                      Icon(
+                        LucideIcons.wallet,
+                        size: 20,
+                        color: AppColor.globalTextSecondary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          "Pilih Pembayaran",
+                          style: pSemiBold14.copyWith(
+                            color: AppColor.globalTextSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 18,
+                        color: AppColor.globalTextSecondary,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoDonatur() {
+    final controller = Get.find<MosqueCharityPaymentController>();
+    return Container(
+      width: Get.width,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Informasi Donatur",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: controller.nameController,
+            style: pMedium14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              hintText: "Nama Lengkap",
+              hintStyle: pRegular12.copyWith(
+                color: AppColor.globalTextSecondary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Sembunyikan nama saya (anonim)",
+                style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
+              ),
+              Obx(
+                () => Switch(
+                  value: controller.isAnonymous.value,
+                  onChanged: (value) => controller.isAnonymous.value = value,
+                  activeColor: AppColor.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: controller.phoneController,
+            keyboardType: TextInputType.phone,
+            style: pMedium14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              hintText: "Nomor WhatsApp",
+              hintStyle: pRegular12.copyWith(
+                color: AppColor.globalTextSecondary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNominalInfaq() {
+    final controller = Get.find<MosqueCharityPaymentController>();
+    final List<int> nominalInfaq = [25000, 50000, 100000, 200000];
+
+    return Container(
+      width: Get.width,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Pilih Nominal Infaq",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: nominalInfaq.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 3.8,
+            ),
+            itemBuilder: (context, index) {
+              final valString = nominalInfaq[index].toString();
+              return Obx(() {
+                final isSelected =
+                    controller.selectedNominal.value.replaceAll('.', '') ==
+                    valString;
+                return GestureDetector(
+                  onTap: () {
+                    final formatted = NumberFormat.decimalPattern(
+                      'id',
+                    ).format(nominalInfaq[index]);
+                    controller.nominalController.text = formatted;
+                    controller.nominalController.selection =
+                        TextSelection.collapsed(offset: formatted.length);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColor.primaryColor
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColor.primaryColor
+                            : AppColor.globalBorder,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      "Rp${NumberFormat.decimalPattern('id').format(nominalInfaq[index])}",
+                      style: pMedium12.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColor.globalTextSecondary,
+                      ),
+                    ),
+                  ),
+                );
+              });
+            },
+          ),
+          const SizedBox(height: 14),
+          Text(
+            "Nominal lainnya",
+            style: pMedium12.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: controller.nominalController,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              CurrencyMosqueInputFormatter(),
+            ],
+            keyboardType: TextInputType.number,
+            style: pMedium16.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              hintText: "Masukkan nominal",
+              hintStyle: pRegular12.copyWith(
+                color: AppColor.globalTextSecondary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColor.globalBorder),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -771,11 +482,9 @@ void _showPaymentMethodBottomSheet(
   BuildContext context,
   MosqueCharityPaymentController controller,
 ) {
-  final isDark = context.isDarkMode;
-
   showModalBottomSheet(
     context: context,
-    backgroundColor: isDark ? _kSurfaceDark : Colors.white,
+    backgroundColor: context.theme.colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -794,9 +503,7 @@ void _showPaymentMethodBottomSheet(
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF3F3F46)
-                      : Colors.grey.shade300,
+                  color: AppColor.globalBorder,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -807,7 +514,7 @@ void _showPaymentMethodBottomSheet(
                     Text(
                       'Metode Pembayaran',
                       style: pBold16.copyWith(
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        color: context.theme.colorScheme.onSurface,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -818,40 +525,36 @@ void _showPaymentMethodBottomSheet(
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.black.withValues(alpha: 0.04),
+                          color: context.theme.colorScheme.onSurface.withValues(
+                            alpha: 0.05,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.close,
                           size: 16,
-                          color: isDark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade600,
+                          color: AppColor.globalTextSecondary,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              Divider(height: 1, color: isDark ? _kBorderDark : _kBorderLight),
+              Divider(height: 1, color: AppColor.globalBorder),
               Expanded(
                 child: Obx(() {
                   if (controller.isLoading.value) {
                     return Center(
                       child: CircularProgressIndicator(
-                        color: isDark
-                            ? AppColor.primaryColorDark
-                            : AppColor.primaryColor,
+                        color: AppColor.primaryColor,
                         strokeWidth: 2,
                       ),
                     );
                   }
                   return ListView.separated(
                     controller: scrollController,
-                    padding: const EdgeInsets.all(16),
                     itemCount: controller.paymentMethods.length,
+                    padding: const EdgeInsets.all(12),
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final method = controller.paymentMethods[index];
@@ -870,25 +573,15 @@ void _showPaymentMethodBottomSheet(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? (isDark
-                                        ? AppColor.primaryColor.withValues(
-                                            alpha: 0.12,
-                                          )
-                                        : AppColor.primaryColor.withValues(
-                                            alpha: 0.04,
-                                          ))
-                                  : (isDark
-                                        ? const Color(0xFF27272A)
-                                        : const Color(0xFFF8FAFC)),
+                                  ? AppColor.primaryColor.withValues(
+                                      alpha: 0.04,
+                                    )
+                                  : context.theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected
-                                    ? (isDark
-                                          ? AppColor.primaryColorDark
-                                          : AppColor.primaryColor)
-                                    : (isDark
-                                          ? const Color(0xFF3F3F46)
-                                          : _kBorderLight),
+                                    ? (AppColor.primaryColor)
+                                    : (AppColor.globalBorder),
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -899,17 +592,7 @@ void _showPaymentMethodBottomSheet(
                                   width: 44,
                                   height: 32,
                                   padding: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF18181B)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: isDark
-                                          ? const Color(0xFF3F3F46)
-                                          : _kBorderLight,
-                                    ),
-                                  ),
+                                  decoration: const BoxDecoration(),
                                   child:
                                       method.logo != null &&
                                           method.logo!.isNotEmpty
@@ -919,13 +602,10 @@ void _showPaymentMethodBottomSheet(
                                                 fit: BoxFit.contain,
                                                 errorBuilder: (_, __, ___) =>
                                                     Icon(
-                                                      IconlyLight.wallet,
+                                                      LucideIcons.wallet,
                                                       size: 16,
-                                                      color: isDark
-                                                          ? Colors.grey.shade600
-                                                          : Colors
-                                                                .grey
-                                                                .shade400,
+                                                      color: AppColor
+                                                          .globalTextSecondary,
                                                     ),
                                                 placeholderBuilder: (_) =>
                                                     const Center(
@@ -944,21 +624,16 @@ void _showPaymentMethodBottomSheet(
                                                 fit: BoxFit.contain,
                                                 errorBuilder: (_, __, ___) =>
                                                     Icon(
-                                                      IconlyLight.wallet,
+                                                      LucideIcons.wallet,
                                                       size: 16,
-                                                      color: isDark
-                                                          ? Colors.grey.shade600
-                                                          : Colors
-                                                                .grey
-                                                                .shade400,
+                                                      color: AppColor
+                                                          .globalTextSecondary,
                                                     ),
                                               ))
                                       : Icon(
-                                          IconlyLight.wallet,
+                                          LucideIcons.wallet,
                                           size: 16,
-                                          color: isDark
-                                              ? Colors.grey.shade600
-                                              : Colors.grey.shade400,
+                                          color: AppColor.globalTextSecondary,
                                         ),
                                 ),
                                 const SizedBox(width: 12),
@@ -967,40 +642,20 @@ void _showPaymentMethodBottomSheet(
                                     method.name,
                                     style: pSemiBold14.copyWith(
                                       color: isSelected
-                                          ? (isDark
-                                                ? AppColor.primaryColorDark
-                                                : AppColor.primaryColor)
+                                          ? (AppColor.primaryColor)
                                           : context.theme.colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
                                 // Radio indicator
-                                Container(
+                                SizedBox(
                                   width: 20,
                                   height: 20,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected
-                                        ? (isDark
-                                              ? AppColor.primaryColorDark
-                                              : AppColor.primaryColor)
-                                        : Colors.transparent,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? (isDark
-                                                ? AppColor.primaryColorDark
-                                                : AppColor.primaryColor)
-                                          : (isDark
-                                                ? Colors.grey.shade600
-                                                : Colors.grey.shade400),
-                                      width: 1.5,
-                                    ),
-                                  ),
                                   child: isSelected
                                       ? const Icon(
-                                          Icons.check,
+                                          LucideIcons.check,
                                           size: 13,
-                                          color: Colors.white,
+                                          color: AppColor.primaryColor,
                                         )
                                       : null,
                                 ),

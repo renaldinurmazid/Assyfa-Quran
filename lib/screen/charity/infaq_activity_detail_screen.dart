@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:iconly/iconly.dart';
+
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/models/donation_detail_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
@@ -31,22 +31,13 @@ class InfaqActivityDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Detail Infaq',
-          style: pBold16.copyWith(
-            color: context.theme.colorScheme.onSurface,
-            letterSpacing: -0.2,
-          ),
-        ),
+        title: Text('Detail Infaq', style: pSemiBold16),
         centerTitle: true,
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left,
-            color: context.theme.colorScheme.onSurface,
-          ),
+          icon: const Icon(LucideIcons.arrowLeft, size: 20),
           onPressed: () => Get.back(),
         ),
       ),
@@ -62,14 +53,14 @@ class InfaqActivityDetailScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  IconlyLight.document,
+                  LucideIcons.fileText,
                   size: 48,
-                  color: Colors.grey.shade400,
+                  color: AppColor.globalTextSecondary,
                 ),
                 const SizedBox(height: 12),
                 Text(
                   "Data infaq tidak ditemukan",
-                  style: pBold14.copyWith(
+                  style: pSemiBold14.copyWith(
                     color: context.theme.colorScheme.onSurface,
                   ),
                 ),
@@ -77,7 +68,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 Text(
                   "Silakan periksa koneksi Anda atau coba lagi nanti.",
                   style: pRegular12.copyWith(
-                    color: context.theme.colorScheme.onSurfaceVariant,
+                    color: AppColor.globalTextSecondary,
                   ),
                 ),
               ],
@@ -86,11 +77,12 @@ class InfaqActivityDetailScreen extends StatelessWidget {
         }
 
         final payment = donation.payment;
-        final bool isUnpaid = payment.status.toUpperCase() == 'UNPAID' ||
+        final bool isUnpaid =
+            payment.status.toUpperCase() == 'UNPAID' ||
             donation.status.toLowerCase() == 'pending';
 
         return RefreshIndicator(
-          color: AppColor.primaryColorDark,
+          color: AppColor.primaryColor,
           backgroundColor: context.theme.colorScheme.surface,
           onRefresh: () async {
             await controller.fetchDonationDetail();
@@ -100,7 +92,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
               parent: BouncingScrollPhysics(),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -153,42 +145,12 @@ class InfaqActivityDetailScreen extends StatelessWidget {
   }
 
   Widget _buildStatusHeader(BuildContext context, DonationDetailItem donation) {
-    final isDark = context.isDarkMode;
-    Color statusColor;
-    String statusText;
-    IconData statusIcon;
-
-    final String statusKey = donation.status.toLowerCase();
-    if (statusKey == 'pending' || statusKey == 'unpaid') {
-      statusColor = Colors.amber.shade800;
-      statusText = 'Menunggu Pembayaran';
-      statusIcon = IconlyBold.time_circle;
-    } else if (statusKey == 'success' || statusKey == 'paid') {
-      statusColor = AppColor.primaryColorDark;
-      statusText = 'Infaq Berhasil';
-      statusIcon = Icons.verified_rounded;
-    } else {
-      statusColor = Colors.red.shade600;
-      statusText = donation.status.toUpperCase();
-      statusIcon = IconlyBold.danger;
-    }
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.25 : 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder),
       ),
       child: Column(
         children: [
@@ -196,39 +158,10 @@ class InfaqActivityDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: Column(
               children: [
-                // Status Pill
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(
-                      color: statusColor.withOpacity(0.3),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, color: statusColor, size: 13),
-                      const SizedBox(width: 6),
-                      Text(
-                        statusText,
-                        style: pBold10.copyWith(color: statusColor),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Title
                 Text(
                   'Nominal Infaq',
                   style: pRegular12.copyWith(
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: AppColor.globalTextSecondary,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -236,12 +169,10 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 // Big Amount
                 Text(
                   donation.formattedAmount,
-                  style: pBold24.copyWith(
-                    color: isDark
-                        ? AppColor.primaryColorDark
-                        : AppColor.primaryColor,
+                  style: pSemiBold24.copyWith(
+                    color: AppColor.primaryColor,
                     fontSize: 28,
-                    letterSpacing: -0.5,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -258,9 +189,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                   child: Container(
                     color: index % 2 == 0
                         ? Colors.transparent
-                        : (isDark
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade300),
+                        : AppColor.globalBorder,
                     height: 1.2,
                   ),
                 ),
@@ -277,7 +206,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 Text(
                   'ID Pesanan (Order ID)',
                   style: pRegular12.copyWith(
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: AppColor.globalTextSecondary,
                   ),
                 ),
                 InkWell(
@@ -290,18 +219,16 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         donation.orderId,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                        style: pSemiBold12.copyWith(
                           color: context.theme.colorScheme.onSurface,
-                          letterSpacing: 0.3,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(width: 6),
                       const Icon(
-                        IconlyLight.document,
+                        LucideIcons.copy,
                         size: 14,
-                        color: AppColor.primaryColorDark,
+                        color: AppColor.primaryColor,
                       ),
                     ],
                   ),
@@ -315,30 +242,16 @@ class InfaqActivityDetailScreen extends StatelessWidget {
   }
 
   Widget _buildCampaignCard(BuildContext context, CampaignShort campaign) {
-    final isDark = context.isDarkMode;
-
     return InkWell(
-      onTap: () => Get.toNamed(
-        Routes.charityShow,
-        arguments: {'id': campaign.id},
-      ),
-      borderRadius: BorderRadius.circular(18),
+      onTap: () =>
+          Get.toNamed(Routes.charityShow, arguments: {'id': campaign.id}),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColor.globalBorder),
         ),
         child: Row(
           children: [
@@ -353,7 +266,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   width: 72,
                   height: 72,
-                  color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+                  color: context.theme.colorScheme.surfaceContainerHighest,
                   child: const Center(
                     child: SizedBox(
                       width: 16,
@@ -361,7 +274,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColor.primaryColorDark,
+                          AppColor.primaryColor,
                         ),
                       ),
                     ),
@@ -374,51 +287,30 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                     color: context.theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(IconlyLight.image, size: 24),
+                  child: const Icon(
+                    LucideIcons.image,
+                    size: 24,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 14),
-
-            // Campaign Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Penyaluran Program',
-                        style: pBold10.copyWith(
-                          color: AppColor.primaryColorDark,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified_rounded,
-                        color: Colors.blueAccent,
-                        size: 12,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    campaign.title,
-                    style: pBold12.copyWith(
-                      color: context.theme.colorScheme.onSurface,
-                      height: 1.35,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            Text(
+              campaign.title,
+              style: pSemiBold12.copyWith(
+                color: context.theme.colorScheme.onSurface,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 8),
+            const Spacer(),
             Icon(
-              IconlyLight.arrow_right_2,
-              size: 18,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              LucideIcons.chevronRight,
+              size: 20,
+              color: AppColor.globalTextSecondary,
             ),
           ],
         ),
@@ -434,29 +326,17 @@ class InfaqActivityDetailScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            'Scan QR Code untuk Pembayaran',
-            style: pBold14.copyWith(
+            'Scan QR Code',
+            style: pSemiBold14.copyWith(
               color: context.theme.colorScheme.onSurface,
-              letterSpacing: -0.2,
             ),
           ),
         ),
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             children: [
@@ -471,7 +351,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -479,7 +359,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.qr_code_2_rounded,
-                            color: Colors.white.withOpacity(0.95),
+                            color: Colors.white.withValues(alpha: 0.95),
                             size: 16,
                           ),
                           const SizedBox(width: 6),
@@ -499,10 +379,10 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withOpacity(0.18),
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: const Color(0xFFF59E0B).withOpacity(0.4),
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
                         ),
                       ),
                       child: Text(
@@ -524,14 +404,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -558,7 +431,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                   'Buka e-wallet atau m-Banking Anda, lalu scan QR di atas.',
                   textAlign: TextAlign.center,
                   style: pRegular12.copyWith(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     height: 1.4,
                   ),
                 ),
@@ -583,10 +456,9 @@ class InfaqActivityDetailScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            'Nomor Rekening / Kode Pembayaran',
-            style: pBold14.copyWith(
+            'Kode Pembayaran',
+            style: pSemiBold14.copyWith(
               color: context.theme.colorScheme.onSurface,
-              letterSpacing: -0.2,
             ),
           ),
         ),
@@ -594,19 +466,8 @@ class InfaqActivityDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF123524), Color(0xFF1B4D35)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColor.primaryColor.withOpacity(0.3),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: const Color(0xFF1B4D35),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -627,7 +488,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -646,10 +507,9 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       accNo,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      style: pSemiBold20.copyWith(
                         color: Colors.white,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
@@ -667,17 +527,17 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                         vertical: 7,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha: 0.25),
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            IconlyLight.document,
+                            LucideIcons.copy,
                             color: Colors.white,
                             size: 14,
                           ),
@@ -703,14 +563,14 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                         Text(
                           'ATAS NAMA',
                           style: pRegular10.copyWith(
-                            color: Colors.white.withOpacity(0.65),
+                            color: Colors.white.withValues(alpha: 0.65),
                             letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           accName.toUpperCase(),
-                          style: pBold14.copyWith(
+                          style: pSemiBold14.copyWith(
                             color: Colors.white,
                             letterSpacing: 0.2,
                           ),
@@ -736,24 +596,12 @@ class InfaqActivityDetailScreen extends StatelessWidget {
   }
 
   Widget _buildPaymentMethod(BuildContext context, PaymentDetail payment) {
-    final isDark = context.isDarkMode;
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder),
       ),
       child: Row(
         children: [
@@ -761,26 +609,19 @@ class InfaqActivityDetailScreen extends StatelessWidget {
             width: 48,
             height: 48,
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              ),
-            ),
             child: payment.paymentMethode?.logo != null
                 ? (payment.paymentMethode!.logo!.contains('.svg')
-                    ? SvgPicture.network(
-                        payment.paymentMethode!.logo!,
-                        fit: BoxFit.contain,
-                      )
-                    : Image.network(
-                        payment.paymentMethode!.logo!,
-                        fit: BoxFit.contain,
-                      ))
+                      ? SvgPicture.network(
+                          payment.paymentMethode!.logo!,
+                          fit: BoxFit.contain,
+                        )
+                      : Image.network(
+                          payment.paymentMethode!.logo!,
+                          fit: BoxFit.contain,
+                        ))
                 : const Icon(
-                    IconlyLight.wallet,
-                    color: AppColor.primaryColorDark,
+                    LucideIcons.wallet,
+                    color: AppColor.primaryColor,
                     size: 24,
                   ),
           ),
@@ -792,13 +633,13 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 Text(
                   'Metode Pembayaran',
                   style: pRegular10.copyWith(
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: AppColor.globalTextSecondary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   payment.paymentMethode?.name ?? 'Metode Pembayaran',
-                  style: pBold14.copyWith(
+                  style: pSemiBold14.copyWith(
                     color: context.theme.colorScheme.onSurface,
                   ),
                 ),
@@ -807,7 +648,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                   Text(
                     payment.paymentMethode!.accountName!,
                     style: pRegular12.copyWith(
-                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                      color: AppColor.globalTextSecondary,
                     ),
                   ),
                 ],
@@ -824,24 +665,12 @@ class InfaqActivityDetailScreen extends StatelessWidget {
     DonationDetailItem donation,
     PaymentDetail payment,
   ) {
-    final isDark = context.isDarkMode;
-
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,16 +680,13 @@ class InfaqActivityDetailScreen extends StatelessWidget {
             children: [
               Text(
                 'Ringkasan Transaksi',
-                style: pBold14.copyWith(
+                style: pSemiBold14.copyWith(
                   color: context.theme.colorScheme.onSurface,
-                  letterSpacing: -0.2,
                 ),
               ),
               Text(
                 DateFormat('dd MMM yyyy, HH:mm').format(donation.createdAt),
-                style: pRegular10.copyWith(
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                ),
+                style: pRegular10.copyWith(color: AppColor.globalTextSecondary),
               ),
             ],
           ),
@@ -871,31 +697,27 @@ class InfaqActivityDetailScreen extends StatelessWidget {
             payment.status,
             isStatus: true,
             statusColor: payment.status.toUpperCase() == 'PAID'
-                ? AppColor.primaryColorDark
-                : Colors.amber.shade800,
+                ? AppColor.primaryColor
+                : Colors.orange,
           ),
           _summaryRow(context, 'Metode', payment.paymentMethode?.name ?? '-'),
           if (donation.guestName.isNotEmpty)
             _summaryRow(context, 'Nama Donatur', donation.guestName),
-          Divider(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            height: 20,
-          ),
+          Divider(color: AppColor.globalBorder, height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Total Infaq',
-                style: pBold14.copyWith(
+                style: pSemiBold14.copyWith(
                   color: context.theme.colorScheme.onSurface,
                 ),
               ),
               Text(
                 donation.formattedAmount,
-                style: pBold16.copyWith(
-                  color: isDark
-                      ? AppColor.primaryColorDark
-                      : AppColor.primaryColor,
+                style: pSemiBold16.copyWith(
+                  color: AppColor.primaryColor,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -912,8 +734,6 @@ class InfaqActivityDetailScreen extends StatelessWidget {
     bool isStatus = false,
     Color? statusColor,
   }) {
-    final isDark = context.isDarkMode;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -921,15 +741,13 @@ class InfaqActivityDetailScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: pRegular12.copyWith(
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
+            style: pRegular12.copyWith(color: AppColor.globalTextSecondary),
           ),
           if (isStatus)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: (statusColor ?? Colors.grey).withOpacity(0.12),
+                color: (statusColor ?? Colors.grey).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -953,18 +771,15 @@ class InfaqActivityDetailScreen extends StatelessWidget {
     BuildContext context,
     List<InstructionItem> instructions,
   ) {
-    final isDark = context.isDarkMode;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 10),
           child: Text(
-            'Panduan & Cara Pembayaran',
-            style: pBold14.copyWith(
+            'Panduan Pembayaran',
+            style: pSemiBold14.copyWith(
               color: context.theme.colorScheme.onSurface,
-              letterSpacing: -0.2,
             ),
           ),
         ),
@@ -973,10 +788,8 @@ class InfaqActivityDetailScreen extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
               color: context.theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColor.globalBorder),
             ),
             child: Theme(
               data: context.theme.copyWith(dividerColor: Colors.transparent),
@@ -1005,8 +818,8 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                               margin: const EdgeInsets.only(top: 2),
                               padding: const EdgeInsets.all(5),
                               decoration: BoxDecoration(
-                                color: AppColor.primaryColorDark.withOpacity(
-                                  0.12,
+                                color: AppColor.primaryColor.withValues(
+                                  alpha: 0.12,
                                 ),
                                 shape: BoxShape.circle,
                               ),
@@ -1014,7 +827,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                                 child: Text(
                                   '${entry.key + 1}',
                                   style: pBold10.copyWith(
-                                    color: AppColor.primaryColorDark,
+                                    color: AppColor.primaryColor,
                                     fontSize: 10,
                                   ),
                                 ),
@@ -1044,26 +857,15 @@ class InfaqActivityDetailScreen extends StatelessWidget {
   }
 
   Widget _buildBottomAction(BuildContext context, DonationDetailItem donation) {
-    final isDark = context.isDarkMode;
-    final bool isUnpaid = donation.payment.status.toUpperCase() == 'UNPAID' ||
+    final bool isUnpaid =
+        donation.payment.status.toUpperCase() == 'UNPAID' ||
         donation.status.toLowerCase() == 'pending';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColor.globalBorder)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1091,36 +893,34 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   elevation: 0,
                 ),
                 child: Text(
                   'Konfirmasi Pembayaran via WhatsApp',
-                  style: pMedium14.copyWith(color: Colors.white),
+                  style: pSemiBold14.copyWith(color: Colors.white),
                 ),
               ),
             ),
             const SizedBox(height: 8),
           ],
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => Get.offAllNamed(Routes.main),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-              child: Text(
-                'Kembali ke Beranda',
-                style: pMedium12.copyWith(
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
-                ),
-              ),
-            ),
-          ),
+          // SizedBox(
+          //   width: double.infinity,
+          //   child: TextButton(
+          //     onPressed: () => Get.offAllNamed(Routes.main),
+          //     style: TextButton.styleFrom(
+          //       padding: const EdgeInsets.symmetric(vertical: 10),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(14),
+          //       ),
+          //     ),
+          //     child: Text(
+          //       'Kembali ke Beranda',
+          //       style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -1134,14 +934,14 @@ class InfaqActivityDetailScreen extends StatelessWidget {
       highlightColor: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(
             children: [
               Container(
                 height: 180,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1149,7 +949,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 height: 90,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1157,7 +957,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1165,7 +965,7 @@ class InfaqActivityDetailScreen extends StatelessWidget {
                 height: 160,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ],

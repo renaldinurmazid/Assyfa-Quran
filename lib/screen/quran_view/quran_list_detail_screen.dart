@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran_app/screen/quran_view/quran_list_detail_screen_controller.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app/models/quran_list_detail_model.dart';
 import 'package:quran_app/theme/font.dart';
@@ -27,7 +28,10 @@ class QuranListDetailScreen extends StatelessWidget {
         title: Obx(
           () => Text(
             controller.data.value?.namaLatin ?? '',
-            style: pSemiBold18.copyWith(color: Colors.white),
+            style: pSemiBold16.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         actions: [
@@ -107,7 +111,7 @@ class QuranListDetailScreen extends StatelessWidget {
                                         Text(
                                           ayat?.nomorAyat.toString() ?? '',
                                           style: pBold10.copyWith(
-                                            color: primaryColor,
+                                            color: AppColor.globalTextSecondary,
                                           ),
                                         ),
                                       ],
@@ -139,6 +143,8 @@ class QuranListDetailScreen extends StatelessWidget {
                                 style: pMedium14.copyWith(
                                   color: primaryColor,
                                   height: 1.4,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -150,6 +156,7 @@ class QuranListDetailScreen extends StatelessWidget {
                                     context,
                                   ).colorScheme.onSurface.withOpacity(0.85),
                                   height: 1.5,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -208,18 +215,7 @@ class QuranListDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(
-                    Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.1,
-                  ),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-              border: Border.all(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-              ),
+              border: Border.all(color: AppColor.globalBorder, width: 0.8),
             ),
             child: Row(
               children: [
@@ -228,15 +224,6 @@ class QuranListDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: IconButton(
                       onPressed: () => controller.playPauseAudio(),
@@ -277,7 +264,8 @@ class QuranListDetailScreen extends StatelessWidget {
                                 child: Text(
                                   reciter['name']!,
                                   style: pSemiBold14.copyWith(
-                                    color: Theme.of(context).primaryColor,
+                                    color: AppColor.globalTextSecondary,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               );

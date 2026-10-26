@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide TextInput;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -11,6 +11,7 @@ import 'package:quran_app/widgets/app_toast.dart';
 import 'package:quran_app/widgets/text_input.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_app/screen/haji&umrah/register/register_controller.dart';
+import 'package:quran_app/widgets/keyboard_avoiding_bar.dart';
 
 class HajiAndUmrahRegisterScreen extends StatelessWidget {
   const HajiAndUmrahRegisterScreen({super.key});
@@ -32,23 +33,17 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: context.theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text('Pendaftaran Umrah', style: pBold16),
-          backgroundColor: context.theme.scaffoldBackgroundColor,
-          elevation: 0,
+          title: Text('Pendaftaran Umrah', style: pSemiBold16),
+          centerTitle: false,
           leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: context.theme.colorScheme.onSurface,
-              size: 18,
-            ),
+            icon: const Icon(LucideIcons.arrowLeft),
             onPressed: () => Get.back(),
           ),
-          surfaceTintColor: Colors.transparent,
-          centerTitle: true,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -68,35 +63,14 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
             ),
           ),
         ),
-        bottomNavigationBar: _buildBottomButton(
-          context,
-          controller,
-          currencyFormat,
+        bottomNavigationBar: KeyboardAvoidingBar(
+          child: _buildBottomButton(context, controller, currencyFormat),
         ),
       );
     });
   }
 
   // --- STEP HEADER BUILDER ---
-  Widget _buildStepHeader(BuildContext context, String step, String title) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColor.primaryColorDark,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(step, style: pBold10.copyWith(color: Colors.white)),
-        ),
-        const SizedBox(width: 10),
-        Text(title, style: pBold14),
-      ],
-    );
-  }
-
-  // --- WIDGET BUILDERS ---
-
   Widget _buildPackageHeader(
     BuildContext context,
     HajiAndUmrahRegisterController controller,
@@ -104,28 +78,13 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
   ) {
     final package = controller.package;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: context.isDarkMode
-              ? [Colors.grey.shade900, const Color(0xFF0F0F0F)]
-              : [
-                  AppColor.primaryColor.withOpacity(0.06),
-                  AppColor.primaryColorDark.withOpacity(0.04),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColor.primaryColorDark.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: context.theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -133,12 +92,12 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColor.primaryColorDark.withOpacity(0.1),
-              shape: BoxShape.circle,
+              color: AppColor.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              IconlyLight.info_square,
-              color: AppColor.primaryColorDark,
+              LucideIcons.package,
+              color: AppColor.primaryColor,
               size: 24,
             ),
           ),
@@ -149,8 +108,9 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
               children: [
                 Text(
                   package.title ?? 'Paket Umrah',
-                  style: pBold14.copyWith(
-                    color: context.theme.colorScheme.onSurface,
+                  style: pSemiBold14.copyWith(
+                    color: AppColor.globalTextSecondary,
+                    fontWeight: FontWeight.w700,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -158,7 +118,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   currencyFormat.format(controller.packagePriceAmount),
-                  style: pBold16.copyWith(color: AppColor.primaryColorDark),
+                  style: pBold16.copyWith(color: AppColor.primaryColor),
                 ),
               ],
             ),
@@ -173,29 +133,25 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     HajiAndUmrahRegisterController controller,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader(context, "Langkah 1", "Tipe Pesanan"),
-          const SizedBox(height: 16),
+          Text(
+            "Tipe Pesanan",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
           Obx(() {
             final isPerorangan = controller.orderType.value == 'Perorangan';
             return Row(
@@ -205,7 +161,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                     context: context,
                     isSelected: isPerorangan,
                     title: 'Perorangan',
-                    icon: IconlyLight.user,
+                    icon: LucideIcons.user,
                     onTap: () => controller.setOrderType('Perorangan'),
                   ),
                 ),
@@ -215,7 +171,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                     context: context,
                     isSelected: !isPerorangan,
                     title: 'Keluarga',
-                    icon: IconlyLight.user_1,
+                    icon: LucideIcons.users,
                     onTap: () => controller.setOrderType('Keluarga'),
                   ),
                 ),
@@ -234,87 +190,35 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    final activeColor = AppColor.primaryColorDark;
-    final inactiveBorderColor = context.isDarkMode
-        ? Colors.grey.shade800
-        : Colors.grey.shade200;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? activeColor.withOpacity(0.04)
-              : context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? AppColor.primaryColor.withOpacity(0.04) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? activeColor : inactiveBorderColor,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppColor.primaryColor : AppColor.globalBorder,
+            width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: activeColor.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? activeColor.withOpacity(0.1)
-                    : (context.isDarkMode
-                          ? Colors.grey.shade900
-                          : Colors.grey.shade100),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? activeColor : Colors.grey,
-                size: 20,
-              ),
+            Icon(
+              icon,
+              color: isSelected ? AppColor.primaryColor : AppColor.globalTextSecondary,
+              size: 18,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                title,
-                style: pBold12.copyWith(
-                  color: isSelected
-                      ? activeColor
-                      : context.theme.colorScheme.onSurface,
-                ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: pMedium12.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isSelected ? AppColor.primaryColor : AppColor.globalTextSecondary,
               ),
-            ),
-            const SizedBox(width: 4),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? activeColor : Colors.grey.shade400,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: activeColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    )
-                  : null,
             ),
           ],
         ),
@@ -327,23 +231,13 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     HajiAndUmrahRegisterController controller,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,31 +245,20 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: _buildStepHeader(
-                  context,
-                  "Langkah 2",
-                  "Data Calon Jemaah",
+              Text(
+                "Data Calon Jemaah",
+                style: pSemiBold14.copyWith(
+                  color: AppColor.globalTextSecondary,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               Obx(() {
                 if (controller.orderType.value == 'Keluarga') {
-                  return TextButton.icon(
-                    onPressed: () =>
-                        _showJemaahBottomSheet(context, controller),
-                    icon: const Icon(
-                      Icons.add,
-                      size: 16,
-                      color: AppColor.primaryColorDark,
-                    ),
-                    label: Text(
-                      'Tambah',
-                      style: pBold12.copyWith(color: AppColor.primaryColorDark),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  return InkWell(
+                    onTap: () => _showJemaahBottomSheet(context, controller),
+                    child: Text(
+                      '+ Tambah',
+                      style: pSemiBold12.copyWith(color: AppColor.primaryColor),
                     ),
                   );
                 }
@@ -383,7 +266,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
               }),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Obx(() {
             return ListView.separated(
               shrinkWrap: true,
@@ -395,42 +278,27 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                 final isValid = jemaah.isValid;
 
                 return Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: context.theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isValid
-                          ? AppColor.primaryColorDark.withOpacity(0.2)
-                          : Colors.amber.shade300.withOpacity(0.3),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.01),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColor.globalBorder, width: 0.5),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 36,
-                        height: 36,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
                           color: isValid
-                              ? AppColor.primaryColorDark.withOpacity(0.1)
+                              ? AppColor.primaryColor.withOpacity(0.1)
                               : Colors.amber.withOpacity(0.1),
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          isValid
-                              ? Icons.check_circle
-                              : Icons.error_outline_rounded,
-                          color: isValid
-                              ? AppColor.primaryColorDark
-                              : Colors.amber.shade900,
-                          size: 20,
+                          isValid ? LucideIcons.checkCircle2 : LucideIcons.alertCircle,
+                          color: isValid ? AppColor.primaryColor : Colors.amber.shade700,
+                          size: 18,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -439,11 +307,10 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isValid
-                                  ? jemaah.name
-                                  : 'Lengkapi Data Jemaah ${index + 1}',
-                              style: pBold14.copyWith(
-                                color: context.theme.colorScheme.onSurface,
+                              isValid ? jemaah.name : 'Lengkapi Data Jemaah ${index + 1}',
+                              style: pSemiBold14.copyWith(
+                                color: AppColor.globalTextSecondary,
+                                fontWeight: FontWeight.w700,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -454,12 +321,8 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                                   ? '${jemaah.relationship} • ${jemaah.gender == 'male' ? 'Laki-laki' : 'Perempuan'}'
                                   : 'Harap isi data calon jemaah',
                               style: pRegular12.copyWith(
-                                color: isValid
-                                    ? context.theme.colorScheme.onSurfaceVariant
-                                    : Colors.amber.shade900,
-                                fontStyle: isValid
-                                    ? FontStyle.normal
-                                    : FontStyle.italic,
+                                color: isValid ? AppColor.globalTextSecondary : Colors.amber.shade700,
+                                fontStyle: isValid ? FontStyle.normal : FontStyle.italic,
                               ),
                             ),
                           ],
@@ -469,35 +332,20 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: Icon(
-                              IconlyLight.edit,
-                              color: AppColor.primaryColorDark,
-                              size: 20,
-                            ),
-                            onPressed: () => _showJemaahBottomSheet(
-                              context,
-                              controller,
-                              index: index,
-                            ),
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColor.primaryColorDark
-                                  .withOpacity(0.06),
-                              padding: const EdgeInsets.all(8),
+                          InkWell(
+                            onTap: () => _showJemaahBottomSheet(context, controller, index: index),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(LucideIcons.edit2, color: AppColor.primaryColor, size: 18),
                             ),
                           ),
                           if (controller.jemaahList.length > 1) ...[
                             const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(
-                                IconlyLight.delete,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              onPressed: () => controller.removeJemaah(index),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.red.withOpacity(0.06),
-                                padding: const EdgeInsets.all(8),
+                            InkWell(
+                              onTap: () => controller.removeJemaah(index),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(LucideIcons.trash2, color: Colors.red.shade400, size: 18),
                               ),
                             ),
                           ],
@@ -518,51 +366,73 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     BuildContext context,
     HajiAndUmrahRegisterController controller,
   ) {
+    InputDecoration inputDeco(String hint) {
+      return InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        hintText: hint,
+        hintStyle: pRegular12.copyWith(color: AppColor.globalTextSecondary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColor.globalBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColor.globalBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColor.globalBorder),
+        ),
+      );
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader(context, "Langkah 3", "Kontak Penanggung Jawab"),
-          const SizedBox(height: 16),
-          Text('Nama Lengkap Kontak', style: pBold12),
-          const SizedBox(height: 8),
-          TextInput(
+          Text(
+            "Kontak Penanggung Jawab",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
             controller: controller.contactNameController,
-            hintText: 'Nama Lengkap Kontak',
+            style: pMedium14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: inputDeco("Nama Lengkap Kontak"),
           ),
-          const SizedBox(height: 16),
-          Text('Nomor WhatsApp Kontak', style: pBold12),
-          const SizedBox(height: 8),
-          TextInput(
+          const SizedBox(height: 12),
+          TextField(
             controller: controller.contactPhoneController,
-            hintText: 'Nomor WhatsApp Kontak',
             keyboardType: TextInputType.phone,
+            style: pMedium14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: inputDeco("Nomor WhatsApp Kontak"),
           ),
-          const SizedBox(height: 16),
-          Text('Catatan Khusus (Opsional)', style: pBold12),
-          const SizedBox(height: 8),
-          TextInput(
+          const SizedBox(height: 12),
+          TextField(
             controller: controller.notesController,
-            hintText: 'Misal: Minta kamar dekat lift / kursi roda',
             maxLines: 3,
+            style: pMedium14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: inputDeco("Catatan Khusus (Opsional)"),
           ),
         ],
       ),
@@ -575,29 +445,25 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     NumberFormat currencyFormat,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader(context, "Langkah 4", "Tipe Pembayaran"),
-          const SizedBox(height: 16),
+          Text(
+            "Tipe Pembayaran",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
           Obx(() {
             final isLunas = controller.paymentType.value == 'Lunas';
             return Column(
@@ -621,30 +487,22 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: context.isDarkMode
-                          ? Colors.grey.shade900
-                          : AppColor.primaryColorDark.withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColor.primaryColorDark.withOpacity(0.15),
-                      ),
+                      color: AppColor.primaryColor.withOpacity(0.04),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColor.globalBorder, width: 0.5),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Total Harga Paket',
-                          style: pBold12.copyWith(
-                            color: context.theme.colorScheme.onSurfaceVariant,
-                          ),
+                          style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
                         ),
                         Text(
                           '${controller.jemaahList.length} x ${currencyFormat.format(controller.packagePriceAmount)}',
-                          style: pBold14.copyWith(
-                            color: AppColor.primaryColorDark,
-                          ),
+                          style: pSemiBold14.copyWith(color: AppColor.primaryColor, fontWeight: FontWeight.w800),
                         ),
                       ],
                     ),
@@ -665,34 +523,18 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    final activeColor = AppColor.primaryColorDark;
-    final inactiveBorderColor = context.isDarkMode
-        ? Colors.grey.shade800
-        : Colors.grey.shade200;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected
-              ? activeColor.withOpacity(0.04)
-              : context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? AppColor.primaryColor.withOpacity(0.04) : context.theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? activeColor : inactiveBorderColor,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppColor.primaryColor : AppColor.globalBorder,
+            width: isSelected ? 1.5 : 0.5,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: activeColor.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
         ),
         child: Row(
           children: [
@@ -702,45 +544,24 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: pBold14.copyWith(
-                      color: isSelected
-                          ? activeColor
-                          : context.theme.colorScheme.onSurface,
+                    style: pSemiBold14.copyWith(
+                      color: isSelected ? AppColor.primaryColor : AppColor.globalTextSecondary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: pRegular12.copyWith(
-                      color: context.theme.colorScheme.onSurfaceVariant,
-                    ),
+                    style: pRegular12.copyWith(color: AppColor.globalTextSecondary),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? activeColor : Colors.grey.shade400,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: activeColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    )
-                  : null,
+            Icon(
+              isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
+              color: isSelected ? AppColor.primaryColor : AppColor.globalBorder,
+              size: 20,
             ),
           ],
         ),
@@ -753,125 +574,67 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     HajiAndUmrahRegisterController controller,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade900
-              : Colors.grey.shade100,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader(context, "Langkah 5", "Metode Pembayaran"),
-          const SizedBox(height: 16),
+          Text(
+            "Metode Pembayaran",
+            style: pSemiBold14.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
           Obx(() {
             final selected = controller.selectedPaymentMethod.value;
             return GestureDetector(
               onTap: () => _showPaymentMethodBottomSheet(context, controller),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: context.theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: selected != null
-                        ? AppColor.primaryColorDark
-                        : (context.isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade200),
-                    width: selected != null ? 2 : 1,
-                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColor.globalBorder, width: 0.5),
                 ),
                 child: Row(
                   children: [
                     if (selected != null) ...[
-                      Container(
-                        width: 48,
-                        height: 32,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: context.isDarkMode
-                              ? Colors.grey.shade900
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: context.isDarkMode
-                                ? Colors.grey.shade800
-                                : Colors.grey.shade200,
-                          ),
-                        ),
-                        child: selected.logo != null && selected.logo!.isNotEmpty
-                            ? (selected.logo!.contains('.svg')
-                                  ? SvgPicture.network(
-                                      selected.logo!,
-                                      fit: BoxFit.contain,
-                                      placeholderBuilder: (_) => const Center(
-                                        child: SizedBox(
-                                          width: 12,
-                                          height: 12,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Image.network(
-                                      selected.logo!,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => const Icon(
-                                        IconlyLight.wallet,
-                                        size: 20,
-                                        color: Colors.grey,
-                                      ),
-                                    ))
-                            : const Icon(
-                                IconlyLight.wallet,
-                                size: 20,
-                                color: Colors.grey,
-                              ),
-                      ),
-                      const SizedBox(width: 16),
+                      selected.logo != null && selected.logo!.isNotEmpty
+                          ? (selected.logo!.contains('.svg')
+                              ? SvgPicture.network(selected.logo!, width: 30, height: 20)
+                              : Image.network(selected.logo!, width: 30, height: 20))
+                          : Icon(LucideIcons.wallet, size: 20, color: AppColor.globalTextSecondary),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           selected.name,
-                          style: pBold14.copyWith(
-                            color: AppColor.primaryColorDark,
+                          style: pSemiBold14.copyWith(
+                            color: AppColor.globalTextSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                      Text("Ubah", style: pSemiBold12.copyWith(color: AppColor.primaryColor)),
                     ] else ...[
-                      const Icon(
-                        IconlyLight.wallet,
-                        size: 22,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 16),
+                      Icon(LucideIcons.wallet, size: 20, color: AppColor.globalTextSecondary),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Pilih metode pembayaran',
-                          style: pRegular14.copyWith(
-                            color: context.theme.colorScheme.onSurfaceVariant,
+                          "Pilih Pembayaran",
+                          style: pSemiBold14.copyWith(
+                            color: AppColor.globalTextSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                      Icon(LucideIcons.chevronRight, size: 18, color: AppColor.globalTextSecondary),
                     ],
-                    const Icon(
-                      IconlyLight.arrow_right_2,
-                      size: 20,
-                      color: Colors.grey,
-                    ),
                   ],
                 ),
               ),
@@ -888,82 +651,57 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
     NumberFormat currencyFormat,
   ) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       decoration: BoxDecoration(
         color: context.theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: context.isDarkMode
-                ? Colors.grey.shade900
-                : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColor.globalBorder, width: 0.5)),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Total Pembayaran',
-                  style: pMedium10.copyWith(
-                    color: context.theme.colorScheme.onSurfaceVariant,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Total Pembayaran",
+                style: pSemiBold12.copyWith(color: AppColor.globalTextSecondary),
+              ),
+              Obx(() {
+                return Text(
+                  currencyFormat.format(controller.totalPrice),
+                  style: pSemiBold14.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColor.primaryColor,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Obx(() {
-                  return Text(
-                    currencyFormat.format(controller.totalPrice),
-                    style: pBold18.copyWith(color: AppColor.primaryColorDark),
-                  );
-                }),
-              ],
-            ),
+                );
+              }),
+            ],
           ),
-          const SizedBox(width: 16),
           Obx(() {
             final isValid = controller.isFormValid;
             final isLoading = controller.isLoading.value;
 
             return ElevatedButton(
-              onPressed: (isLoading || !isValid)
-                  ? null
-                  : controller.submitBooking,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.primaryColorDark,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 16,
-                ),
+                backgroundColor: AppColor.primaryColor,
+                disabledBackgroundColor: AppColor.primaryColor.withOpacity(0.4),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 elevation: 0,
-                disabledBackgroundColor: Colors.grey.shade300,
               ),
+              onPressed: (isLoading || !isValid) ? null : controller.submitBooking,
               child: isLoading
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
                   : Text(
-                      'Pesan Sekarang',
-                      style: pBold14.copyWith(color: Colors.white),
+                      "Pesan Sekarang",
+                      style: pMedium12.copyWith(color: Colors.white),
                     ),
             );
           }),
@@ -1037,7 +775,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                       style: pBold16,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(LucideIcons.x),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -1230,38 +968,38 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.theme.scaffoldBackgroundColor,
+      backgroundColor: context.theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
       builder: (_) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.3,
+          initialChildSize: 0.55,
+          minChildSize: 0.35,
           maxChildSize: 0.85,
           expand: false,
           builder: (context, scrollController) {
             return Column(
               children: [
-                // Drag handle
                 Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  width: 40,
+                  margin: const EdgeInsets.only(top: 10, bottom: 6),
+                  width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: AppColor.globalBorder,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 paddingHeader(context),
-                const Divider(height: 1),
+                Divider(height: 1, color: AppColor.globalBorder),
                 Expanded(
                   child: Obx(() {
                     if (controller.isLoading.value) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: AppColor.primaryColorDark,
+                          color: AppColor.primaryColor,
+                          strokeWidth: 2,
                         ),
                       );
                     }
@@ -1272,106 +1010,68 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                     }
                     return ListView.separated(
                       controller: scrollController,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(12),
                       itemCount: controller.paymentMethods.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final method = controller.paymentMethods[index];
-                        final isSelected =
-                            controller.selectedPaymentMethod.value?.id ==
-                            method.id;
+                        final isSelected = controller.selectedPaymentMethod.value?.id == method.id;
 
-                        return GestureDetector(
+                        return InkWell(
                           onTap: () {
                             controller.selectedPaymentMethod.value = method;
                             Navigator.pop(context);
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: context.theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
+                              color: isSelected
+                                  ? AppColor.primaryColor.withOpacity(0.04)
+                                  : context.theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected
-                                    ? AppColor.primaryColorDark
-                                    : Colors.transparent,
-                                width: 2,
+                                color: isSelected ? AppColor.primaryColor : AppColor.globalBorder,
+                                width: isSelected ? 1.5 : 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 48,
+                                  width: 44,
                                   height: 32,
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: context.isDarkMode
-                                        ? Colors.grey.shade900
-                                        : Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: context.isDarkMode
-                                          ? Colors.grey.shade800
-                                          : Colors.grey.shade200,
-                                    ),
-                                  ),
+                                  padding: const EdgeInsets.all(5),
                                   child: method.logo != null && method.logo!.isNotEmpty
                                       ? (method.logo!.contains('.svg')
-                                            ? SvgPicture.network(
-                                                method.logo!,
-                                                fit: BoxFit.contain,
-                                                placeholderBuilder: (_) =>
-                                                    const Center(
-                                                      child: SizedBox(
-                                                        width: 12,
-                                                        height: 12,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                            ),
-                                                      ),
-                                                    ),
-                                              )
-                                            : Image.network(
-                                                method.logo!,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const Icon(
-                                                      IconlyLight.wallet,
-                                                      size: 20,
-                                                      color: Colors.grey,
-                                                    ),
-                                              ))
-                                      : const Icon(
-                                          IconlyLight.wallet,
-                                          size: 20,
-                                          color: Colors.grey,
-                                        ),
+                                          ? SvgPicture.network(
+                                              method.logo!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) => Icon(LucideIcons.wallet, size: 16, color: AppColor.globalTextSecondary),
+                                            )
+                                          : Image.network(
+                                              method.logo!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) => Icon(LucideIcons.wallet, size: 16, color: AppColor.globalTextSecondary),
+                                            ))
+                                      : Icon(LucideIcons.wallet, size: 16, color: AppColor.globalTextSecondary),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     method.name,
-                                    style: pBold14.copyWith(
-                                      color: isSelected
-                                          ? AppColor.primaryColorDark
-                                          : context.theme.colorScheme.onSurface,
+                                    style: pSemiBold14.copyWith(
+                                      color: isSelected ? AppColor.primaryColor : context.theme.colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
-                                if (isSelected)
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: AppColor.primaryColorDark,
-                                    size: 24,
-                                  ),
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: isSelected
+                                      ? const Icon(LucideIcons.check, size: 13, color: AppColor.primaryColor)
+                                      : null,
+                                ),
                               ],
                             ),
                           ),
@@ -1443,7 +1143,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.close, color: context.theme.colorScheme.onSurface),
+            icon: Icon(LucideIcons.x, color: context.theme.colorScheme.onSurface),
             onPressed: () {
               Get.back();
             },
@@ -1466,7 +1166,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.check_circle_rounded,
+                  LucideIcons.checkCircle,
                   color: AppColor.primaryColorDark,
                   size: 48,
                 ),
@@ -1611,7 +1311,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
-                              IconlyLight.document,
+                              LucideIcons.copy,
                               color: Colors.white,
                               size: 16,
                             ),
@@ -1640,7 +1340,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                           ],
                         ),
                         const Icon(
-                          Icons.verified_user_outlined,
+                          LucideIcons.shieldCheck,
                           color: Color(0xFFD4AF37),
                           size: 20,
                         ),
@@ -1835,7 +1535,7 @@ class HajiAndUmrahRegisterScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Icon(
-                      IconlyLight.document,
+                      LucideIcons.copy,
                       color: AppColor.primaryColorDark,
                       size: 16,
                     ),

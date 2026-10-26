@@ -1,0 +1,45 @@
+{
+    "data": [
+        {
+            "id": 90,
+            "title": "Fondasi",
+            "subtitle": "Dasar",
+            "order": 1,
+            "themes": [
+                {
+                    "id": 101,
+                    "title": "Huruf",
+                    "goal": "Kenal huruf",
+                    "color": "#1d7946",
+                    "icon": null,
+                    "order": 1,
+                    "total_lessons": 1,
+                    "completed_lessons": 0,
+                    "progress_pct": 0,
+                    "is_locked": false,
+                    "levels": [
+                        {
+                            "id": 133,
+                            "name": "Level 1",
+                            "description": "Awal",
+                            "order": 1,
+                            "color": "#3B82F6",
+                            "icon": null,
+                            "total_lessons": 1,
+                            "completed_lessons": 0,
+                            "progress_pct": 0,
+                            "status": "not_started",
+                            "is_locked": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "stats": {
+        "total_xp": 0,
+        "total_lessons": 1,
+        "completed_lessons": 0,
+        "next_lesson_id": 357
+    }
+}

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/quran_mp3/quran_mp3_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/models/dropdown_surah_model.dart';
+import 'package:quran_app/theme/app_color.dart';
 
 class QuranMp3Screen extends StatefulWidget {
   const QuranMp3Screen({super.key});
@@ -41,7 +43,6 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        final isDark = context.isDarkMode;
         final primaryColor = Theme.of(context).primaryColor;
 
         return DraggableScrollableSheet(
@@ -58,7 +59,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                   height: 4,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
+                    color: AppColor.globalBorder,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -74,14 +75,15 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                     children: [
                       Text(
                         'Pilih Qori',
-                        style: pBold20.copyWith(
-                          color: context.theme.colorScheme.onSurface,
+                        style: pSemiBold16.copyWith(
+                          color: AppColor.globalTextSecondary,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       IconButton(
                         icon: Icon(
                           Icons.close,
-                          color: context.theme.colorScheme.onSurface,
+                          color: AppColor.globalTextSecondary,
                         ),
                         onPressed: () => Get.back(),
                       ),
@@ -97,26 +99,30 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.grey.shade900
-                          : const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(12),
+                      color: context.theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColor.globalBorder,
+                        width: 0.5,
+                      ),
                     ),
                     child: TextField(
                       controller: reciterSearchController,
                       onChanged: (value) => searchReciterQuery.value = value,
                       cursorColor: primaryColor,
                       style: pMedium14.copyWith(
-                        color: context.theme.colorScheme.onSurface,
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w700,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Cari qori...',
+                        hintText: 'Cari nama qori...',
                         hintStyle: pRegular14.copyWith(
-                          color: Colors.grey.shade500,
+                          color: AppColor.globalTextSecondary,
+                          fontWeight: FontWeight.w400,
                         ),
                         prefixIcon: Icon(
                           IconlyLight.search,
-                          color: Colors.grey.shade500,
+                          color: AppColor.globalTextSecondary,
                           size: 20,
                         ),
                         suffixIcon: Obx(
@@ -124,7 +130,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                               ? IconButton(
                                   icon: Icon(
                                     Icons.close,
-                                    color: Colors.grey.shade500,
+                                    color: AppColor.globalTextSecondary,
                                     size: 20,
                                   ),
                                   onPressed: () {
@@ -168,7 +174,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                         child: Text(
                           'Qori tidak ditemukan',
                           style: pMedium14.copyWith(
-                            color: Colors.grey.shade600,
+                            color: AppColor.globalTextSecondary,
                           ),
                         ),
                       );
@@ -205,9 +211,8 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                       itemCount: filteredReciters.length,
                       separatorBuilder: (context, index) => Divider(
                         height: 1,
-                        color: isDark
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade200,
+                        thickness: 0.5,
+                        color: AppColor.globalBorder,
                       ),
                       itemBuilder: (context, index) {
                         final reciter = filteredReciters[index];
@@ -218,14 +223,21 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                           contentPadding: EdgeInsets.zero,
                           title: Text(
                             reciter.name,
-                            style: pMedium16.copyWith(
+                            style: pMedium14.copyWith(
                               color: isSelected
                                   ? primaryColor
-                                  : context.theme.colorScheme.onSurface,
+                                  : AppColor.globalTextSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                             ),
                           ),
                           trailing: isSelected
-                              ? Icon(Icons.check_circle, color: primaryColor)
+                              ? Icon(
+                                  LucideIcons.check,
+                                  color: primaryColor,
+                                  size: 16,
+                                )
                               : null,
                           onTap: () {
                             controller.onSelectReciter(reciter);
@@ -246,7 +258,6 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isDarkMode;
     final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
@@ -254,15 +265,16 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
       appBar: AppBar(
         title: Text(
           'Murottal',
-          style: pBold20.copyWith(
+          style: pSemiBold16.copyWith(
             color: context.theme.colorScheme.onSurface,
             letterSpacing: -0.5,
           ),
         ),
         centerTitle: false,
-        backgroundColor: context.theme.scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        leading: IconButton(
+          icon: Icon(LucideIcons.arrowLeft),
+          onPressed: () => Get.back(),
+        ),
         iconTheme: IconThemeData(color: context.theme.colorScheme.onSurface),
         actions: [
           IconButton(
@@ -288,10 +300,12 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.grey.shade900
-                          : const Color(0xFFF5F5F5),
+                      color: context.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColor.globalBorder,
+                        width: 0.5,
+                      ),
                     ),
                     child: Obx(
                       () => TextField(
@@ -304,18 +318,18 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                         decoration: InputDecoration(
                           hintText: 'Cari surah...',
                           hintStyle: pRegular14.copyWith(
-                            color: Colors.grey.shade500,
+                            color: AppColor.globalTextSecondary,
                           ),
                           prefixIcon: Icon(
                             IconlyLight.search,
-                            color: Colors.grey.shade500,
+                            color: AppColor.globalTextSecondary,
                             size: 20,
                           ),
                           suffixIcon: controller.searchQuery.value.isNotEmpty
                               ? IconButton(
                                   icon: Icon(
                                     Icons.close,
-                                    color: Colors.grey.shade500,
+                                    color: AppColor.globalTextSecondary,
                                     size: 20,
                                   ),
                                   onPressed: controller.clearSearch,
@@ -356,7 +370,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                           Text(
                             'Surah tidak ditemukan',
                             style: pMedium14.copyWith(
-                              color: Colors.grey.shade600,
+                              color: AppColor.globalTextSecondary,
                             ),
                           ),
                         ],
@@ -394,7 +408,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                                       style: pMedium14.copyWith(
                                         color: isCurrentPlaying
                                             ? primaryColor
-                                            : Colors.grey.shade500,
+                                            : AppColor.globalTextSecondary,
                                       ),
                                     ),
                                   ),
@@ -422,7 +436,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                                         Text(
                                           '${surah.cityName} • ${surah.totalAyah} Ayat',
                                           style: pRegular12.copyWith(
-                                            color: Colors.grey.shade500,
+                                            color: AppColor.globalTextSecondary,
                                           ),
                                         ),
                                       ],
@@ -451,7 +465,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                                   else
                                     Icon(
                                       Icons.play_arrow_rounded,
-                                      color: Colors.grey.shade300,
+                                      color: AppColor.globalBorder,
                                       size: 20,
                                     ),
                                 ],
@@ -462,12 +476,10 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                           if (index < controller.surahList.length - 1)
                             Divider(
                               height: 1,
-                              thickness: 1,
+                              thickness: 0.5,
                               indent: 64, // Aligns with text
                               endIndent: 20,
-                              color: isDark
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade100,
+                              color: AppColor.globalBorder,
                             ),
                         ],
                       );
@@ -532,7 +544,6 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                         controller,
                         displaySurah,
                         primaryColor,
-                        isDark,
                       )
                     : const SizedBox.shrink(),
               );
@@ -548,7 +559,6 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
     QuranMp3Controller controller,
     DropdownSurah surah,
     Color primaryColor,
-    bool isDark,
   ) {
     final isPlaying = controller.isPlaying.value;
     final isLoading = controller.isAudioLoading.value;
@@ -557,18 +567,8 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
       decoration: BoxDecoration(
         color: context.theme.scaffoldBackgroundColor,
         border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
-            width: 1,
-          ),
+          top: BorderSide(color: AppColor.globalBorder, width: 0.5),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
       ),
       child: SafeArea(
         top: false,
@@ -587,7 +587,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                     height: 44,
                     width: 44,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: AppColor.globalBorder,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: ClipRRect(
@@ -621,7 +621,7 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                           controller.selectedReciter.value?.name ??
                               'Syeikh Mishary Rashid',
                           style: pRegular12.copyWith(
-                            color: Colors.grey.shade500,
+                            color: AppColor.globalTextSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -632,16 +632,6 @@ class _QuranMp3ScreenState extends State<QuranMp3Screen> {
                 ),
 
                 // Minimal Controls
-                // IconButton(
-                //   icon: Icon(
-                //     IconlyLight.heart,
-                //     color: Colors.grey.shade500,
-                //     size: 24,
-                //   ),
-                //   onPressed: () {
-                //     AppToast.success(message: 'Ditambahkan ke Favorit');
-                //   },
-                // ),
                 isLoading
                     ? Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),

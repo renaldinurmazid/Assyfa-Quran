@@ -41,32 +41,26 @@ class QuranPageScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.1),
+                          border: Border.all(color: AppColor.globalBorder),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          IconlyBold.info_square,
-                          color: Theme.of(context).primaryColor,
+                          LucideIcons.info,
+                          color: AppColor.globalTextSecondary,
                           size: 32,
                         ),
                       ),
                       const SizedBox(height: 20),
                       Text(
                         'Akhiri Bacaan?',
-                        style: pBold18.copyWith(
-                          color: Theme.of(context).primaryColor,
-                        ),
+                        style: pBold18.copyWith(color: AppColor.primaryColor),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Apakah Anda yakin ingin mengakhiri bacaan Al-Quran?',
                         style: pRegular14.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
+                          color: AppColor.globalTextSecondary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -151,6 +145,12 @@ class QuranPageScreen extends StatelessWidget {
                 child: AppBar(
                   centerTitle: false,
                   titleSpacing: 0,
+                  leading: IconButton(
+                    onPressed: () async {
+                      Navigator.maybePop(context);
+                    },
+                    icon: const Icon(LucideIcons.arrowLeft),
+                  ),
                   title: Obx(() {
                     if (controller.dataPage.isEmpty) {
                       return Text('Al-Quran', style: pBold18);
@@ -185,7 +185,7 @@ class QuranPageScreen extends StatelessWidget {
                                   child: Text(
                                     surahs.join(', '),
                                     style: pBold16.copyWith(
-                                      color: Theme.of(context).primaryColor,
+                                      color: AppColor.globalTextSecondary,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
@@ -194,7 +194,7 @@ class QuranPageScreen extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Icon(
                                   IconlyLight.arrow_down_2,
-                                  color: Theme.of(context).primaryColor,
+                                  color: AppColor.globalTextSecondary,
                                   size: 14,
                                 ),
                               ],
@@ -220,7 +220,7 @@ class QuranPageScreen extends StatelessWidget {
                       },
                       icon: Icon(
                         LucideIcons.search,
-                        color: Theme.of(context).primaryColor,
+                        color: AppColor.globalTextSecondary,
                         size: 22,
                       ),
                     ),
@@ -229,7 +229,7 @@ class QuranPageScreen extends StatelessWidget {
                         onPressed: () => controller.toggleTranslation(),
                         style: IconButton.styleFrom(
                           backgroundColor: controller.isTranslationVisible.value
-                              ? Theme.of(context).primaryColor.withOpacity(0.12)
+                              ? AppColor.globalTextSecondary.withOpacity(0.12)
                               : Colors.transparent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -238,7 +238,7 @@ class QuranPageScreen extends StatelessWidget {
                         tooltip: 'Terjemahan',
                         icon: Icon(
                           LucideIcons.bookOpen,
-                          color: Theme.of(context).primaryColor,
+                          color: AppColor.globalTextSecondary,
                           size: 22,
                         ),
                       ),
@@ -271,7 +271,7 @@ class QuranPageScreen extends StatelessWidget {
                       },
                       icon: Icon(
                         LucideIcons.moreVertical,
-                        color: Theme.of(context).primaryColor,
+                        color: AppColor.globalTextSecondary,
                         size: 22,
                       ),
                       shape: RoundedRectangleBorder(
@@ -289,7 +289,7 @@ class QuranPageScreen extends StatelessWidget {
                                 controller.isLandscape.value
                                     ? IconlyLight.document
                                     : IconlyLight.show,
-                                color: Theme.of(context).primaryColor,
+                                color: AppColor.globalTextSecondary,
                                 size: 18,
                               ),
                               const SizedBox(width: 12),
@@ -298,7 +298,8 @@ class QuranPageScreen extends StatelessWidget {
                                     ? 'Mode Potret'
                                     : 'Mode Lanskap',
                                 style: pMedium14.copyWith(
-                                  color: Theme.of(context).primaryColor,
+                                  color: AppColor.globalTextSecondary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -310,14 +311,15 @@ class QuranPageScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 IconlyLight.document,
-                                color: Theme.of(context).primaryColor,
+                                color: AppColor.globalTextSecondary,
                                 size: 18,
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 'Download Semua',
                                 style: pMedium14.copyWith(
-                                  color: Theme.of(context).primaryColor,
+                                  color: AppColor.globalTextSecondary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -329,14 +331,15 @@ class QuranPageScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 IconlyLight.info_square,
-                                color: Theme.of(context).primaryColor,
+                                color: AppColor.globalTextSecondary,
                                 size: 18,
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 'Info Detail',
                                 style: pMedium14.copyWith(
-                                  color: Theme.of(context).primaryColor,
+                                  color: AppColor.globalTextSecondary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -950,15 +953,6 @@ class QuranPageScreen extends StatelessWidget {
                                                 context,
                                               ).primaryColor,
                                               shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Theme.of(context)
-                                                      .primaryColor
-                                                      .withOpacity(0.3),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 4),
-                                                ),
-                                              ],
                                             ),
                                             child: Icon(
                                               controller.isPlaying.value
@@ -978,11 +972,11 @@ class QuranPageScreen extends StatelessWidget {
                                             horizontal: 16,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor.withOpacity(0.05),
+                                            border: Border.all(
+                                              color: AppColor.globalBorder,
+                                            ),
                                             borderRadius: BorderRadius.circular(
-                                              15,
+                                              12,
                                             ),
                                           ),
                                           child: DropdownButtonHideUnderline(
@@ -993,11 +987,10 @@ class QuranPageScreen extends StatelessWidget {
                                                     .value,
                                                 isExpanded: true,
                                                 icon: Icon(
-                                                  IconlyLight.arrow_down_2,
+                                                  LucideIcons.chevronDown,
                                                   size: 16,
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).primaryColor,
+                                                  color: AppColor
+                                                      .globalTextSecondary,
                                                 ),
                                                 items: controller.reciters.map((
                                                   reciter,
@@ -1007,9 +1000,10 @@ class QuranPageScreen extends StatelessWidget {
                                                     child: Text(
                                                       reciter['name']!,
                                                       style: pMedium14.copyWith(
-                                                        color: Theme.of(
-                                                          context,
-                                                        ).primaryColor,
+                                                        color: AppColor
+                                                            .globalTextSecondary,
+                                                        fontWeight:
+                                                            FontWeight.w700,
                                                       ),
                                                     ),
                                                   );
@@ -1039,19 +1033,17 @@ class QuranPageScreen extends StatelessWidget {
                                           height: 48,
                                           width: 48,
                                           decoration: BoxDecoration(
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor.withOpacity(0.05),
+                                            border: Border.all(
+                                              color: AppColor.globalBorder,
+                                            ),
                                             borderRadius: BorderRadius.circular(
-                                              15,
+                                              12,
                                             ),
                                           ),
                                           child: Icon(
                                             Icons.settings,
-                                            color: context.isDarkMode
-                                                ? AppColor.primaryColorDark
-                                                : AppColor.primaryColor,
-                                            size: 24,
+                                            color: AppColor.globalTextSecondary,
+                                            size: 20,
                                           ),
                                         ),
                                       ),
@@ -1461,18 +1453,24 @@ class QuranPageScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text("Pengaturan Audio", style: pSemiBold18),
-            const SizedBox(height: 8),
+            Text(
+              "Pengaturan Audio",
+              style: pSemiBold18.copyWith(
+                color: AppColor.globalTextSecondary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
               "Sesuaikan pengalaman mendengarkan murottal Anda",
-              style: pRegular12.copyWith(color: colorScheme.onSurfaceVariant),
+              style: pRegular12.copyWith(color: AppColor.globalTextSecondary),
             ),
             const SizedBox(height: 24),
             Obx(
               () => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Dari', style: pMedium12),
+                  Text('Dari', style: pSemiBold12),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -1585,7 +1583,7 @@ class QuranPageScreen extends StatelessWidget {
               () => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Sampai', style: pMedium12),
+                  Text('Sampai', style: pSemiBold12),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -1835,7 +1833,7 @@ class QuranPageScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: pMedium14)),
+          Expanded(child: Text(label, style: pSemiBold14)),
           child,
         ],
       ),
@@ -1847,13 +1845,14 @@ class QuranPageScreen extends StatelessWidget {
     QuranPageScreenController controller,
   ) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Obx(
         () => Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(16),
             color: Theme.of(context).colorScheme.surface,
+            border: Border.all(color: AppColor.globalBorder, width: 0.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1861,15 +1860,18 @@ class QuranPageScreen extends StatelessWidget {
               Text(
                 'Pergi Ke',
                 style: pSemiBold16.copyWith(
-                  color: Theme.of(context).primaryColor,
+                  color: AppColor.globalTextSecondary,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 24),
               // Tab Selector
               Container(
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(15),
+                  color: Theme.of(context).dividerColor.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColor.globalBorder, width: 0.5),
                 ),
                 child: Row(
                   children: [
@@ -1881,12 +1883,12 @@ class QuranPageScreen extends StatelessWidget {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: controller.tabIsAyah.value
-                                ? Theme.of(context).primaryColor
+                                ? AppColor.primaryColor
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Ayat',
@@ -1894,7 +1896,7 @@ class QuranPageScreen extends StatelessWidget {
                             style: pSemiBold14.copyWith(
                               color: controller.tabIsAyah.value
                                   ? Colors.white
-                                  : Colors.grey,
+                                  : AppColor.globalTextSecondary,
                             ),
                           ),
                         ),
@@ -1908,12 +1910,12 @@ class QuranPageScreen extends StatelessWidget {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: !controller.tabIsAyah.value
-                                ? Theme.of(context).primaryColor
+                                ? AppColor.primaryColor
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Halaman',
@@ -1921,7 +1923,7 @@ class QuranPageScreen extends StatelessWidget {
                             style: pSemiBold14.copyWith(
                               color: !controller.tabIsAyah.value
                                   ? Colors.white
-                                  : Colors.grey,
+                                  : AppColor.globalTextSecondary,
                             ),
                           ),
                         ),
@@ -1948,7 +1950,7 @@ class QuranPageScreen extends StatelessWidget {
                               Text(
                                 'Surah',
                                 style: pMedium12.copyWith(
-                                  color: Theme.of(context).hintColor,
+                                  color: AppColor.globalTextSecondary,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -1963,9 +1965,7 @@ class QuranPageScreen extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
-                                            color: context.isDarkMode
-                                                ? Colors.grey.shade800
-                                                : Colors.grey.shade300,
+                                            color: AppColor.globalBorder,
                                           ),
                                         ),
                                       ),
@@ -1981,16 +1981,14 @@ class QuranPageScreen extends StatelessWidget {
                                                   : controller
                                                         .selectedSurahName
                                                         .value,
-                                              style: pMedium12,
+                                              style: pMedium14,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           Icon(
-                                            IconlyLight.arrow_down_2,
+                                            LucideIcons.chevronDown,
                                             size: 16,
-                                            color: Theme.of(
-                                              context,
-                                            ).primaryColor,
+                                            color: AppColor.primaryColor,
                                           ),
                                         ],
                                       ),
@@ -2045,15 +2043,18 @@ class QuranPageScreen extends StatelessWidget {
                               Text(
                                 'Ayat',
                                 style: pMedium12.copyWith(
-                                  color: Theme.of(context).hintColor,
+                                  color: AppColor.globalTextSecondary,
                                 ),
                               ),
                               TextField(
                                 controller: controller.searchAyahController,
                                 keyboardType: TextInputType.number,
-                                style: pMedium12,
+                                style: pMedium14,
                                 decoration: InputDecoration(
                                   hintText: 'No',
+                                  hintStyle: pRegular14.copyWith(
+                                    color: AppColor.globalTextSecondary,
+                                  ),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.only(
                                     top: 12,
@@ -2061,16 +2062,12 @@ class QuranPageScreen extends StatelessWidget {
                                   ),
                                   enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: context.isDarkMode
-                                          ? Colors.grey.shade800
-                                          : Colors.grey.shade300,
+                                      color: AppColor.globalBorder,
                                     ),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: context.isDarkMode
-                                          ? Colors.grey.shade800
-                                          : Colors.grey.shade300,
+                                      color: AppColor.globalBorder,
                                     ),
                                   ),
                                 ),
@@ -2087,7 +2084,7 @@ class QuranPageScreen extends StatelessWidget {
                         Text(
                           'Halaman',
                           style: pMedium12.copyWith(
-                            color: Theme.of(context).hintColor,
+                            color: AppColor.globalTextSecondary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -2096,9 +2093,7 @@ class QuranPageScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
-                                  color: context.isDarkMode
-                                      ? Colors.grey.shade800
-                                      : Colors.grey.shade300,
+                                  color: AppColor.globalBorder,
                                 ),
                               ),
                             ),
@@ -2106,13 +2101,18 @@ class QuranPageScreen extends StatelessWidget {
                               () => DropdownButton<int>(
                                 value: controller.selectedPage.value,
                                 isExpanded: true,
+                                icon: Icon(
+                                  LucideIcons.chevronDown,
+                                  size: 16,
+                                  color: AppColor.primaryColor,
+                                ),
                                 items: controller.listPages
                                     .map(
                                       (page) => DropdownMenuItem(
                                         value: page,
                                         child: Text(
                                           'Halaman $page',
-                                          style: pRegular12,
+                                          style: pRegular14,
                                         ),
                                       ),
                                     )
@@ -2136,21 +2136,15 @@ class QuranPageScreen extends StatelessWidget {
                       onPressed: () => Get.back(),
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        side: BorderSide(
-                          color: context.isDarkMode
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade500,
-                        ),
-                        minimumSize: const Size(0, 50),
+                        side: BorderSide(color: AppColor.globalBorder),
+                        minimumSize: const Size(0, 48),
                       ),
                       child: Text(
                         'Batal',
                         style: pSemiBold14.copyWith(
-                          color: context.isDarkMode
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade500,
+                          color: AppColor.globalTextSecondary,
                         ),
                       ),
                     ),
@@ -2162,11 +2156,11 @@ class QuranPageScreen extends StatelessWidget {
                           ? controller.onJumpToAyah()
                           : controller.onJumpToPage(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
+                        backgroundColor: AppColor.primaryColor,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        minimumSize: const Size(0, 50),
+                        minimumSize: const Size(0, 48),
                         elevation: 0,
                       ),
                       child: Text(
@@ -2191,85 +2185,90 @@ class QuranPageScreen extends StatelessWidget {
     controller.searchSurahController.clear();
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         height: MediaQuery.of(Get.context!).size.height * 0.7,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(16),
           color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: AppColor.globalBorder, width: 0.5),
         ),
         child: Column(
           children: [
             // Header Search Bar
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: AppColor.globalBorder, width: 0.5),
                 ),
               ),
-              child: Column(
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? 0.2
-                                      : 0.04,
-                                ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                  Expanded(
+                    child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColor.globalBorder,
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.search,
+                            size: 18,
+                            color: AppColor.globalTextSecondary,
                           ),
-                          child: TextField(
-                            controller: controller.searchSurahController,
-                            onChanged: (value) =>
-                                controller.onSearchChanged(value),
-                            style: pMedium14,
-                            decoration: InputDecoration(
-                              hintText: 'Cari Surat...',
-                              hintStyle: pRegular14.copyWith(
-                                color: Theme.of(context).hintColor,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: controller.searchSurahController,
+                              onChanged: (value) =>
+                                  controller.onSearchChanged(value),
+                              style: pMedium14.copyWith(
+                                color: AppColor.globalTextSecondary,
+                                fontWeight: FontWeight.w700,
                               ),
-                              border: InputBorder.none,
-                              icon: Icon(
-                                IconlyLight.search,
-                                size: 20,
-                                color: Theme.of(context).primaryColor,
+                              decoration: InputDecoration(
+                                hintText: 'Cari Surat...',
+                                hintStyle: pRegular14.copyWith(
+                                  color: AppColor.globalTextSecondary,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () => Get.back(),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            IconlyLight.close_square,
-                            size: 22,
-                            color: Theme.of(context).hintColor,
-                          ),
-                        ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColor.primaryColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                      child: Icon(
+                        LucideIcons.x,
+                        size: 20,
+                        color: AppColor.globalTextSecondary,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -2277,11 +2276,15 @@ class QuranPageScreen extends StatelessWidget {
             // Tab Selector
             Obx(
               () => Container(
-                margin: const EdgeInsets.all(20),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(15),
+                  color: Theme.of(context).dividerColor.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColor.globalBorder, width: 0.5),
                 ),
                 child: Row(
                   children: [
@@ -2293,12 +2296,12 @@ class QuranPageScreen extends StatelessWidget {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: controller.tabIsSurat.value
-                                ? Theme.of(context).primaryColor
+                                ? AppColor.primaryColor
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Surat',
@@ -2306,7 +2309,7 @@ class QuranPageScreen extends StatelessWidget {
                             style: pSemiBold14.copyWith(
                               color: controller.tabIsSurat.value
                                   ? Colors.white
-                                  : Colors.grey,
+                                  : AppColor.globalTextSecondary,
                             ),
                           ),
                         ),
@@ -2320,12 +2323,12 @@ class QuranPageScreen extends StatelessWidget {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: !controller.tabIsSurat.value
-                                ? Theme.of(context).primaryColor
+                                ? AppColor.primaryColor
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Juz',
@@ -2333,7 +2336,7 @@ class QuranPageScreen extends StatelessWidget {
                             style: pSemiBold14.copyWith(
                               color: !controller.tabIsSurat.value
                                   ? Colors.white
-                                  : Colors.grey,
+                                  : AppColor.globalTextSecondary,
                             ),
                           ),
                         ),
@@ -2354,24 +2357,26 @@ class QuranPageScreen extends StatelessWidget {
                   Obx(
                     () => controller.isDialogLoading.value
                         ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             itemCount: controller.dropdownSurah.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final surah = controller.dropdownSurah[index];
                               return InkWell(
                                 onTap: () => controller.onSelectSurah(surah.id),
+                                borderRadius: BorderRadius.circular(12),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: context.isDarkMode
-                                            ? Colors.grey.shade800
-                                            : Colors.grey.shade300,
-                                      ),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColor.globalBorder,
+                                      width: 0.5,
                                     ),
                                   ),
                                   child: Row(
@@ -2386,11 +2391,14 @@ class QuranPageScreen extends StatelessWidget {
                                           ),
                                           Text(
                                             surah.id.toString(),
-                                            style: pBold12,
+                                            style: pBold12.copyWith(
+                                              color:
+                                                  AppColor.globalTextSecondary,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(width: 16),
+                                      const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -2398,12 +2406,17 @@ class QuranPageScreen extends StatelessWidget {
                                           children: [
                                             Text(
                                               surah.name,
-                                              style: pSemiBold16,
+                                              style: pSemiBold14.copyWith(
+                                                color: AppColor
+                                                    .globalTextSecondary,
+                                                fontWeight: FontWeight.w800,
+                                              ),
                                             ),
                                             Text(
                                               '${surah.translationName} • ${surah.totalAyah} Ayat',
                                               style: pRegular12.copyWith(
-                                                color: Colors.grey,
+                                                color: AppColor
+                                                    .globalTextSecondary,
                                               ),
                                             ),
                                           ],
@@ -2411,8 +2424,8 @@ class QuranPageScreen extends StatelessWidget {
                                       ),
                                       Text(
                                         surah.cityName,
-                                        style: pMedium12.copyWith(
-                                          color: Theme.of(context).primaryColor,
+                                        style: pSemiBold12.copyWith(
+                                          color: AppColor.primaryColor,
                                         ),
                                       ),
                                     ],
@@ -2426,93 +2439,135 @@ class QuranPageScreen extends StatelessWidget {
                   Obx(
                     () => controller.isDialogLoading.value
                         ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             itemCount: controller.dropdownJuz.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final juz = controller.dropdownJuz[index];
                               return Theme(
                                 data: Theme.of(
                                   context,
                                 ).copyWith(dividerColor: Colors.transparent),
-                                child: ExpansionTile(
-                                  tilePadding: EdgeInsets.zero,
-                                  title: Row(
-                                    children: [
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/png/frame.png',
-                                            height: 36,
-                                            width: 36,
-                                          ),
-                                          Text(
-                                            juz.juzNomor.toString(),
-                                            style: pBold12,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Text(
-                                        'Juz ${juz.juzNomor}',
-                                        style: pSemiBold16,
-                                      ),
-                                    ],
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColor.globalBorder,
+                                      width: 0.5,
+                                    ),
                                   ),
-                                  children: juz.surah.map((surah) {
-                                    return InkWell(
-                                      onTap: () => controller.onSelectSurah(
-                                        surah.id,
-                                        ayah: surah.startAyah,
-                                      ),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                          horizontal: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            bottom: BorderSide(
-                                              color: context.isDarkMode
-                                                  ? Colors.grey.shade800
-                                                  : Colors.grey.shade100,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Row(
+                                  child: ExpansionTile(
+                                    tilePadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Stack(
+                                          alignment: Alignment.center,
                                           children: [
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    surah.name,
-                                                    style: pMedium14,
-                                                  ),
-                                                  Text(
-                                                    '${surah.translationName} • ${surah.totalAyah} Ayat',
-                                                    style: pRegular12.copyWith(
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                            Image.asset(
+                                              'assets/images/png/frame.png',
+                                              height: 36,
+                                              width: 36,
                                             ),
                                             Text(
-                                              surah.cityName,
-                                              style: pMedium12.copyWith(
-                                                color: Theme.of(
-                                                  context,
-                                                ).primaryColor,
+                                              juz.juzNomor.toString(),
+                                              style: pBold12.copyWith(
+                                                color: AppColor.primaryColor,
                                               ),
                                             ),
                                           ],
                                         ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Juz ${juz.juzNomor}',
+                                          style: pSemiBold14.copyWith(
+                                            color: AppColor.globalTextSecondary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    children: [
+                                      Container(
+                                        color: AppColor.globalBorder
+                                            .withOpacity(0.2),
+                                        child: Column(
+                                          children: juz.surah.map((surah) {
+                                            return InkWell(
+                                              onTap: () =>
+                                                  controller.onSelectSurah(
+                                                    surah.id,
+                                                    ayah: surah.startAyah,
+                                                  ),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    top: BorderSide(
+                                                      color:
+                                                          AppColor.globalBorder,
+                                                      width: 0.5,
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            surah.name,
+                                                            style: pSemiBold14
+                                                                .copyWith(
+                                                                  color: AppColor
+                                                                      .globalTextSecondary,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            '${surah.translationName} • ${surah.totalAyah} Ayat',
+                                                            style: pRegular12
+                                                                .copyWith(
+                                                                  color: AppColor
+                                                                      .globalTextSecondary,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      surah.cityName,
+                                                      style: pSemiBold12
+                                                          .copyWith(
+                                                            color: AppColor
+                                                                .primaryColor,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
                                       ),
-                                    );
-                                  }).toList(),
+                                    ],
+                                  ),
                                 ),
                               );
                             },

@@ -1,0 +1,84 @@
+{
+    "mode": "main",
+    "score": 14,
+    "best_score": 14,
+    "pass_score": 80,
+    "passed": false,
+    "total": 7,
+    "correct_count": 1,
+    "wrong_count": 6,
+    "earned_points": 10,
+    "total_points": 70,
+    "results": [
+        {
+            "quiz_id": 225,
+            "is_correct": true,
+            "correct_answer": "a",
+            "explanation": null
+        },
+        {
+            "quiz_id": 226,
+            "is_correct": false,
+            "correct_answer": [
+                "1",
+                "3"
+            ],
+            "explanation": null
+        },
+        {
+            "quiz_id": 227,
+            "is_correct": false,
+            "correct_answer": true,
+            "explanation": null
+        },
+        {
+            "quiz_id": 228,
+            "is_correct": false,
+            "correct_answer": [
+                "buku"
+            ],
+            "explanation": null
+        },
+        {
+            "quiz_id": 229,
+            "is_correct": false,
+            "correct_answer": {
+                "1": "1",
+                "2": "2"
+            },
+            "explanation": null
+        },
+        {
+            "quiz_id": 230,
+            "is_correct": false,
+            "correct_answer": [
+                "x",
+                "y",
+                "z"
+            ],
+            "explanation": null
+        },
+        {
+            "quiz_id": 231,
+            "is_correct": false,
+            "correct_answer": "a",
+            "explanation": null
+        }
+    ],
+    "review_required": true,
+    "review_quiz_ids": [
+        226,
+        227,
+        228,
+        229,
+        230,
+        231
+    ],
+    "completed": false,
+    "just_completed": false,
+    "level_completed": false,
+    "xp_awarded": 10,
+    "total_xp": 10,
+    "motivation_message": null,
+    "next_lesson_id": null
+}

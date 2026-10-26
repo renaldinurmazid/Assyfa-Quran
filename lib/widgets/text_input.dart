@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/context_extensions.dart';
+import 'package:quran_app/theme/app_color.dart';
 
 import 'package:quran_app/theme/font.dart';
 
@@ -42,27 +43,15 @@ class TextInput extends StatelessWidget {
         hintStyle: pRegular12.copyWith(color: Colors.grey.shade500),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade300,
-          ),
+          borderSide: BorderSide(color: AppColor.globalBorder),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade300,
-          ),
+          borderSide: BorderSide(color: AppColor.globalBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade300,
-          ),
+          borderSide: BorderSide(color: AppColor.globalBorder),
         ),
       ),
     );

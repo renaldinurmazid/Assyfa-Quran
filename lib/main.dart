@@ -17,6 +17,7 @@ import 'package:quran_app/theme/app_color.dart';
 import 'package:toastification/toastification.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:quran_app/widgets/dismiss_keyboard_on_tap.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,7 @@ void main() async {
   ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FcmService.init();
-  
+
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
     androidNotificationChannelName: 'Audio playback',
@@ -45,7 +46,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-@override
+  @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
       child: GetMaterialApp(
@@ -55,17 +56,17 @@ class MyApp extends StatelessWidget {
           primaryColor: AppColor.primaryColor,
           scaffoldBackgroundColor: AppColor.backgroundColor,
           useMaterial3: true,
-          colorScheme: const ColorScheme.light(
+          colorScheme: ColorScheme.light(
             primary: AppColor.primaryColor,
             surface: AppColor.backgroundColor,
             onSurface: AppColor.textColor,
             surfaceContainer: AppColor.surfaceColor,
           ),
-          textTheme: GoogleFonts.poppinsTextTheme().apply(
+          textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
             bodyColor: AppColor.textColor,
             displayColor: AppColor.textColor,
           ),
-          appBarTheme: const AppBarTheme(
+          appBarTheme: AppBarTheme(
             backgroundColor: AppColor.backgroundColor,
             elevation: 0,
             iconTheme: IconThemeData(color: AppColor.textColor),
@@ -81,8 +82,10 @@ class MyApp extends StatelessWidget {
             onSurface: AppColor.textColorDark,
             surfaceContainer: AppColor.surfaceColorDark,
           ),
-          textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
-              .apply(
+          textTheme:
+              GoogleFonts.plusJakartaSansTextTheme(
+                ThemeData.dark().textTheme,
+              ).apply(
                 bodyColor: AppColor.textColorDark,
                 displayColor: AppColor.textColorDark,
               ),
@@ -94,6 +97,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
         themeMode: ThemeController.to.themeMode,
+        builder: (context, child) => DismissKeyboardOnTap(child: child),
         initialBinding: GlobalBinding(),
         initialRoute: AppPages.initial,
         getPages: AppPages.routes,

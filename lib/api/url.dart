@@ -18,6 +18,7 @@ class Url {
   static const String quranOfflineIndex = '/api/quran/offline/index';
   static const String quranOfflinePage = '/api/quran/offline/page';
   static const String quranOfflineDropdowns = '/api/quran/offline/dropdowns';
+  static const String asmaulHusna = '/api/asmaul-husna';
   static const String campaigns = '/api/campaigns';
   static const String umrah = '/api/umrah';
   static const String umrahFilters = '/api/umrah/filters';
@@ -47,12 +48,15 @@ class Url {
   static const String mosqueCharity = '/api/mosque-charities';
   static const String banners = '/api/banners';
   static const String events = '/api/events';
+  static const String eventsFinished = '/api/events/finished';
 
   static const String mosqueCharityPayment = '/api/mosque-donations';
   static String checkMosqueDonationStatus(dynamic identifier) =>
       '/api/mosque-donations/$identifier/status';
   static const String leaderboard = '/api/reading-history/leaderboard';
   static const String myReferral = '/api/my-referral';
+
+  static const String appMenus = '/api/app-menus';
 
   // Event
   static const String myEventRegistrations = '/api/events/my-registrations';
@@ -105,11 +109,18 @@ class Url {
   static const String chatBotSend = '/api/chatbot/send';
 
   // Arabic Learning API
-  static const String arabicLevels = '/api/arabic-learning/levels';
+  static const String arabicRoadmap = '/api/arabic-learning/roadmap';
+  static const String arabicLeaderboard = '/api/arabic-learning/leaderboard';
   static String arabicLessons(int levelId) =>
       '/api/arabic-learning/levels/$levelId/lessons';
+  static String arabicLesson(int lessonId) =>
+      '/api/arabic-learning/lessons/$lessonId';
   static String arabicQuizzes(int lessonId) =>
       '/api/arabic-learning/lessons/$lessonId/quizzes';
-  static String arabicCompleteLesson(int lessonId) =>
-      '/api/arabic-learning/lessons/$lessonId/complete';
+  static String arabicReview(int lessonId) =>
+      '/api/arabic-learning/lessons/$lessonId/review';
+  static String arabicSubmit(int lessonId) =>
+      '/api/arabic-learning/lessons/$lessonId/submit';
+  static String arabicCheck(int quizId) =>
+      '/api/arabic-learning/quizzes/$quizId/check';
 }

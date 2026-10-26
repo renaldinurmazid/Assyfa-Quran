@@ -76,6 +76,7 @@ class EventRegistrationFormScreen extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 child: Form(
                   key: controller.formKey,

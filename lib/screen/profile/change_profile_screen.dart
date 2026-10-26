@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/profile/change_profile_controller.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/widgets/text_input.dart';
 
 class ChangeProfileScreen extends StatelessWidget {
@@ -19,12 +20,14 @@ class ChangeProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Ubah Profil', style: pSemiBold16),
         centerTitle: true,
-        backgroundColor: context.theme.scaffoldBackgroundColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(LucideIcons.arrowLeft, size: 20),
+        ),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
@@ -40,12 +43,10 @@ class ChangeProfileScreen extends StatelessWidget {
                         height: 100,
                         width: 100,
                         decoration: BoxDecoration(
-                          color: context.theme.colorScheme.surface,
+                          color: context.theme.scaffoldBackgroundColor,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: context.isDarkMode
-                                ? Colors.grey.shade800
-                                : Colors.grey.shade100,
+                            color: AppColor.globalBorder,
                             width: 2,
                           ),
                           image: controller.selectedImage.value != null
@@ -74,10 +75,9 @@ class ChangeProfileScreen extends StatelessWidget {
                                 AuthController.to.userData['profile_picture'] ==
                                     null
                             ? Icon(
-                                IconlyBold.profile,
+                                LucideIcons.user,
                                 size: 40,
-                                color: context.theme.colorScheme.primary
-                                    .withOpacity(0.3),
+                                color: AppColor.globalTextSecondary,
                               )
                             : null,
                       ),
@@ -89,23 +89,15 @@ class ChangeProfileScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: context.theme.colorScheme.primary,
+                              color: AppColor.primaryColor,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: context.theme.colorScheme.surface,
+                                color: context.theme.scaffoldBackgroundColor,
                                 width: 2,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.theme.colorScheme.primary
-                                      .withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
                             ),
                             child: const Icon(
-                              IconlyBold.camera,
+                              LucideIcons.camera,
                               size: 16,
                               color: Colors.white,
                             ),
@@ -154,14 +146,14 @@ class ChangeProfileScreen extends StatelessWidget {
                       ? null
                       : () => controller.updateProfile(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: context.theme.colorScheme.primary,
-                    disabledBackgroundColor: context.theme.colorScheme.primary
-                        .withOpacity(0.5),
+                    backgroundColor: AppColor.primaryColor,
+                    disabledBackgroundColor: AppColor.primaryColor
+                        .withValues(alpha: 0.5),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 52),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: controller.isLoading.value
@@ -195,7 +187,7 @@ class ChangeProfileScreen extends StatelessWidget {
         child: Text(
           label,
           style: pSemiBold12.copyWith(
-            color: context.theme.colorScheme.onSurfaceVariant,
+            color: AppColor.globalTextSecondary,
           ),
         ),
       ),

@@ -1,0 +1,69 @@
+{
+    "lesson": {
+        "id": 357,
+        "level_id": 133,
+        "title": "Pelajaran 1",
+        "description": "",
+        "kind": "lesson",
+        "order": 1,
+        "duration_minutes": 10,
+        "max_xp": 50,
+        "total_quizzes": 8,
+        "is_completed": false,
+        "is_locked": false,
+        "status": "not_started",
+        "score": 0,
+        "attempts": 0,
+        "level": {
+            "id": 133,
+            "name": "Level 1",
+            "color": "#3B82F6"
+        },
+        "theme": {
+            "id": 101,
+            "title": "Huruf"
+        },
+        "target": "Hafal 5 kata",
+        "objectives": [
+            "Kenal kata",
+            "Baca kata"
+        ],
+        "motivation_message": "Hebat!",
+        "pass_score": 80,
+        "xp": {
+            "lesson": 20,
+            "quiz": 10,
+            "perfect_bonus": 10,
+            "review": 10
+        },
+        "practice_count": 1,
+        "main_count": 7,
+        "need_review_count": 0
+    },
+    "contents": [
+        {
+            "id": 12,
+            "type": "vocab_card",
+            "title": "Kata",
+            "arabic_text": "كِتَابٌ",
+            "transliteration": "kitaabun",
+            "translation": "buku",
+            "reference": null,
+            "body": null,
+            "image": null,
+            "audio": null
+        },
+        {
+            "id": 13,
+            "type": "insight",
+            "title": null,
+            "arabic_text": null,
+            "transliteration": null,
+            "translation": null,
+            "reference": null,
+            "body": "Tips",
+            "image": null,
+            "audio": null
+        }
+    ]
+}

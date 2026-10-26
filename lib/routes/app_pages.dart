@@ -1,8 +1,11 @@
 import 'package:get/get.dart';
 import 'package:quran_app/screen/arabic-quran/arabic_quran_screen.dart';
 import 'package:quran_app/screen/arabic-quran/arabic_lesson_screen.dart';
+import 'package:quran_app/screen/arabic-quran/arabic_lesson_detail_screen.dart';
+import 'package:quran_app/screen/arabic-quran/arabic_leaderboard_screen.dart';
 import 'package:quran_app/screen/arabic-quran/arabic_quiz_screen.dart';
 import 'package:quran_app/bindings/arabic_quran_binding.dart';
+import 'package:quran_app/screen/asmaul-husna/asmaulhusna_screen.dart';
 import 'package:quran_app/screen/event/event_registration_list_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/app_share_leaderboard/app_share_leaderboard_screen.dart';
@@ -15,6 +18,7 @@ import 'package:quran_app/screen/charity/charity_donatur_screen.dart';
 import 'package:quran_app/screen/chat-bot/chat_bot_screen.dart';
 import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
 import 'package:quran_app/screen/event/event_registration_list_screen.dart';
+import 'package:quran_app/screen/find-qiblat/find_qiblat_screen.dart';
 import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
@@ -363,6 +367,18 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
+      name: Routes.arabicLeaderboard,
+      page: () => const ArabicLeaderboardScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.arabicLessonDetail,
+      page: () => const ArabicLessonDetailScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
       name: Routes.arabicQuiz,
       page: () => const ArabicQuizScreen(),
       transition: Transition.fadeIn,
@@ -458,6 +474,18 @@ class AppPages {
     GetPage(
       name: Routes.showEvent,
       page: () => const ShowEventScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.asmaulHusna,
+      page: () => const AsmaulhusnaScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.findQiblat,
+      page: () => const FindQiblatScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

@@ -11,6 +11,9 @@ class CharitySearchController extends GetxController {
   var isLoadingMore = false.obs;
   var query = ''.obs;
 
+  var popularCharities = <Datum>[].obs;
+  var isPopularLoading = false.obs;
+
   // Pagination
   var currentPage = 1;
   var hasMoreData = true.obs;
@@ -20,6 +23,25 @@ class CharitySearchController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController = ScrollController()..addListener(_scrollListener);
+    fetchPopularCharities();
+  }
+
+  Future<void> fetchPopularCharities() async {
+    try {
+      isPopularLoading.value = true;
+      final response = await Request().get(
+        Url.campaigns,
+        queryParameters: {'sort': 'popular', 'per_page': 3},
+      );
+      if (response.statusCode == 200) {
+        final data = Charity.fromJson(response.data);
+        popularCharities.value = data.data.data;
+      }
+    } catch (e) {
+      // fail silently
+    } finally {
+      isPopularLoading.value = false;
+    }
   }
 
   @override

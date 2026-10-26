@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/mosque/pick_location_controller.dart';
 import 'package:quran_app/screen/prayer_time/prayer_time_detail_controller.dart';
 import 'package:quran_app/theme/font.dart';
@@ -61,28 +62,20 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                 // Header Content
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Column(
                       children: [
                         const SizedBox(height: 10),
-                        // Top Bar (Back Button & Location)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Material(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                onTap: () => Get.back(),
-                                customBorder: const CircleBorder(),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Icon(
-                                    IconlyLight.arrow_left,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
+                            InkWell(
+                              onTap: () => Get.back(),
+                              borderRadius: BorderRadius.circular(100),
+                              child: Icon(
+                                LucideIcons.arrowLeft,
+                                size: 20,
+                                color: Colors.white,
                               ),
                             ),
                             Material(
@@ -124,6 +117,8 @@ class PrayerTimeDetailScreen extends StatelessWidget {
                                           style: pSemiBold12.copyWith(
                                             color: Colors.white,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       const SizedBox(width: 6),

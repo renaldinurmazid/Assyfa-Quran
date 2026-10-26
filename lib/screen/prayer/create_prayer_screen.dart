@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/prayer/create_prayer_controller.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 
 class CreatePrayerScreen extends StatelessWidget {
@@ -17,6 +19,10 @@ class CreatePrayerScreen extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Text('Buat Doa', style: pSemiBold16),
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(LucideIcons.arrowLeft, size: 20),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -45,12 +51,8 @@ class CreatePrayerScreen extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 color: context.theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: context.isDarkMode
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade200,
-                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColor.globalBorder),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: TextField(
@@ -58,14 +60,11 @@ class CreatePrayerScreen extends StatelessWidget {
                 maxLines: 8,
                 decoration: InputDecoration(
                   hintText: 'Tulis doa Anda di sini...',
-                  hintStyle: pRegular14.copyWith(
-                    color: context.theme.colorScheme.onSurfaceVariant
-                        .withOpacity(0.5),
-                  ),
+                  hintStyle: pRegular14,
                   border: InputBorder.none,
                 ),
                 style: pRegular14.copyWith(
-                  color: context.theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
                   height: 1.6,
                 ),
               ),
@@ -88,9 +87,7 @@ class CreatePrayerScreen extends StatelessWidget {
                     border: Border.all(
                       color: controller.isAnonymous.value
                           ? context.theme.colorScheme.primary.withOpacity(0.3)
-                          : context.isDarkMode
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade200,
+                          : AppColor.globalBorder,
                     ),
                   ),
                   child: Row(

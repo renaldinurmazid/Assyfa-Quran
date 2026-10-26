@@ -113,6 +113,21 @@ class NotificationService {
     print('NotificationService: Cancelled all prayer notifications');
   }
 
+  /// Nama file suara di bundle iOS (ios/Runner). iOS membatasi suara notifikasi
+  /// maksimal 30 detik, sehingga adzan di sini adalah versi potongan (.caf).
+  static String? _iosSoundFile(String soundName) {
+    switch (soundName) {
+      case 'beep':
+        return 'beep.wav';
+      case 'adzan_subuh':
+        return 'adzan_subuh.caf';
+      case 'adzan_general':
+        return 'adzan_general.caf';
+      default:
+        return null;
+    }
+  }
+
   static Future<void> schedulePrayerNotification({
     required int id,
     required String title,
@@ -129,7 +144,9 @@ class NotificationService {
       androidSoundRawResourceName = 'adzan_general';
     }
 
-    String channelId = 'prayer_channel_v2_$soundName';
+    // v3: channel Android tidak bisa diubah suaranya setelah dibuat, jadi ID dinaikkan
+    // agar channel lama (yang mungkin tersimpan tanpa suara) dibuat ulang.
+    String channelId = 'prayer_channel_v3_$soundName';
     String channelName = 'Prayer Times ($soundName)';
 
     // Register notification channel explicitly on Android with audio attributes
@@ -177,7 +194,7 @@ class NotificationService {
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        sound: soundName == 'silent' ? null : '$soundName.mp3',
+        sound: _iosSoundFile(soundName),
       ),
     );
 

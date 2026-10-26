@@ -46,7 +46,9 @@ abstract class Routes {
   static const theme = '/theme';
   static const String arabicQuran = '/arabic_quran';
   static const String arabicLesson = '/arabic_lesson';
+  static const String arabicLessonDetail = '/arabic_lesson_detail';
   static const String arabicQuiz = '/arabic_quiz';
+  static const String arabicLeaderboard = '/arabic_leaderboard';
   static const String levelDetail = '/level_detail';
   static const charityCampaignTabs = '/charity_campaign_tabs';
   static const mosqueCharityTabs = '/mosque_charity_tabs';
@@ -62,4 +64,6 @@ abstract class Routes {
   static const findMosque = '/find_mosque';
   static const chatBot = '/chat_bot';
   static const showEvent = '/show_event';
+  static const asmaulHusna = '/asmaul_husna';
+  static const findQiblat = '/find_qiblat';
 }

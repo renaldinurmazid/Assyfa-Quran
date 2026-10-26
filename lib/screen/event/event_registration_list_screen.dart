@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:quran_app/screen/event/event_registration_list_controller.dart';
 import 'package:quran_app/models/event_registration_list_model.dart';
@@ -8,8 +8,10 @@ import 'package:quran_app/models/event_payment_response_model.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-class EventRegistrationListScreen extends GetView<EventRegistrationListController> {
+class EventRegistrationListScreen
+    extends GetView<EventRegistrationListController> {
   const EventRegistrationListScreen({super.key});
 
   @override
@@ -17,12 +19,13 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Aktivitas Event', style: pBold16),
-        centerTitle: true,
-        backgroundColor: context.theme.scaffoldBackgroundColor,
+        title: Text('Aktivitas Event', style: pSemiBold16),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.theme.colorScheme.onSurface),
+          icon: Icon(
+            LucideIcons.arrowLeft,
+            color: context.theme.colorScheme.onSurface,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -36,11 +39,17 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(IconlyLight.ticket, size: 64, color: Colors.grey.shade400),
+                Icon(
+                  LucideIcons.calendarX,
+                  size: 64,
+                  color: AppColor.globalBorder,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada aktivitas event',
-                  style: pMedium14.copyWith(color: Colors.grey.shade600),
+                  style: pMedium14.copyWith(
+                    color: AppColor.globalTextSecondary,
+                  ),
                 ),
               ],
             ),
@@ -50,9 +59,9 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
         return RefreshIndicator(
           onRefresh: controller.fetchRegistrations,
           child: ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             itemCount: controller.registrations.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: 14),
             itemBuilder: (context, index) {
               final registration = controller.registrations[index];
               return _buildEventCard(context, registration);
@@ -63,39 +72,34 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
     );
   }
 
-  Widget _buildEventCard(BuildContext context, EventRegistrationItem registration) {
+  Widget _buildEventCard(
+    BuildContext context,
+    EventRegistrationItem registration,
+  ) {
     final event = registration.event;
     final payment = registration.payment;
-    final isDark = context.isDarkMode;
 
-    Color statusColor = Colors.grey;
-    String statusText = registration.status.toUpperCase();
+    Color statusColor = AppColor.globalTextSecondary;
 
     if (registration.status == 'approved') {
-      statusColor = Colors.green;
+      statusColor = AppColor.primaryColor; // Green
     } else if (registration.status == 'rejected') {
-      statusColor = Colors.red;
+      statusColor = Colors.red.shade600; // Red
     } else if (registration.status == 'pending') {
-      statusColor = Colors.orange;
+      statusColor = AppColor.secondaryColor; // Orange
     }
 
     return Container(
+      width: Get.width,
+      height: 142,
       decoration: BoxDecoration(
-        color: isDark ? AppColor.surfaceColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColor.globalBorder),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           onTap: () {
             if (payment != null && payment.status == 'UNPAID') {
               final paymentData = EventPaymentData(
@@ -119,123 +123,81 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
             }
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (event?.thumbnail != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          event!.thumbnail!,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 60,
-                              height: 60,
-                              color: Colors.grey.shade200,
-                              child: const Icon(IconlyLight.image, color: Colors.grey),
-                            );
-                          },
-                        ),
-                      )
-                    else
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: context.theme.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(IconlyLight.ticket, color: context.theme.primaryColor),
+                    Text(
+                      registration.registrationCode,
+                      style: pSemiBold12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w800,
                       ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event?.title ?? 'Event Tidak Diketahui',
-                            style: pBold14,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Reg ID: ${registration.registrationCode}',
-                            style: pRegular12.copyWith(color: Colors.grey),
-                          ),
-                          if (event != null && event.startDate != null) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(IconlyLight.calendar, size: 14, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(
-                                  DateFormat('dd MMM yyyy').format(event.startDate!),
-                                  style: pRegular12.copyWith(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
+                    ),
+                    Text(
+                      registration.status.toUpperCase(),
+                      style: pSemiBold12.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Status Pendaftaran', style: pRegular10.copyWith(color: Colors.grey)),
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            statusText,
-                            style: pBold10.copyWith(color: statusColor),
+                const SizedBox(height: 4),
+                const Divider(color: AppColor.borderColor),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: CachedNetworkImage(
+                          imageUrl: event?.thumbnail ?? "",
+                          width: 120,
+                          height: Get.height,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey,
+                            child: Icon(Icons.error),
                           ),
                         ),
-                      ],
-                    ),
-                    if (payment != null) ...[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('Status Pembayaran', style: pRegular10.copyWith(color: Colors.grey)),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Text(
-                                payment.status,
-                                style: pBold12.copyWith(
-                                  color: payment.status == 'UNPAID' ? Colors.orange : Colors.green,
-                                ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              event?.title ?? "",
+                              style: pSemiBold12.copyWith(
+                                color: AppColor.globalTextSecondary,
+                                fontWeight: FontWeight.w800,
                               ),
-                              if (payment.status == 'UNPAID') ...[
-                                const SizedBox(width: 4),
-                                const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.orange),
-                              ]
-                            ],
-                          ),
-                        ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              _formatDateRange(
+                                registration.event?.startDate,
+                                registration.event?.endDate,
+                              ),
+                              style: pMedium12.copyWith(
+                                color: AppColor.globalTextSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -243,5 +205,19 @@ class EventRegistrationListScreen extends GetView<EventRegistrationListControlle
         ),
       ),
     );
+  }
+
+  String _formatDateRange(DateTime? start, DateTime? end) {
+    if (start == null) return '-';
+    final startStr = DateFormat('dd MMM HH:mm').format(start);
+    if (end == null) return '$startStr WIB';
+
+    if (start.year == end.year &&
+        start.month == end.month &&
+        start.day == end.day) {
+      return '$startStr - ${DateFormat('HH:mm').format(end)} WIB';
+    }
+
+    return '$startStr - ${DateFormat('dd MMM HH:mm').format(end)} WIB';
   }
 }

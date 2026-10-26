@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/mosque/mosque_charity_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/theme/font.dart';
@@ -28,17 +28,10 @@ class MosqueMapScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            IconlyLight.arrow_left_2,
-            color: Theme.of(context).primaryColor,
-          ),
+          icon: Icon(LucideIcons.arrowLeft),
           onPressed: () => Get.back(),
         ),
-        title: Text(
-          'Lokasi Masjid',
-          style: pSemiBold16.copyWith(color: Theme.of(context).primaryColor),
-        ),
-        centerTitle: true,
+        title: Text('Lokasi Masjid', style: pSemiBold16),
       ),
       body: Stack(
         children: [

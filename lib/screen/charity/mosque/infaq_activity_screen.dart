@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/charity/mosque/infaq_activity_controller.dart';
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -22,6 +23,10 @@ class InfaqActivityScreen extends StatelessWidget {
         backgroundColor: context.theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(LucideIcons.arrowLeft, size: 20),
+        ),
       ),
       body: Column(
         children: [
@@ -42,10 +47,11 @@ class InfaqActivityScreen extends StatelessWidget {
 
   Widget _buildTabs(BuildContext context, InfaqActivityController controller) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        color: Colors.transparent,
+        border: Border.all(color: AppColor.globalBorder),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Obx(
@@ -88,17 +94,18 @@ class InfaqActivityScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? context.theme.colorScheme.primary
+              ? AppColor.primaryColor
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Center(
           child: Text(
             label,
-            style: pSemiBold14.copyWith(
+            style: pSemiBold12.copyWith(
               color: isSelected
                   ? Colors.white
-                  : context.theme.colorScheme.onSurfaceVariant,
+                  : AppColor.globalTextSecondary,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -121,10 +128,10 @@ class InfaqActivityScreen extends StatelessWidget {
 
       return RefreshIndicator(
         onRefresh: () => controller.fetchDonationHistory(isRefresh: true),
-        color: context.theme.colorScheme.primary,
+        color: AppColor.primaryColor,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           itemCount:
               controller.donations.length +
               (controller.hasNextPage.value ? 1 : 0),
@@ -139,7 +146,7 @@ class InfaqActivityScreen extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: context.theme.colorScheme.primary,
+                      color: AppColor.primaryColor,
                     ),
                   ),
                 ),
@@ -181,10 +188,10 @@ class InfaqActivityScreen extends StatelessWidget {
 
       return RefreshIndicator(
         onRefresh: () => controller.fetchMosqueDonationHistory(isRefresh: true),
-        color: context.theme.colorScheme.primary,
+        color: AppColor.primaryColor,
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           itemCount:
               controller.mosqueDonations.length +
               (controller.mosqueHasNextPage.value ? 1 : 0),
@@ -199,7 +206,7 @@ class InfaqActivityScreen extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: context.theme.colorScheme.primary,
+                      color: AppColor.primaryColor,
                     ),
                   ),
                 ),
@@ -247,7 +254,7 @@ class InfaqActivityScreen extends StatelessWidget {
         statusText = 'Menunggu';
         break;
       case 'success':
-        statusColor = context.theme.colorScheme.primary;
+        statusColor = AppColor.primaryColor;
         statusText = 'Berhasil';
         break;
       default:
@@ -259,15 +266,11 @@ class InfaqActivityScreen extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade100,
-          ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColor.globalBorder),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +291,7 @@ class InfaqActivityScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    IconlyLight.image,
+                    LucideIcons.image,
                     color: Colors.grey,
                     size: 20,
                   ),
@@ -310,8 +313,9 @@ class InfaqActivityScreen extends StatelessWidget {
                         child: Text(
                           title,
                           style: pSemiBold12.copyWith(
-                            color: context.theme.colorScheme.onSurface,
+                            color: AppColor.globalTextSecondary,
                             height: 1.3,
+                            fontWeight: FontWeight.w700,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -321,10 +325,10 @@ class InfaqActivityScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 3,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -342,14 +346,15 @@ class InfaqActivityScreen extends StatelessWidget {
                     children: [
                       Text(
                         amount,
-                        style: pBold14.copyWith(
-                          color: context.theme.colorScheme.primary,
+                        style: pSemiBold14.copyWith(
+                          color: AppColor.primaryColor,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
                         formattedDate,
                         style: pRegular10.copyWith(
-                          color: context.theme.colorScheme.onSurfaceVariant,
+                          color: AppColor.globalTextSecondary,
                         ),
                       ),
                     ],
@@ -371,25 +376,28 @@ class InfaqActivityScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: context.theme.colorScheme.primary.withOpacity(0.08),
+              color: AppColor.primaryColor.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              IconlyLight.chart,
+              LucideIcons.barChart2,
               size: 48,
-              color: context.theme.colorScheme.primary,
+              color: AppColor.primaryColor,
             ),
           ),
           const SizedBox(height: 20),
           Text(
             'Belum Ada Riwayat',
-            style: pBold16.copyWith(color: context.theme.colorScheme.onSurface),
+            style: pSemiBold16.copyWith(
+              color: AppColor.globalTextSecondary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Infaq yang Anda berikan akan muncul di sini',
             style: pRegular12.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
+              color: AppColor.globalTextSecondary,
             ),
           ),
         ],
@@ -399,7 +407,7 @@ class InfaqActivityScreen extends StatelessWidget {
 
   Widget _buildLoadingState(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       itemCount: 5,
       itemBuilder: (context, index) => Shimmer.fromColors(
         baseColor: context.isDarkMode
@@ -413,7 +421,7 @@ class InfaqActivityScreen extends StatelessWidget {
           height: 84,
           decoration: BoxDecoration(
             color: context.theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),

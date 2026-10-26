@@ -1,0 +1,27 @@
+{
+    "level": {
+        "id": 133,
+        "name": "Level 1",
+        "description": "Awal",
+        "color": "#3B82F6",
+        "theme": "Huruf"
+    },
+    "lessons": [
+        {
+            "id": 357,
+            "level_id": 133,
+            "title": "Pelajaran 1",
+            "description": "",
+            "kind": "lesson",
+            "order": 1,
+            "duration_minutes": 10,
+            "max_xp": 50,
+            "total_quizzes": 8,
+            "is_completed": false,
+            "is_locked": false,
+            "status": "not_started",
+            "score": 0,
+            "attempts": 0
+        }
+    ]
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/prayer/show_prayer_controller.dart';
@@ -7,6 +8,7 @@ import 'package:quran_app/screen/home/home_screen_controller.dart';
 import 'package:quran_app/screen/home/home_screen.dart';
 
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShowPrayerScreen extends StatelessWidget {
@@ -22,355 +24,305 @@ class ShowPrayerScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: context.theme.scaffoldBackgroundColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
         title: Text('Detail Doa', style: pSemiBold16),
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(LucideIcons.arrowLeft, size: 20),
+        ),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return _buildLoading(context);
-        }
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return _buildLoading(context);
+          }
 
-        final prayer = controller.prayer.value;
-        if (prayer == null) {
-          return Center(
-            child: Text(
-              'Gagal memuat data doa.',
-              style: pMedium14.copyWith(
-                color: context.theme.colorScheme.onSurfaceVariant,
+          final prayer = controller.prayer.value;
+          if (prayer == null) {
+            return Center(
+              child: Text(
+                'Gagal memuat data doa.',
+                style: pMedium14.copyWith(color: AppColor.globalTextSecondary),
               ),
+            );
+          }
+
+          bool isAnon = prayer.isAnonymous == true;
+          bool isAmened = prayer.isAmened == true;
+          String name = isAnon
+              ? "Hamba Allah"
+              : (prayer.isMyPrayer == true
+                    ? "Kamu"
+                    : (prayer.userName ?? "Hamba Allah"));
+          String time = prayer.publishedAt ?? "-";
+
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColor.globalBorder),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            height: 38,
+                            width: 38,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey.shade100,
+                              image:
+                                  (!isAnon &&
+                                      prayer.userProfile != null &&
+                                      prayer.userProfile!.isNotEmpty)
+                                  ? DecorationImage(
+                                      image: NetworkImage(prayer.userProfile!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child:
+                                (isAnon ||
+                                    prayer.userProfile == null ||
+                                    prayer.userProfile!.isEmpty)
+                                ? Icon(
+                                    LucideIcons.circleUserRound,
+                                    size: 20,
+                                    color: Colors.grey.shade400,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: pMedium14.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(time, style: pRegular12),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        prayer.content ?? "-",
+                        style: pRegular12.copyWith(fontStyle: FontStyle.italic),
+                      ),
+                      const SizedBox(height: 18),
+                      if (prayer.isMyPrayer != true)
+                        GestureDetector(
+                          onTap: () async {
+                            if (isAmened) return;
+
+                            if (AuthController.to.isLogin.value) {
+                              if (homeController != null) {
+                                await homeController.toggleAmen(prayer.id!);
+                                controller.fetchPrayerDetail(prayer.id!);
+                              }
+                            } else {
+                              if (homeController != null) {
+                                Get.dialog(
+                                  const HomeScreen().buildLoginDialog(
+                                    homeController,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Container(
+                            width: Get.width,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isAmened
+                                  ? context.theme.colorScheme.primary
+                                        .withValues(alpha: 0.1)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: isAmened
+                                    ? context.theme.colorScheme.primary
+                                    : AppColor.globalBorder,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isAmened
+                                      ? LucideIcons.heartHandshake
+                                      : LucideIcons.handshake,
+                                  size: 14,
+                                  color: isAmened
+                                      ? context.theme.colorScheme.primary
+                                      : context.theme.iconTheme.color,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isAmened ? "Diaminkan" : "Aamiin",
+                                  style: pMedium12.copyWith(
+                                    color: isAmened
+                                        ? context.theme.colorScheme.primary
+                                        : context
+                                              .theme
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                // Comment Section (Amens)
+                Container(
+                  width: Get.width,
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColor.globalBorder),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Diaminkan oleh",
+                            style: pSemiBold14.copyWith(
+                              color: AppColor.globalTextSecondary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          Text(
+                            "${prayer.amensCount ?? 0} orang",
+                            style: pSemiBold12.copyWith(
+                              color: AppColor.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (prayer.amens != null && prayer.amens!.isNotEmpty)
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: prayer.amens!.length,
+                          separatorBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(
+                              color: AppColor.globalBorder,
+                              height: 1,
+                            ),
+                          ),
+                          itemBuilder: (context, index) {
+                            final amenUser = prayer.amens![index];
+                            return Row(
+                              children: [
+                                Container(
+                                  height: 36,
+                                  width: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey.shade100,
+                                    image:
+                                        (amenUser.userProfile != null &&
+                                            amenUser.userProfile!.isNotEmpty)
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                              amenUser.userProfile!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child:
+                                      (amenUser.userProfile == null ||
+                                          amenUser.userProfile!.isEmpty)
+                                      ? Icon(
+                                          LucideIcons.user,
+                                          size: 18,
+                                          color: Colors.grey.shade400,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        amenUser.userName ?? 'User',
+                                        style: pSemiBold12.copyWith(
+                                          color: AppColor.globalTextSecondary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      // Backend only gives us userName and userProfile, not time. So let's omit the time or put a dash.
+                                      // If publishedAt is available we could use it, but usually it's not.
+                                      // I will just remove the time for now or just put empty.
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        )
+                      else
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              'Belum ada yang mengaminkan doa ini.',
+                              style: pMedium12.copyWith(
+                                color: AppColor.globalTextSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
           );
-        }
-
-        return SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. User Profile Card
-                _buildProfileCard(context, prayer),
-                const SizedBox(height: 20),
-
-                // 2. Prayer Content
-                _buildPrayerContent(context, prayer),
-                const SizedBox(height: 24),
-
-                // 3. Amen List
-                _buildAmenSection(context, prayer),
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        );
-      }),
-      bottomNavigationBar: Obx(() {
-        final prayer = controller.prayer.value;
-        if (prayer == null || prayer.isMyPrayer == true) {
-          return const SizedBox.shrink();
-        }
-        return _buildBottomAction(
-          context,
-          prayer,
-          controller,
-          homeController,
-        );
-      }),
-    );
-  }
-
-  Widget _buildProfileCard(BuildContext context, dynamic prayer) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade800
-              : Colors.grey.shade100,
-        ),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor:
-                context.theme.colorScheme.primary.withOpacity(0.1),
-            backgroundImage:
-                (prayer.isAnonymous == false && prayer.userProfile != null)
-                    ? NetworkImage(prayer.userProfile!)
-                    : null,
-            child: (prayer.isAnonymous == true || prayer.userProfile == null)
-                ? Text(
-                    (prayer.isAnonymous == true)
-                        ? 'H'
-                        : (prayer.userName?[0].toUpperCase() ?? 'U'),
-                    style: pBold24.copyWith(
-                      color: context.theme.colorScheme.primary,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 14),
-          Text(
-            prayer.isAnonymous == true
-                ? 'Hamba Allah'
-                : (prayer.isMyPrayer == true
-                    ? 'Kamu'
-                    : prayer.userName ?? 'User'),
-            style: pBold16.copyWith(
-              color: context.theme.colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            prayer.publishedAt ?? '-',
-            style: pRegular12.copyWith(
-              color: context.theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrayerContent(BuildContext context, dynamic prayer) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.isDarkMode
-              ? Colors.grey.shade800
-              : Colors.grey.shade100,
-        ),
-      ),
-      child: Column(
-        children: [
-          // Quote Icon
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: context.theme.colorScheme.primary.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.format_quote_rounded,
-              color: context.theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            prayer.content ?? '-',
-            style: pMedium14.copyWith(
-              color: context.theme.colorScheme.onSurface,
-              height: 1.7,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmenSection(BuildContext context, dynamic prayer) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Diaminkan Oleh', style: pSemiBold14),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: context.theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: Text(
-                '${prayer.amensCount ?? 0} Orang',
-                style: pSemiBold10.copyWith(
-                  color: context.theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (prayer.amens != null && prayer.amens!.isNotEmpty)
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: prayer.amens!.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final amenUser = prayer.amens![index];
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: context.theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: context.isDarkMode
-                        ? Colors.grey.shade800
-                        : Colors.grey.shade100,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: context.theme.colorScheme.primary
-                          .withOpacity(0.1),
-                      backgroundImage: amenUser.userProfile != null
-                          ? NetworkImage(amenUser.userProfile!)
-                          : null,
-                      child: amenUser.userProfile == null
-                          ? Text(
-                              amenUser.userName?[0].toUpperCase() ?? 'A',
-                              style: pBold10.copyWith(
-                                color: context.theme.colorScheme.primary,
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        amenUser.userName ?? 'User',
-                        style: pSemiBold12.copyWith(
-                          color: context.theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.check_circle_rounded,
-                      color: context.theme.colorScheme.primary,
-                      size: 16,
-                    ),
-                  ],
-                ),
-              );
-            },
-          )
-        else
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: context.theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: context.isDarkMode
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade100,
-              ),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.favorite_border_rounded,
-                  color: context.theme.colorScheme.onSurfaceVariant
-                      .withOpacity(0.3),
-                  size: 40,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Belum ada yang mengaminkan doa ini.',
-                  style: pRegular12.copyWith(
-                    color: context.theme.colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildBottomAction(
-    BuildContext context,
-    dynamic prayer,
-    ShowPrayerController controller,
-    HomeScreenController? homeController,
-  ) {
-    final isAmened = prayer.isAmened == true;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: context.isDarkMode
-                ? Colors.grey.shade900
-                : Colors.grey.shade100,
-          ),
-        ),
-      ),
-      child: ElevatedButton(
-        onPressed: () async {
-          if (AuthController.to.isLogin.value) {
-            if (homeController != null) {
-              await homeController.toggleAmen(prayer.id!);
-              controller.fetchPrayerDetail(prayer.id!);
-            }
-          } else {
-            if (homeController != null) {
-              Get.dialog(
-                const HomeScreen().buildLoginDialog(homeController),
-              );
-            }
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isAmened
-              ? context.theme.colorScheme.surfaceContainerHighest
-              : context.theme.colorScheme.primary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isAmened ? Icons.check_circle_rounded : Icons.favorite,
-              size: 18,
-              color: isAmened
-                  ? context.theme.colorScheme.onSurfaceVariant
-                  : Colors.white,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              isAmened ? 'Sudah Diaminkan' : 'Aamiin',
-              style: pSemiBold14.copyWith(
-                color: isAmened
-                    ? context.theme.colorScheme.onSurfaceVariant
-                    : Colors.white,
-              ),
-            ),
-          ],
-        ),
+        }),
       ),
     );
   }
@@ -391,15 +343,7 @@ class ShowPrayerScreen extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
             const SizedBox(height: 20),
@@ -407,7 +351,7 @@ class ShowPrayerScreen extends StatelessWidget {
               height: 200,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
           ],

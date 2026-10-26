@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/group/show_group_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/theme/app_color.dart';
 
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/widgets/text_input.dart';
@@ -153,7 +155,7 @@ class ShowGroupScreen extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
+        icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
         onPressed: () => Get.back(),
       ),
       actions: [
@@ -161,7 +163,8 @@ class ShowGroupScreen extends StatelessWidget {
           PopupMenuButton<String>(
             color: Get.context!.theme.colorScheme.surface,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: AppColor.globalBorder, width: 0.5),
             ),
             onSelected: (value) {
               if (value == 'edit') {
@@ -173,22 +176,23 @@ class ShowGroupScreen extends StatelessWidget {
                 Get.dialog(_buildDeleteGroup(controller));
               }
             },
-            icon: const Icon(IconlyLight.more_square, color: Colors.white),
+            icon: const Icon(LucideIcons.moreVertical, color: Colors.white),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
                     Icon(
-                      IconlyLight.edit,
-                      size: 20,
-                      color: Get.context!.theme.colorScheme.primary,
+                      LucideIcons.edit2,
+                      size: 18,
+                      color: AppColor.globalTextSecondary,
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'Edit Grup',
-                      style: pMedium14.copyWith(
-                        color: Get.context!.theme.colorScheme.onSurface,
+                      style: pMedium12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -199,30 +203,34 @@ class ShowGroupScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      IconlyLight.image,
-                      size: 20,
-                      color: Get.context!.theme.colorScheme.primary,
+                      LucideIcons.image,
+                      size: 18,
+                      color: AppColor.globalTextSecondary,
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'Ganti Cover',
-                      style: pMedium14.copyWith(
-                        color: Get.context!.theme.colorScheme.onSurface,
+                      style: pMedium12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
-              const PopupMenuDivider(),
+              PopupMenuDivider(color: AppColor.globalBorder),
               PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(IconlyLight.delete, size: 20, color: Colors.red),
+                    const Icon(LucideIcons.trash2, size: 18, color: Colors.red),
                     const SizedBox(width: 12),
                     Text(
                       'Hapus Grup',
-                      style: pMedium14.copyWith(color: Colors.red),
+                      style: pMedium12.copyWith(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -277,22 +285,33 @@ class ShowGroupScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          IconlyLight.profile,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                      ),
+                      Obx(() {
+                        final creator = controller.group.value?.createdBy;
+                        if (creator != null &&
+                            creator.profilePicture != null &&
+                            creator.profilePicture!.isNotEmpty) {
+                          return CircleAvatar(
+                            radius: 11,
+                            backgroundImage: NetworkImage(creator.profilePicture!),
+                          );
+                        }
+                        return Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            LucideIcons.user,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        );
+                      }),
                       const SizedBox(width: 8),
                       Obx(
                         () => Text(
-                          'Owner: ${controller.group.value?.createdBy.name ?? '-'}',
+                          'dibuat oleh: ${controller.group.value?.createdBy.name ?? '-'}',
                           style: pMedium14.copyWith(
                             color: Colors.white.withOpacity(0.9),
                           ),
@@ -377,8 +396,9 @@ class ShowGroupScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color:
-                      Get.context!.theme.colorScheme.primary.withOpacity(0.1),
+                  color: Get.context!.theme.colorScheme.primary.withOpacity(
+                    0.1,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
@@ -492,14 +512,15 @@ class ShowGroupScreen extends StatelessWidget {
                   Text(
                     'Lihat Semua',
                     style: pSemiBold14.copyWith(
-                      color: Get.context!.theme.colorScheme.primary,
+                      color: AppColor.globalTextSecondary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Icon(
                     IconlyLight.arrow_right_2,
                     size: 16,
-                    color: Get.context!.theme.colorScheme.primary,
+                    color: AppColor.globalTextSecondary,
                   ),
                 ],
               ),
@@ -748,7 +769,9 @@ class ShowGroupScreen extends StatelessWidget {
                 color: Get.context!.theme.colorScheme.primary.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Get.context!.theme.colorScheme.primary.withOpacity(0.1),
+                  color: Get.context!.theme.colorScheme.primary.withOpacity(
+                    0.1,
+                  ),
                   width: 2,
                 ),
               ),

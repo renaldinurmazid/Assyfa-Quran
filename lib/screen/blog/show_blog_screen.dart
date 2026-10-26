@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/blog/blog_detail_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/services/deep_link_service.dart';
@@ -26,19 +27,10 @@ class ShowBlogScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: Theme.of(context).iconTheme.color,
-            size: 20,
-          ),
+          icon: Icon(LucideIcons.arrowLeft, size: 20),
         ),
-        title: Text(
-          'Detail Blog',
-          style: pSemiBold16.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        centerTitle: true,
+        title: Text('Detail Blog', style: pSemiBold16),
+        centerTitle: false,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {

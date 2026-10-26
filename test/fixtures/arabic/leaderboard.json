@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"rank": 1, "user_id": 7, "name": "Aisyah", "profile_picture": "https://example.com/a.jpg", "total_xp": 300},
+    {"rank": 2, "user_id": 3, "name": "Budi", "profile_picture": null, "total_xp": 200}
+  ],
+  "meta": {"current_page": 1, "last_page": 2, "total": 31},
+  "my_stat": {"rank": 2, "user_id": 3, "name": "Budi", "profile_picture": null, "total_xp": 200}
+}

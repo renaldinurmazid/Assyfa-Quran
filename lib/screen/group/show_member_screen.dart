@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/group/show_member_controller.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/models/group/member_group_tilawah.dart';
@@ -93,10 +94,7 @@ class ShowMemberScreen extends StatelessWidget {
         ),
       ),
       leading: IconButton(
-        icon: Icon(
-          IconlyLight.arrow_left_2,
-          color: Theme.of(context).primaryColor,
-        ),
+        icon: Icon(LucideIcons.arrowLeft, size: 20),
         onPressed: () => Get.back(),
       ),
     );

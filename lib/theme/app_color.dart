@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class AppColor {
   // --- Light Mode ---
-  static const Color primaryColor = Color(0xFF123524); // Dark elegant green
+  static const Color primaryColor = Color(0xFF1d7946);
+  static const Color secondaryColor = Color(0xFFf5b014);
   static const Color backgroundColor = Color(0xFFFBFBFB);
   static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color textColor = Color(0xFF2F2F2F);
+  static Color textColor = Colors.grey.shade800;
   static const Color borderColor = Color(0xFFD8D8D8);
 
   // --- Dark Mode ---
@@ -23,4 +25,11 @@ class AppColor {
   ); // Elevated dark surface
   static const Color textColorDark = Color(0xFFE5E5E5);
   static const Color borderColorDark = Color(0xFF333333);
+
+  // --- Dynamic Theme Colors ---
+  static Color get globalBorder =>
+      Get.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
+
+  static Color get globalTextSecondary =>
+      Get.isDarkMode ? Colors.grey.shade300 : Colors.grey.shade800;
 }

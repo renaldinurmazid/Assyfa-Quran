@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/models/chat_bot_model.dart';
 import 'package:quran_app/screen/chat-bot/chat_bot_controller.dart';
 import 'package:quran_app/theme/app_color.dart';
@@ -25,7 +26,7 @@ class ChatBotScreen extends StatelessWidget {
         scrolledUnderElevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, size: 24, color: AppColor.textColor),
+            icon: Icon(Icons.menu, size: 24, color: AppColor.textColor),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
@@ -55,7 +56,7 @@ class ChatBotScreen extends StatelessWidget {
               children: [
                 Text(
                   'Kak Una',
-                  style: pSemiBold16.copyWith(color: AppColor.textColor),
+                  style: pSemiBold16.copyWith(color: AppColor.surfaceColorDark),
                 ),
                 Text(
                   'Asisten Virtual Quranuna',
@@ -67,7 +68,7 @@ class ChatBotScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close, color: AppColor.textColor),
+            icon: Icon(Icons.close, color: AppColor.textColor),
             onPressed: () => Get.back(),
           ),
         ],
@@ -125,15 +126,15 @@ class ChatBotScreen extends StatelessWidget {
           children: [
             // Minimalist Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Riwayat',
+                    'Riwayat Pesan',
                     style: pSemiBold16.copyWith(
-                      color: AppColor.textColor,
-                      fontSize: 18,
+                      color: AppColor.surfaceColorDark,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   IconButton(
@@ -141,11 +142,7 @@ class ChatBotScreen extends StatelessWidget {
                       controller.startNewChat();
                       Get.back();
                     },
-                    icon: const Icon(
-                      Icons.add,
-                      color: AppColor.textColor,
-                      size: 20,
-                    ),
+                    icon: Icon(Icons.add, color: AppColor.textColor, size: 20),
                     tooltip: 'Chat Baru',
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.grey.shade50,
@@ -159,7 +156,7 @@ class ChatBotScreen extends StatelessWidget {
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Divider(
                 color: Colors.grey.shade200,
                 height: 1,
@@ -243,14 +240,18 @@ class ChatBotScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 16),
                             InkWell(
                               onTap: () {
                                 Get.dialog(
                                   AlertDialog(
-                                    title: const Text('Hapus Riwayat Obrolan'),
-                                    content: const Text(
+                                    title: Text(
+                                      'Hapus Riwayat Obrolan',
+                                      style: pSemiBold16,
+                                    ),
+                                    content: Text(
                                       'Apakah Anda yakin ingin menghapus riwayat obrolan ini?',
+                                      style: pMedium14,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -258,9 +259,11 @@ class ChatBotScreen extends StatelessWidget {
                                     actions: [
                                       TextButton(
                                         onPressed: () => Get.back(),
-                                        child: const Text(
+                                        child: Text(
                                           'Batal',
-                                          style: TextStyle(color: Colors.grey),
+                                          style: pRegular14.copyWith(
+                                            color: AppColor.globalTextSecondary,
+                                          ),
                                         ),
                                       ),
                                       TextButton(
@@ -268,22 +271,21 @@ class ChatBotScreen extends StatelessWidget {
                                           Get.back();
                                           controller.deleteSession(session.id);
                                         },
-                                        child: const Text(
+                                        child: Text(
                                           'Hapus',
-                                          style: TextStyle(color: Colors.red),
+                                          style: pMedium14.copyWith(
+                                            color: Colors.red,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 );
                               },
-                              child: const Padding(
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(
-                                  Icons.delete_outline_rounded,
-                                  size: 20,
-                                  color: Colors.red,
-                                ),
+                              child: Icon(
+                                LucideIcons.x,
+                                size: 18,
+                                color: AppColor.globalTextSecondary,
                               ),
                             ),
                           ],
@@ -363,7 +365,8 @@ class ChatBotScreen extends StatelessWidget {
   }
 
   Widget _buildChatBubble(ChatMessage message) {
-    final isEscalatedMessage = !message.isUser &&
+    final isEscalatedMessage =
+        !message.isUser &&
         (message.isEscalated ||
             message.content.toLowerCase().contains('dialihkan ke admin') ||
             message.content.toLowerCase().contains('admin quranuna'));
@@ -414,7 +417,7 @@ class ChatBotScreen extends StatelessWidget {
                   MarkdownBody(
                     data: message.content,
                     styleSheet: MarkdownStyleSheet(
-                      p: pRegular14.copyWith(
+                      p: pMedium14.copyWith(
                         color: message.isUser
                             ? Colors.white
                             : AppColor.textColor,
@@ -426,7 +429,7 @@ class ChatBotScreen extends StatelessWidget {
                             : AppColor.textColor,
                         height: 1.4,
                       ),
-                      em: pRegular14.copyWith(
+                      em: pMedium14.copyWith(
                         color: message.isUser
                             ? Colors.white
                             : AppColor.textColor,
@@ -441,13 +444,19 @@ class ChatBotScreen extends StatelessWidget {
                       onTap: () async {
                         const String phoneNumber = "6283196064151";
                         final Uri url = Uri.parse('https://wa.me/$phoneNumber');
-                        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                        if (!await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        )) {
                           debugPrint('Could not launch $url');
                         }
                       },
                       borderRadius: BorderRadius.circular(50),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColor.primaryColor,
                           borderRadius: BorderRadius.circular(50),
@@ -507,12 +516,14 @@ class ChatBotScreen extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Obx(
                   () => TextField(
                     controller: controller.textController,
-                    style: pRegular14.copyWith(color: AppColor.textColor),
+                    style: pSemiBold14.copyWith(
+                      color: AppColor.globalTextSecondary,
+                    ),
                     enabled: !controller.isWaitingReply.value,
                     decoration: InputDecoration(
                       hintText: 'Tanya Kak Una...',
@@ -563,10 +574,10 @@ class ChatBotScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
                     color: controller.isWaitingReply.value
                         ? Colors.grey
                         : AppColor.primaryColor,
-                    shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.send_rounded,

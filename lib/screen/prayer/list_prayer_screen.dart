@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/screen/prayer/list_prayer_controller.dart';
 import 'package:quran_app/models/prayer_model.dart';
@@ -8,6 +9,7 @@ import 'package:quran_app/routes/app_routes.dart';
 import 'package:quran_app/screen/home/home_screen.dart';
 
 import 'package:quran_app/theme/font.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ListPrayerScreen extends StatefulWidget {
@@ -51,11 +53,12 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: context.theme.scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
         centerTitle: true,
         title: Text('Saling Mendoakan', style: pSemiBold16),
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(LucideIcons.arrowLeft),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: TabBar(
@@ -109,9 +112,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
           'Buat Doa',
           style: pSemiBold14.copyWith(color: Colors.white),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -193,9 +194,7 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
           const SizedBox(height: 20),
           Text(
             isAll ? 'Belum Ada Doa Hari Ini' : 'Kamu Belum Membuat Doa',
-            style: pBold16.copyWith(
-              color: context.theme.colorScheme.onSurface,
-            ),
+            style: pBold16.copyWith(color: context.theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Text(
@@ -217,7 +216,11 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
     ListPrayerController controller,
     PrayerItem prayer,
   ) {
-    return GestureDetector(
+    bool isAnon = prayer.isAnonymous == true;
+    String name = isAnon ? "Hamba Allah" : prayer.isMyPrayer == true ? "Kamu" : (prayer.userName ?? "Hamba Allah");
+    String time = prayer.publishedAt ?? "";
+
+    return InkWell(
       onTap: () {
         if (AuthController.to.isLogin.value) {
           Get.toNamed(Routes.showPrayer, arguments: prayer.id);
@@ -225,16 +228,16 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
           Get.dialog(const HomeScreen().buildLoginDialog(Get.find()));
         }
       },
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         decoration: BoxDecoration(
           color: context.theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: context.isDarkMode
-                ? Colors.grey.shade800
-                : Colors.grey.shade100,
+            color: AppColor.globalBorder,
+            width: 1,
           ),
         ),
         child: Column(
@@ -242,50 +245,49 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
           children: [
             // User Info
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor:
-                      context.theme.colorScheme.primary.withOpacity(0.1),
-                  backgroundImage:
-                      (prayer.isAnonymous == false &&
-                              prayer.userProfile != null)
-                          ? NetworkImage(prayer.userProfile!)
-                          : null,
-                  child: (prayer.isAnonymous == true ||
-                          prayer.userProfile == null)
-                      ? Text(
-                          (prayer.isAnonymous == true)
-                              ? 'H'
-                              : (prayer.userName?[0].toUpperCase() ?? 'U'),
-                          style: pBold12.copyWith(
-                            color: context.theme.colorScheme.primary,
-                          ),
+                Container(
+                  height: 36,
+                  width: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey.shade100,
+                    image: (!isAnon &&
+                            prayer.userProfile != null &&
+                            prayer.userProfile!.isNotEmpty)
+                        ? DecorationImage(
+                            image: NetworkImage(prayer.userProfile!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: (isAnon ||
+                          prayer.userProfile == null ||
+                          prayer.userProfile!.isEmpty)
+                      ? Icon(
+                          LucideIcons.user,
+                          size: 18,
+                          color: Colors.grey.shade400,
                         )
                       : null,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        prayer.isAnonymous == true
-                            ? 'Hamba Allah'
-                            : prayer.isMyPrayer == true
-                                ? 'Kamu'
-                                : prayer.userName ?? 'User',
-                        style: pSemiBold12.copyWith(
-                          color: context.theme.colorScheme.onSurface,
-                        ),
+                        name,
+                        style: pSemiBold12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        prayer.publishedAt ?? '-',
-                        style: pRegular10.copyWith(
-                          color: context.theme.colorScheme.onSurfaceVariant,
+                        time,
+                        style: pMedium10.copyWith(
+                          color: AppColor.globalTextSecondary,
                         ),
                       ),
                     ],
@@ -297,8 +299,8 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
 
             // Prayer Content
             Text(
-              prayer.content ?? '-',
-              style: pMedium14.copyWith(
+              '"${prayer.content ?? "-"}"',
+              style: pMedium12.copyWith(
                 color: context.theme.colorScheme.onSurface,
                 height: 1.6,
                 fontStyle: FontStyle.italic,
@@ -309,10 +311,8 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
             const SizedBox(height: 14),
 
             // Divider
-            Divider(
-              color: context.isDarkMode
-                  ? Colors.grey.shade800
-                  : Colors.grey.shade100,
+            const Divider(
+              color: AppColor.borderColor,
               height: 1,
             ),
             const SizedBox(height: 12),
@@ -322,77 +322,83 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Amen Avatars + Count
-                if (prayer.amensCount != 0)
-                  Row(
+                Expanded(
+                  child: Row(
                     children: [
                       if (prayer.latestAmens != null &&
                           prayer.latestAmens!.isNotEmpty) ...[
                         SizedBox(
-                          width: (prayer.latestAmens!.length > 3
-                                      ? 3
-                                      : prayer.latestAmens!.length) *
-                                  14.0 +
-                              10,
-                          height: 20,
+                          width: 24.0 +
+                              ((prayer.latestAmens!.length > 3
+                                          ? 3
+                                          : prayer.latestAmens!.length) -
+                                      1) *
+                                  16.0,
+                          height: 24,
                           child: Stack(
                             children: List.generate(
                               prayer.latestAmens!.length > 3
                                   ? 3
                                   : prayer.latestAmens!.length,
-                              (idx) {
-                                final amenUser = prayer.latestAmens![idx];
-                                return Positioned(
-                                  left: idx * 14.0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color:
-                                            context.theme.colorScheme.surface,
-                                        width: 1.5,
-                                      ),
+                              (i) => Positioned(
+                                left: i * 16.0,
+                                child: Container(
+                                  height: 24,
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey.shade200,
+                                    border: Border.all(
+                                      color: context.theme.colorScheme.surface,
+                                      width: 1.5,
                                     ),
-                                    child: CircleAvatar(
-                                      radius: 8,
-                                      backgroundColor: context
-                                          .theme.colorScheme.primary
-                                          .withOpacity(0.2),
-                                      backgroundImage:
-                                          amenUser.userProfile != null
-                                              ? NetworkImage(
-                                                  amenUser.userProfile!)
-                                              : null,
-                                      child: amenUser.userProfile == null
-                                          ? Text(
-                                              amenUser.userName?[0]
-                                                      .toUpperCase() ??
-                                                  'A',
-                                              style: pBold10.copyWith(
-                                                fontSize: 6,
-                                                color: context
-                                                    .theme.colorScheme.primary,
-                                              ),
-                                            )
-                                          : null,
-                                    ),
+                                    image: (prayer.latestAmens![i]
+                                                    .userProfile !=
+                                                null &&
+                                            prayer.latestAmens![i]
+                                                .userProfile!.isNotEmpty)
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                              prayer.latestAmens![i]
+                                                  .userProfile!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
                                   ),
-                                );
-                              },
-                            ),
+                                  child: (prayer.latestAmens![i].userProfile ==
+                                              null ||
+                                          prayer.latestAmens![i].userProfile!
+                                              .isEmpty)
+                                      ? Icon(
+                                          LucideIcons.user,
+                                          size: 12,
+                                          color: Colors.grey.shade400,
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            ).reversed.toList(),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                       ],
-                      Text(
-                        '${prayer.amensCount ?? 0} Aamiin',
-                        style: pRegular10.copyWith(
-                          color: context.theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      if (prayer.amensCount != 0)
+                        Expanded(
+                          child: Text(
+                            "di Aamiinkan ${prayer.amensCount ?? 0} kali",
+                            style: pMedium10.copyWith(
+                              color: AppColor.globalTextSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                      else
+                        const SizedBox.shrink(),
                     ],
-                  )
-                else
-                  const SizedBox.shrink(),
+                  ),
+                ),
 
                 // Amen Button
                 if (prayer.isMyPrayer != true)
@@ -413,35 +419,32 @@ class _ListPrayerScreenState extends State<ListPrayerScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: prayer.isAmened == true
-                            ? context.theme.colorScheme.primary
+                            ? context.theme.colorScheme.primary.withValues(alpha: 0.1)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(100),
                         border: Border.all(
-                          color: context.theme.colorScheme.primary
-                              .withOpacity(prayer.isAmened == true ? 1 : 0.3),
+                          color: prayer.isAmened == true 
+                            ? context.theme.colorScheme.primary 
+                            : AppColor.globalBorder,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            prayer.isAmened == true
-                                ? Icons.check_circle_rounded
-                                : IconlyLight.heart,
+                            LucideIcons.heartHandshake,
                             size: 14,
                             color: prayer.isAmened == true
-                                ? Colors.white
-                                : context.theme.colorScheme.primary,
+                                ? context.theme.colorScheme.primary
+                                : AppColor.globalTextSecondary,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            prayer.isAmened == true
-                                ? 'Diaminkan'
-                                : 'Aamiinkan',
+                            prayer.isAmened == true ? 'Diaminkan' : 'Aamiinkan',
                             style: pSemiBold10.copyWith(
                               color: prayer.isAmened == true
-                                  ? Colors.white
-                                  : context.theme.colorScheme.primary,
+                                  ? context.theme.colorScheme.primary
+                                  : AppColor.globalTextSecondary,
                             ),
                           ),
                         ],

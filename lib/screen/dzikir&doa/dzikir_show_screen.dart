@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/dzikir&doa/dzikir_show_screen_controller.dart';
 import 'package:quran_app/models/dzikir_model.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:quran_app/widgets/app_toast.dart';
 
 class DzikirShowScreen extends StatelessWidget {
   const DzikirShowScreen({super.key});
@@ -14,316 +13,164 @@ class DzikirShowScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(DzikirShowScreenController());
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (bool didPop, dynamic result) {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-      },
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: CustomScrollView(
-          slivers: [
-            _buildSliverAppBar(context, controller),
-            SliverToBoxAdapter(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return SizedBox(
-                    height: Get.height * 0.7,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  );
-                }
-
-                if (controller.data.isEmpty) {
-                  return SizedBox(
-                    height: Get.height * 0.7,
-                    child: Center(
-                      child: Text(
-                        'Tidak ada data dzikir',
-                        style: pRegular14.copyWith(
-                          color: Theme.of(context).hintColor,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(20),
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final dzikir = controller.data[index];
-                    return _DzikirCard(dzikir: dzikir, index: index + 1);
-                  },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16),
-                  itemCount: controller.data.length,
-                );
-              }),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(
-    BuildContext context,
-    DzikirShowScreenController controller,
-  ) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      backgroundColor: Theme.of(context).primaryColor,
-      elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        centerTitle: true,
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
         title: Obx(
-          () => Text(
-            controller.title.value,
-            style: pBold18.copyWith(color: Colors.white),
-          ),
+          () => Text(controller.title.value, style: pSemiBold16.copyWith()),
         ),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                IconlyLight.star,
-                size: 150,
-                color: Colors.white.withOpacity(0.1),
-              ),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: () => Get.back(),
         ),
       ),
-      actions: [
-        Obx(() {
-          final isAlMatsurat =
-              controller.title.value.toLowerCase().contains('al-matsurat');
-          if (!isAlMatsurat) return const SizedBox.shrink();
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColor.primaryColor),
+            );
+          }
 
-          return PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            color: Theme.of(context).colorScheme.surface,
-            onSelected: (value) {
-              if (value == 'toggleLandscape') {
-                controller.toggleOrientation();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem<String>(
-                value: 'toggleLandscape',
-                child: Row(
-                  children: [
-                    Icon(
-                      controller.isLandscape.value
-                          ? Icons.stay_current_portrait_rounded
-                          : Icons.stay_current_landscape_rounded,
-                      color: Theme.of(context).primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      controller.isLandscape.value
-                          ? 'Mode Potret'
-                          : 'Mode Landscape',
-                      style: pMedium14.copyWith(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
+          if (controller.data.isEmpty) {
+            return Center(
+              child: Text(
+                'Tidak ada data dzikir',
+                style: pRegular14.copyWith(color: AppColor.globalTextSecondary),
               ),
-            ],
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            physics: const BouncingScrollPhysics(),
+            itemCount: controller.data.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final dzikir = controller.data[index];
+              return _CollapsibleDzikirCard(dzikir: dzikir);
+            },
           );
         }),
-      ],
-      leading: IconButton(
-        icon: const Icon(IconlyLight.arrow_left_2, color: Colors.white),
-        onPressed: () => Get.back(),
       ),
     );
   }
 }
 
-class _DzikirCard extends StatelessWidget {
+class _CollapsibleDzikirCard extends StatefulWidget {
   final DzikirModel dzikir;
-  final int index;
 
-  const _DzikirCard({required this.dzikir, required this.index});
+  const _CollapsibleDzikirCard({required this.dzikir});
+
+  @override
+  State<_CollapsibleDzikirCard> createState() => _CollapsibleDzikirCardState();
+}
+
+class _CollapsibleDzikirCardState extends State<_CollapsibleDzikirCard> {
+  bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.1 : 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isExpanded = !isExpanded;
+        });
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColor.globalBorder, width: 0.5),
+          borderRadius: BorderRadius.circular(14),
+          color: Theme.of(
+            context,
+          ).scaffoldBackgroundColor, // Ensure tap detection
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        dzikir.title,
-                        style: pBold16.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          height: 1.2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Baca ${dzikir.read}x',
-                        style: pBold10.copyWith(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Teks Arab
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Theme.of(context).primaryColor.withOpacity(0.05),
-                    ),
-                  ),
+                Expanded(
                   child: Text(
-                    dzikir.arab,
-                    style: GoogleFonts.amiri(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      height: 2.2,
-                      color: Theme.of(context).colorScheme.onSurface,
+                    widget.dzikir.title,
+                    style: pSemiBold14.copyWith(
+                      color: AppColor.globalTextSecondary,
+                      fontWeight: FontWeight.w800,
                     ),
-                    textAlign: TextAlign.right,
-                    textDirection: TextDirection.rtl,
                   ),
                 ),
-                const SizedBox(height: 20),
-                // Transliterasi Latin
-                Text(
-                  dzikir.latin,
-                  style: pMedium14.copyWith(
-                    color: Theme.of(context).primaryColor.withOpacity(0.8),
-                    fontStyle: FontStyle.italic,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Terjemahan
-                Text(
-                  dzikir.arti,
-                  style: pRegular14.copyWith(
-                    color: Theme.of(context).hintColor,
-                    height: 1.6,
-                  ),
-                  textAlign: TextAlign.justify,
-                ),
-                const SizedBox(height: 20),
-                Divider(height: 1, color: Theme.of(context).dividerColor),
-                const SizedBox(height: 12),
+                const SizedBox(width: 8),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildActionButton(
-                      context,
-                      icon: Icons.copy_rounded,
-                      onTap: () {
-                        Clipboard.setData(
-                          ClipboardData(
-                            text:
-                                "${dzikir.title}\n\n${dzikir.arab}\n\n${dzikir.arti}",
-                          ),
-                        );
-                        AppToast.success(
-                          context: context,
-                          message: 'Dzikir berhasil disalin',
-                        );
-                      },
+                    Text(
+                      "dibaca ${widget.dzikir.read}x",
+                      style: pMedium12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: const Icon(LucideIcons.chevronDown, size: 20),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    BuildContext context, {
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: isExpanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 28),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            widget.dzikir.arab,
+                            style: pRegular16.copyWith(
+                              fontSize: 24,
+                              height: 2,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: GoogleFonts.amiri().fontFamily,
+                              color: AppColor.globalTextSecondary,
+                            ),
+                            textAlign: TextAlign.end,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          widget.dzikir.latin,
+                          style: pSemiBold16.copyWith(
+                            color: AppColor.primaryColor,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          widget.dzikir.arti,
+                          style: pRegular14.copyWith(
+                            color: AppColor.globalTextSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity, height: 0),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
       ),
     );
   }

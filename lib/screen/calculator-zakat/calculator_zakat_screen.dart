@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
 import 'package:quran_app/routes/app_routes.dart';
@@ -125,7 +126,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: context.isDarkMode ? Colors.grey.shade900 : Colors.white,
+            color: context.theme.scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.all(24),
@@ -136,7 +137,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: AppColor.globalBorder,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -146,23 +147,35 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: context.isDarkMode
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColor.globalBorder),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Rincian:', style: pMedium12),
+                    Text(
+                      'Rincian:',
+                      style: pSemiBold12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text(breakdown, style: pRegular12),
+                    Text(
+                      breakdown,
+                      style: pRegular12.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        height: 1.5,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Total Zakat yang Harus Dibayar:', style: pRegular12),
+              Text(
+                'Total Zakat yang Harus Dibayar:',
+                style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
+              ),
               const SizedBox(height: 8),
               Text(
                 currencyFormatter.format(total),
@@ -171,7 +184,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                       ? context.isDarkMode
                             ? Colors.white
                             : Colors.black
-                      : Colors.grey,
+                      : AppColor.globalTextSecondary,
                 ),
               ),
               const SizedBox(height: 32),
@@ -215,6 +228,7 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                           final campaignData = await calcController
                               .getCampaignDetail(campaignSlug);
                           if (campaignData != null) {
+                            if (!context.mounted) return;
                             Navigator.pop(context); // Tutup bottom sheet
                             Get.toNamed(
                               Routes.charityPayment,
@@ -231,12 +245,10 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: context.isDarkMode
-                        ? AppColor.primaryColorDark
-                        : AppColor.primaryColor,
+                    backgroundColor: AppColor.primaryColor,
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: calcController.isLoading.value
@@ -250,7 +262,10 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                         )
                       : Text(
                           'Bayar Sekarang',
-                          style: pMedium14.copyWith(color: Colors.white),
+                          style: pSemiBold14.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                 );
               }),
@@ -262,53 +277,46 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     );
   }
 
-  // void _resetForm() {
-  //   _jumlahOrangController.clear();
-  //   _hargaBerasController.clear();
-  //   _totalHartaController.clear();
-  //   _hargaEmasMaalController.clear();
-  //   _gajiBulananController.clear();
-  //   _bonusController.clear();
-  //   _hargaEmasPenghasilanController.clear();
-  //   _beratEmasController.clear();
-  //   _hargaEmasController.clear();
-  //   setState(() {
-  //     selectedZakatSlug = 'zakat-maal';
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         title: Text('Kalkulator Zakat', style: pSemiBold16),
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(LucideIcons.arrowLeft, size: 20),
+        ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           child: Column(
             children: [
               _buildTypeZakat(context),
               const SizedBox(height: 24),
               Expanded(
-                child: SingleChildScrollView(child: _buildDynamicForm(context)),
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: _buildDynamicForm(context),
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _calculateZakat,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.isDarkMode
-                      ? AppColor.primaryColorDark
-                      : AppColor.primaryColor,
+                  backgroundColor: AppColor.primaryColor,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: Text(
                   'Hitung Zakat',
-                  style: pMedium14.copyWith(color: Colors.white),
+                  style: pSemiBold14.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -344,7 +352,10 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: pMedium12),
+        Text(
+          label,
+          style: pMedium12.copyWith(color: AppColor.globalTextSecondary),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -353,52 +364,55 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 height: 52,
                 decoration: BoxDecoration(
-                  color: context.isDarkMode
-                      ? Colors.grey.shade900
-                      : Colors.grey.shade100,
-                  border: Border.all(
-                    color: context.isDarkMode
-                        ? Colors.grey.shade800
-                        : Colors.grey.shade300,
+                  border: Border(
+                    top: BorderSide(color: AppColor.globalBorder),
+                    bottom: BorderSide(color: AppColor.globalBorder),
+                    left: BorderSide(color: AppColor.globalBorder),
                   ),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
                   ),
                 ),
                 alignment: Alignment.center,
-                child: Text('Rp', style: pSemiBold14),
+                child: Text(
+                  'Rp',
+                  style: pSemiBold14.copyWith(
+                    color: AppColor.globalTextSecondary,
+                  ),
+                ),
               ),
             Expanded(
               child: TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
                 inputFormatters: isCurrency ? [_CurrencyInputFormatter()] : [],
-                style: pMedium14,
+                style: pMedium14.copyWith(
+                  color: AppColor.globalTextSecondary,
+                  fontWeight: FontWeight.w800,
+                ),
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(16),
                   hintText: hint,
-                  hintStyle: pRegular12.copyWith(color: Colors.grey),
+                  hintStyle: pRegular12.copyWith(
+                    color: AppColor.globalTextSecondary.withValues(alpha: 0.5),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: isCurrency
                         ? const BorderRadius.only(
-                            topRight: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
+                            topRight: Radius.circular(14),
+                            bottomRight: Radius.circular(14),
                           )
-                        : BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.isDarkMode
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade300,
-                    ),
+                        : BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColor.globalBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: isCurrency
                         ? const BorderRadius.only(
-                            topRight: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
+                            topRight: Radius.circular(14),
+                            bottomRight: Radius.circular(14),
                           )
-                        : BorderRadius.circular(12),
+                        : BorderRadius.circular(14),
                     borderSide: BorderSide(
                       color: AppColor.primaryColor,
                       width: 1.5,
@@ -415,111 +429,139 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
   }
 
   Widget _formZakatFitrah(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Zakat Fitrah',
-          'Wajib bagi setiap Muslim di bulan Ramadhan (setara 2.5 kg atau 3.5 liter beras).',
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Jumlah Orang',
-          hint: 'Contoh: 5',
-          controller: _jumlahOrangController,
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Harga Beras saat ini (per kg)',
-          hint: 'Contoh: 15000',
-          controller: _hargaBerasController,
-          isCurrency: true,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColor.globalBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+            'Zakat Fitrah',
+            'Wajib bagi setiap Muslim di bulan Ramadhan (setara 2.5 kg atau 3.5 liter beras).',
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Jumlah Orang',
+            hint: 'Contoh: 5',
+            controller: _jumlahOrangController,
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Harga Beras saat ini (per kg)',
+            hint: 'Contoh: 15.000',
+            controller: _hargaBerasController,
+            isCurrency: true,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _formZakatMaal(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Zakat Maal (Harta)',
-          'Zakat atas harta yang telah mencapai nisab (setara 85g emas) dan dimiliki selama 1 tahun.',
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Total Nilai Harta (Tabungan/Saham/Emas/Lainnya)',
-          hint: 'Contoh: 100000000',
-          controller: _totalHartaController,
-          isCurrency: true,
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Harga Emas saat ini (per gram)',
-          hint: 'Contoh: 1200000',
-          controller: _hargaEmasMaalController,
-          isCurrency: true,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColor.globalBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+            'Zakat Maal (Harta)',
+            'Zakat atas harta yang telah mencapai nisab (setara 85g emas) dan dimiliki selama 1 tahun.',
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Total Nilai Harta (Tabungan/Saham/Emas/Lainnya)',
+            hint: 'Contoh: 1.000.000',
+            controller: _totalHartaController,
+            isCurrency: true,
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Harga Emas saat ini (per gram)',
+            hint: 'Contoh: 1.200.000',
+            controller: _hargaEmasMaalController,
+            isCurrency: true,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _formZakatPenghasilan(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Zakat Penghasilan',
-          'Zakat yang dikeluarkan dari penghasilan bulanan jika telah mencapai nisab.',
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Gaji Bulanan',
-          hint: 'Contoh: 10000000',
-          controller: _gajiBulananController,
-          isCurrency: true,
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Penghasilan Lain / Bonus',
-          hint: 'Contoh: 2000000',
-          controller: _bonusController,
-          isCurrency: true,
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Harga Emas saat ini (per gram)',
-          hint: 'Contoh: 1200000',
-          controller: _hargaEmasPenghasilanController,
-          isCurrency: true,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColor.globalBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+            'Zakat Penghasilan',
+            'Zakat yang dikeluarkan dari penghasilan bulanan jika telah mencapai nisab.',
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Gaji Bulanan',
+            hint: 'Contoh: 1.000.000',
+            controller: _gajiBulananController,
+            isCurrency: true,
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Penghasilan Lain / Bonus',
+            hint: 'Contoh: 200.000',
+            controller: _bonusController,
+            isCurrency: true,
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Harga Emas saat ini (per gram)',
+            hint: 'Contoh: 1.200.000',
+            controller: _hargaEmasPenghasilanController,
+            isCurrency: true,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _formZakatEmas(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          'Zakat Emas',
-          'Wajib dikeluarkan jika emas yang dimiliki mencapai nisab 85 gram.',
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Berat Emas (gram)',
-          hint: 'Contoh: 90',
-          controller: _beratEmasController,
-        ),
-        _buildInputField(
-          context: context,
-          label: 'Harga Emas saat ini (per gram)',
-          hint: 'Contoh: 1200000',
-          controller: _hargaEmasController,
-          isCurrency: true,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColor.globalBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+            'Zakat Emas',
+            'Wajib dikeluarkan jika emas yang dimiliki mencapai nisab 85 gram.',
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Berat Emas (gram)',
+            hint: 'Contoh: 90',
+            controller: _beratEmasController,
+          ),
+          _buildInputField(
+            context: context,
+            label: 'Harga Emas saat ini (per gram)',
+            hint: 'Contoh: 1.200.000',
+            controller: _hargaEmasController,
+            isCurrency: true,
+          ),
+        ],
+      ),
     );
   }
 
@@ -529,7 +571,10 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
       children: [
         Text(title, style: pSemiBold14),
         const SizedBox(height: 4),
-        Text(desc, style: pRegular12),
+        Text(
+          desc,
+          style: pRegular12.copyWith(color: AppColor.globalTextSecondary),
+        ),
         const SizedBox(height: 24),
       ],
     );
@@ -561,7 +606,10 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Pilih Jenis Zakat', style: pMedium14),
+        Text(
+          'Pilih Jenis Zakat',
+          style: pSemiBold14.copyWith(color: AppColor.globalTextSecondary),
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: selectedZakatSlug,
@@ -571,25 +619,22 @@ class _CalculatorZakatScreenState extends State<CalculatorZakatScreen> {
               vertical: 8,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: context.isDarkMode
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade400,
-              ),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: AppColor.globalBorder),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: AppColor.primaryColor),
             ),
           ),
-          icon: const Icon(Icons.arrow_drop_down),
-          iconSize: 24,
+          icon: const Icon(LucideIcons.chevronDown),
+          iconSize: 20,
           elevation: 16,
+          dropdownColor: context.theme.scaffoldBackgroundColor,
           items: listData.map((item) {
             return DropdownMenuItem<String>(
               value: item['slug'],
-              child: Text(item['title']!, style: pRegular12),
+              child: Text(item['title']!, style: pMedium14),
             );
           }).toList(),
           onChanged: (value) {

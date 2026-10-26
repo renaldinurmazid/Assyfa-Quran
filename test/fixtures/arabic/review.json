@@ -1,0 +1,157 @@
+{
+    "lesson": {
+        "id": 357,
+        "title": "Pelajaran 1",
+        "level": "Level 1",
+        "color": "#3B82F6",
+        "pass_score": 80
+    },
+    "quizzes": [
+        {
+            "id": 226,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "multiple_select",
+            "question": "Pilih",
+            "arabic_text": null,
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": null,
+            "options": [
+                {
+                    "id": "1",
+                    "text": "A"
+                },
+                {
+                    "id": "2",
+                    "text": "B"
+                },
+                {
+                    "id": "3",
+                    "text": "C"
+                }
+            ]
+        },
+        {
+            "id": 227,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "true_false",
+            "question": "Benar?",
+            "arabic_text": null,
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": null,
+            "options": [
+                {
+                    "id": "true",
+                    "text": "Benar"
+                },
+                {
+                    "id": "false",
+                    "text": "Salah"
+                }
+            ]
+        },
+        {
+            "id": 228,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "short_answer",
+            "question": "Ketik",
+            "arabic_text": null,
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": null,
+            "options": []
+        },
+        {
+            "id": 229,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "matching",
+            "question": "Jodohkan",
+            "arabic_text": null,
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": null,
+            "options": [],
+            "left": [
+                {
+                    "id": 1,
+                    "text": "كتاب",
+                    "image": null
+                },
+                {
+                    "id": 2,
+                    "text": "قلم",
+                    "image": null
+                }
+            ],
+            "right": [
+                {
+                    "id": 2,
+                    "text": "pena",
+                    "image": null
+                },
+                {
+                    "id": 1,
+                    "text": "buku",
+                    "image": null
+                }
+            ]
+        },
+        {
+            "id": 230,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "ordering",
+            "question": "Urutkan",
+            "arabic_text": null,
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": null,
+            "options": [
+                {
+                    "id": "y",
+                    "text": "Dua"
+                },
+                {
+                    "id": "x",
+                    "text": "Satu"
+                },
+                {
+                    "id": "z",
+                    "text": "Tiga"
+                }
+            ]
+        },
+        {
+            "id": 231,
+            "lesson_id": 357,
+            "stage": "main",
+            "type": "fill_blank",
+            "question": "Lengkapi",
+            "arabic_text": "هذا ___",
+            "image": null,
+            "audio": null,
+            "points": 10,
+            "time_limit": 30,
+            "options": [
+                {
+                    "id": "b",
+                    "text": "قلم"
+                },
+                {
+                    "id": "a",
+                    "text": "كتاب"
+                }
+            ]
+        }
+    ]
+}

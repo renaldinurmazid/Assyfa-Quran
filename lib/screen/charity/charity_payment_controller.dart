@@ -43,9 +43,7 @@ class CharityPaymentController extends GetxController {
     super.onInit();
     _initArgs();
 
-    if (withOption == 1 &&
-        campaignOptions != null &&
-        campaignOptions!.isNotEmpty) {
+    if (!isGeneral && hasOptions) {
       selectedOption.value = campaignOptions![0];
       updateNominal();
     } else if (qurbanPrice != null) {
@@ -132,9 +130,24 @@ class CharityPaymentController extends GetxController {
     }
   }
 
+  bool get isGeneral => formType == 'general';
+
+  /// Opsi dipilih dari daftar `campaignOptions` (form patungan/satuan dengan opsi).
+  bool get hasOptions =>
+      withOption == 1 && campaignOptions != null && campaignOptions!.isNotEmpty;
+
+  /// Nominal dihitung otomatis dari harga opsi/qurban, bukan diketik donatur.
+  bool get isNominalFixed => !isGeneral && (hasOptions || qurbanPrice != null);
+
+  /// Patungan: jumlah nama dibatasi "Max Slot" pada opsi yang dipilih.
+  int get maxParticipants =>
+      formType == 'patungan' ? (selectedOption.value?.slot ?? 7) : 1 << 30;
+
   void incrementQuantity() {
-    if (formType == 'patungan' && quantity.value >= 7) {
-      AppToast.info(message: 'Maksimal 7 nama untuk paket patungan');
+    if (quantity.value >= maxParticipants) {
+      AppToast.info(
+        message: 'Maksimal $maxParticipants nama untuk paket patungan',
+      );
       return;
     }
     quantity.value++;
@@ -173,6 +186,10 @@ class CharityPaymentController extends GetxController {
 
   void selectOption(CampaignOption option) {
     selectedOption.value = option;
+    while (quantity.value > maxParticipants && quantity.value > 1) {
+      quantity.value--;
+      qurbanNameControllers.removeLast();
+    }
     updateNominal();
   }
 
@@ -210,6 +227,10 @@ class CharityPaymentController extends GetxController {
       AppToast.warning(message: 'Pilih metode pembayaran terlebih dahulu');
       return;
     }
+    if (!isGeneral && qurbanNameControllers.any((c) => c.text.trim().isEmpty)) {
+      AppToast.warning(message: 'Lengkapi semua nama terlebih dahulu');
+      return;
+    }
 
     try {
       isLoading.value = true;
@@ -221,10 +242,11 @@ class CharityPaymentController extends GetxController {
         'guest_phone': phoneController.text,
         'referral_code': AuthController.to.referralCode.value,
         'is_anonymous': isAnonymous.value,
-        if (formType != 'regular') ...{
+        if (!isGeneral) ...{
           'quantity': quantity.value,
           'participant_names': qurbanNameControllers
               .map((c) => c.text)
+              .where((text) => text.isNotEmpty)
               .toList(),
           if (selectedOption.value != null)
             'campaign_option_id': selectedOption.value!.id,
@@ -232,6 +254,7 @@ class CharityPaymentController extends GetxController {
       };
 
       final response = await Request().post(Url.donations, data: data);
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final result = DonationResponseModel.fromJson(response.data);
         Get.offNamed(Routes.charityPaymentDetail, arguments: result.data);
@@ -240,6 +263,7 @@ class CharityPaymentController extends GetxController {
         AppToast.error(message: response.data['message']);
       }
     } catch (e) {
+      print(e);
       AppToast.error(message: 'Terjadi kesalahan, silahkan coba lagi.');
     } finally {
       isLoading.value = false;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/quran_mp3/quran_mp3_controller.dart';
 import 'package:quran_app/models/dropdown_surah_model.dart';
 import 'package:quran_app/theme/font.dart';
@@ -60,19 +61,10 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        // leading: IconButton(
-        //   icon: Icon(Icons.arrow_back, color: onSurface, size: 32),
-        //   onPressed: () => Get.back(),
-        // ),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(
-        //       Icons.more_horiz_rounded,
-        //       color: onSurface,
-        //     ),
-        //     onPressed: () {},
-        //   ),
-        // ],
+        leading: IconButton(
+          icon: Icon(LucideIcons.arrowLeft),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -462,7 +454,8 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
     QuranMp3Controller controller,
     bool isDark,
   ) {
-    final TextEditingController reciterSearchController = TextEditingController();
+    final TextEditingController reciterSearchController =
+        TextEditingController();
     final RxString searchReciterQuery = ''.obs;
 
     showModalBottomSheet(
@@ -494,10 +487,13 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                
+
                 // Title
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -508,7 +504,10 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: context.theme.colorScheme.onSurface),
+                        icon: Icon(
+                          Icons.close,
+                          color: context.theme.colorScheme.onSurface,
+                        ),
                         onPressed: () => Get.back(),
                       ),
                     ],
@@ -517,10 +516,15 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
 
                 // Search Input
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.grey.shade900 : const Color(0xFFF5F5F5),
+                      color: isDark
+                          ? Colors.grey.shade900
+                          : const Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextField(
@@ -540,21 +544,25 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
                           color: Colors.grey.shade500,
                           size: 20,
                         ),
-                        suffixIcon: Obx(() => searchReciterQuery.value.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  Icons.close,
-                                  color: Colors.grey.shade500,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  reciterSearchController.clear();
-                                  searchReciterQuery.value = '';
-                                },
-                              )
-                            : const SizedBox.shrink()),
+                        suffixIcon: Obx(
+                          () => searchReciterQuery.value.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.close,
+                                    color: Colors.grey.shade500,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    reciterSearchController.clear();
+                                    searchReciterQuery.value = '';
+                                  },
+                                )
+                              : const SizedBox.shrink(),
+                        ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -565,43 +573,58 @@ class _QuranMp3DetailScreenState extends State<QuranMp3DetailScreen> {
                 // Reciter List
                 Expanded(
                   child: Obx(() {
-                    if (controller.isRecitersLoading.value && controller.reciters.isEmpty) {
+                    if (controller.isRecitersLoading.value &&
+                        controller.reciters.isEmpty) {
                       return Center(
                         child: CircularProgressIndicator(color: primaryColor),
                       );
                     }
 
-                    final filteredReciters = controller.reciters.where((reciter) {
-                      return reciter.name.toLowerCase().contains(searchReciterQuery.value.toLowerCase());
+                    final filteredReciters = controller.reciters.where((
+                      reciter,
+                    ) {
+                      return reciter.name.toLowerCase().contains(
+                        searchReciterQuery.value.toLowerCase(),
+                      );
                     }).toList();
 
                     if (filteredReciters.isEmpty) {
                       return Center(
                         child: Text(
                           'Qori tidak ditemukan',
-                          style: pMedium14.copyWith(color: Colors.grey.shade600),
+                          style: pMedium14.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       );
                     }
 
                     return ListView.separated(
                       controller: scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                       itemCount: filteredReciters.length,
                       separatorBuilder: (context, index) => Divider(
                         height: 1,
-                        color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                        color: isDark
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
                       ),
                       itemBuilder: (context, index) {
                         final reciter = filteredReciters[index];
-                        final isSelected = controller.selectedReciter.value?.id == reciter.id;
+                        final isSelected =
+                            controller.selectedReciter.value?.id == reciter.id;
 
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(
                             reciter.name,
                             style: pMedium16.copyWith(
-                              color: isSelected ? primaryColor : context.theme.colorScheme.onSurface,
+                              color: isSelected
+                                  ? primaryColor
+                                  : context.theme.colorScheme.onSurface,
                             ),
                           ),
                           trailing: isSelected

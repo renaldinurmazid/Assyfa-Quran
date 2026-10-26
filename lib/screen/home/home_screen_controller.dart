@@ -18,9 +18,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/models/banner_model.dart';
 import 'package:quran_app/models/prayer_model.dart';
 import 'package:quran_app/models/event_model.dart';
+import 'package:quran_app/models/menu_model.dart';
 
 class HomeScreenController extends GetxController {
   final calendarToday = '-'.obs;
+  final calendarMasehi = '-'.obs;
   final dayName = '-'.obs;
   final isLoading = false.obs;
   final isLoadingPrayerTime = false.obs;
@@ -54,6 +56,8 @@ class HomeScreenController extends GetxController {
 
   final events = <EventModel>[].obs;
   final isLoadingEvents = false.obs;
+  final finishedEvents = <EventModel>[].obs;
+  final isLoadingFinishedEvents = false.obs;
 
   final bannerLoginController = PageController();
   final bannerLoginPage = 0.obs;
@@ -68,13 +72,23 @@ class HomeScreenController extends GetxController {
   final passwordController = TextEditingController();
   final isPasswordVisible = false.obs;
 
+  // Menus
+  final mainMenus = <MenuModel>[].obs;
+  final quranMenus = <MenuModel>[].obs;
+  final moreMenus = <MenuModel>[].obs;
+  final isLoadingMenus = false.obs;
+
+  final scrollController = ScrollController();
+
   @override
   void onInit() {
     super.onInit();
+    fetchMenus();
     getPrayerTime();
     _startTimer();
     fetchBanners();
     fetchEvents();
+    fetchFinishedEvents();
     autoSlideBanner();
     fetchPrayers();
     _checkConnection();
@@ -148,6 +162,7 @@ class HomeScreenController extends GetxController {
     heartbeatTimer?.cancel();
     bannerTimer?.cancel();
     loginBannerTimer?.cancel();
+    scrollController.dispose();
     super.onClose();
   }
 
@@ -424,6 +439,7 @@ class HomeScreenController extends GetxController {
         // Load to observables
         kabKota.value = location['city'] ?? 'Jakarta';
         calendarToday.value = '${dateData['hijri']}';
+        calendarMasehi.value = '${dateData['day']}, ${dateData['gregorian']}';
         dayName.value = '${dateData['day']}';
         jadwalToday.assignAll(prayerTimes);
       } else {
@@ -444,10 +460,12 @@ class HomeScreenController extends GetxController {
     final kabKotaData = prefs.getString('kabKota');
     final prayerTimesData = prefs.getString('prayerTimes');
     final calendarData = prefs.getString('calendarToday');
+    final calendarMasehiData = prefs.getString('calendarMasehi');
     final dayNameData = prefs.getString('dayName');
 
     if (kabKotaData != null) kabKota.value = kabKotaData;
     if (calendarData != null) calendarToday.value = calendarData;
+    if (calendarMasehiData != null) calendarMasehi.value = calendarMasehiData;
     if (dayNameData != null) dayName.value = dayNameData;
     if (prayerTimesData != null) {
       final prayerMap = jsonDecode(prayerTimesData) as Map<String, dynamic>;
@@ -597,6 +615,28 @@ class HomeScreenController extends GetxController {
     }
   }
 
+  /// Events that are over, newest first (shown with their recording when there is one).
+  Future<void> fetchFinishedEvents() async {
+    isLoadingFinishedEvents.value = true;
+    try {
+      final response = await Request().get(
+        Url.eventsFinished,
+        queryParameters: {'limit': 10},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'] ?? [];
+        finishedEvents.assignAll(
+          data.map((e) => EventModel.fromJson(e)).toList(),
+        );
+      }
+    } catch (e) {
+      // Secondary section: stay quiet instead of toasting on the home screen.
+      debugPrint('Error fetching finished events: $e');
+    } finally {
+      isLoadingFinishedEvents.value = false;
+    }
+  }
+
   Future<void> fetchPrayers() async {
     isLoadingPrayers.value = true;
     try {
@@ -695,5 +735,239 @@ class HomeScreenController extends GetxController {
         }
       }
     }
+  }
+
+  Future<void> fetchMenus() async {
+    isLoadingMenus.value = true;
+    try {
+      // Set default fallback values
+      _setFallbackMenus();
+
+      final response = await Request().get(Url.appMenus);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'] ?? [];
+        if (data.isNotEmpty) {
+          final parsedMenus = data.map((e) => MenuModel.fromJson(e)).toList();
+          parsedMenus.sort((a, b) => a.priority.compareTo(b.priority));
+
+          mainMenus.assignAll(parsedMenus.where((m) => m.parentId == null));
+
+          final quranMenuId = mainMenus
+              .firstWhereOrNull((m) => m.actionType == 'quran_bottom_sheet')
+              ?.id;
+          if (quranMenuId != null) {
+            quranMenus.assignAll(
+              parsedMenus.where((m) => m.parentId == quranMenuId),
+            );
+          }
+
+          final moreMenuId = mainMenus
+              .firstWhereOrNull((m) => m.actionType == 'more_menu')
+              ?.id;
+          if (moreMenuId != null) {
+            moreMenus.assignAll(
+              parsedMenus.where((m) => m.parentId == moreMenuId),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching menus: $e");
+    } finally {
+      isLoadingMenus.value = false;
+    }
+  }
+
+  void _setFallbackMenus() {
+    mainMenus.assignAll([
+      MenuModel(
+        id: 1,
+        title: 'Al-Quran',
+        image: 'assets/images/png/menu/quran.png',
+        actionType: 'quran_bottom_sheet',
+        priority: 1,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 2,
+        title: 'Infaq',
+        image: 'assets/images/png/menu/infaq.png',
+        route: '/charity',
+        priority: 2,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 3,
+        title: 'Dzikir',
+        image: 'assets/images/png/menu/dzikir.png',
+        route: '/dzikir',
+        priority: 3,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 4,
+        title: 'Asmaul-Husna',
+        image: 'assets/images/png/menu/asmaul-husna.png',
+        route: '/asmaul-husna',
+        priority: 4,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 5,
+        title: 'Quran Mp3',
+        image: 'assets/images/png/menu/quran-mp3.png',
+        route: '/quran-mp3',
+        priority: 5,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 6,
+        title: 'Masjid Terdekat',
+        image: 'assets/images/png/menu/masjid-terdekat.png',
+        route: '/find-mosque',
+        priority: 6,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 7,
+        title: 'Haji & Umroh',
+        image: 'assets/images/png/menu/kabah.png',
+        route: '/haji-and-umrah',
+        priority: 7,
+        parentId: null,
+      ),
+      MenuModel(
+        id: 8,
+        title: 'Menu',
+        image: 'assets/images/png/menu/menu.png',
+        actionType: 'more_menu',
+        priority: 8,
+        parentId: null,
+      ),
+    ]);
+
+    quranMenus.assignAll([
+      MenuModel(
+        id: 9,
+        title: 'Per Ayat',
+        asset: 'assets/images/svg/q-yellow.svg',
+        isPages: false,
+        slug: 'per-ayat',
+        route: '/quran-list',
+        priority: 1,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 10,
+        title: 'Indonesia',
+        asset: 'assets/images/svg/q-red.svg',
+        isPages: true,
+        slug: 'id',
+        route: '/quran-page',
+        priority: 2,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 11,
+        title: 'Tajwid Indo',
+        asset: 'assets/images/svg/q-blue.svg',
+        isPages: true,
+        slug: 'id-tajwid',
+        route: '/quran-page',
+        priority: 3,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 12,
+        title: 'Per-Kata',
+        asset: 'assets/images/svg/q-green.svg',
+        isPages: true,
+        slug: 'kata-tajwid',
+        route: '/quran-page',
+        priority: 4,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 13,
+        title: 'Latin',
+        asset: 'assets/images/svg/q-blue.svg',
+        isPages: true,
+        slug: 'latin-tajwid',
+        route: '/quran-page',
+        priority: 5,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 14,
+        title: 'Madinah',
+        asset: 'assets/images/svg/q-red.svg',
+        isPages: true,
+        slug: 'md',
+        route: '/quran-page',
+        priority: 6,
+        parentId: 1,
+      ),
+      MenuModel(
+        id: 15,
+        title: 'Tajwid Md',
+        asset: 'assets/images/svg/q-yellow.svg',
+        isPages: true,
+        slug: 'md-tajwid',
+        route: '/quran-page',
+        priority: 7,
+        parentId: 1,
+      ),
+    ]);
+
+    moreMenus.assignAll([
+      MenuModel(
+        id: 16,
+        title: 'Group Ngaji',
+        image: 'assets/images/png/menu/grup-ngaji.png',
+        route: '/group-ngaji',
+        priority: 1,
+        parentId: 8,
+      ),
+      MenuModel(
+        id: 17,
+        title: 'Leaderboard',
+        image: 'assets/images/png/menu/leaderboard.png',
+        route: '/leaderboard',
+        priority: 2,
+        parentId: 8,
+      ),
+      MenuModel(
+        id: 18,
+        title: 'Penyebar Al-Quran',
+        image: 'assets/images/png/menu/penyebar-quran.png',
+        route: '/app-share-leaderboard',
+        priority: 3,
+        parentId: 8,
+      ),
+      MenuModel(
+        id: 19,
+        title: 'Kalkulator Zakat',
+        image: 'assets/images/png/menu/kalkulator-zakat.png',
+        route: '/calculator-zakat',
+        priority: 4,
+        parentId: 8,
+      ),
+      MenuModel(
+        id: 20,
+        title: 'Infaq Masjid',
+        image: 'assets/images/png/menu/infaq-masjid.png',
+        route: '/mosque-charity',
+        priority: 5,
+        parentId: 8,
+      ),
+      MenuModel(
+        id: 21,
+        title: 'Arah Qiblat',
+        image: 'assets/images/png/menu/arah-kiblat.png',
+        route: '/find-qiblat',
+        priority: 6,
+        parentId: 8,
+      ),
+    ]);
   }
 }

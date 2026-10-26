@@ -2,104 +2,99 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
-import 'package:quran_app/models/arabic_learning/arabic_level_model.dart';
 import 'package:quran_app/models/arabic_learning/arabic_lesson_model.dart';
-import 'package:quran_app/models/arabic_learning/arabic_quiz_model.dart';
+import 'package:quran_app/models/arabic_learning/arabic_level_model.dart';
+import 'package:quran_app/widgets/app_toast.dart';
 
+/// Browsing side of the Arabic course: roadmap -> level lessons -> lesson detail.
+/// Quizzes live in [ArabicQuizController].
 class ArabicQuranController extends GetxController {
   static ArabicQuranController get to => Get.find<ArabicQuranController>();
 
-  var isLoadingLevels = false.obs;
-  var levels = <ArabicLevel>[].obs;
+  final isLoadingRoadmap = false.obs;
+  final roadmapFailed = false.obs;
+  final stats = Rxn<ArabicStats>();
+  final phases = <ArabicPhase>[].obs;
 
-  var isLoadingLessons = false.obs;
-  var currentLevelId = 0.obs;
-  var currentLevel = Rxn<ArabicLevel>();
-  var lessons = <ArabicLesson>[].obs;
+  final isLoadingLessons = false.obs;
+  final levelLessons = Rxn<ArabicLevelLessons>();
 
-  var isLoadingQuizzes = false.obs;
-  var currentLessonId = 0.obs;
-  var currentLesson = Rxn<ArabicLesson>();
-  var quizzes = <ArabicQuiz>[].obs;
+  final isLoadingDetail = false.obs;
+  final lessonDetail = Rxn<ArabicLessonDetail>();
 
   @override
   void onInit() {
     super.onInit();
-    fetchLevels();
+    fetchRoadmap();
   }
 
-  Future<void> fetchLevels() async {
-    isLoadingLevels.value = true;
+  /// Message from the API (`message`) when present, otherwise [fallback].
+  static String errorMessage(DioException e, String fallback) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] is String) return data['message'];
+    return fallback;
+  }
+
+  Future<void> fetchRoadmap() async {
+    isLoadingRoadmap.value = true;
+    roadmapFailed.value = false;
     try {
-      final response = await Request().get(Url.arabicLevels);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'] ?? [];
-        levels.value = data.map((json) => ArabicLevel.fromJson(json)).toList();
-      }
+      final response = await Request().get(Url.arabicRoadmap);
+      final roadmap = ArabicRoadmap.fromJson(response.data);
+      stats.value = roadmap.stats;
+      phases.value = roadmap.phases;
     } on DioException catch (e) {
-      Get.snackbar('Error', 'Gagal memuat level bahasa Arab');
+      roadmapFailed.value = phases.isEmpty;
+      AppToast.error(
+        title: 'Gagal',
+        message: errorMessage(e, 'Gagal memuat materi bahasa Arab.'),
+      );
     } finally {
-      isLoadingLevels.value = false;
+      isLoadingRoadmap.value = false;
     }
   }
 
   Future<void> fetchLessons(int levelId) async {
+    // A different level must not flash the previous level's lessons.
+    if (levelLessons.value?.levelId != levelId) levelLessons.value = null;
     isLoadingLessons.value = true;
-    currentLevelId.value = levelId;
-    currentLevel.value = levels.firstWhereOrNull((l) => l.id == levelId);
-
     try {
       final response = await Request().get(Url.arabicLessons(levelId));
-      if (response.statusCode == 200) {
-        final List<dynamic> lessonsData = response.data['lessons'] ?? [];
-        lessons.value = lessonsData
-            .map((json) => ArabicLesson.fromJson(json))
-            .toList();
-      }
+      levelLessons.value = ArabicLevelLessons.fromJson(response.data);
     } on DioException catch (e) {
-      Get.snackbar('Error', 'Gagal memuat pelajaran');
+      AppToast.error(
+        title: 'Gagal',
+        message: errorMessage(e, 'Gagal memuat pelajaran.'),
+      );
     } finally {
       isLoadingLessons.value = false;
     }
   }
 
-  Future<void> fetchQuizzes(int lessonId) async {
-    isLoadingQuizzes.value = true;
-    currentLessonId.value = lessonId;
-    currentLesson.value = lessons.firstWhereOrNull((l) => l.id == lessonId);
-
+  Future<void> fetchLessonDetail(int lessonId) async {
+    if (lessonDetail.value?.lesson.id != lessonId) lessonDetail.value = null;
+    isLoadingDetail.value = true;
     try {
-      final response = await Request().get(Url.arabicQuizzes(lessonId));
-      if (response.statusCode == 200) {
-        final List<dynamic> quizzesData = response.data['quizzes'] ?? [];
-        quizzes.value = quizzesData
-            .map((json) => ArabicQuiz.fromJson(json))
-            .toList();
-      }
+      final response = await Request().get(Url.arabicLesson(lessonId));
+      lessonDetail.value = ArabicLessonDetail.fromJson(response.data);
     } on DioException catch (e) {
-      Get.snackbar('Error', 'Gagal memuat pertanyaan');
+      AppToast.error(
+        title: 'Gagal',
+        message: errorMessage(e, 'Gagal memuat pelajaran.'),
+      );
     } finally {
-      isLoadingQuizzes.value = false;
+      isLoadingDetail.value = false;
     }
   }
 
-  Future<bool> completeLesson(int lessonId, int score) async {
-    try {
-      final response = await Request().post(
-        Url.arabicCompleteLesson(lessonId),
-        data: {'score': score, 'xp_earned': score},
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // Refresh levels and lessons to update progress
-        fetchLevels();
-        if (currentLevelId.value != 0) {
-          fetchLessons(currentLevelId.value);
-        }
-        return true;
-      }
-    } on DioException catch (e) {
-      Get.snackbar('Error', 'Gagal menyimpan progres pembelajaran');
-    }
-    return false;
+  /// Called after a quiz finished so every screen below it shows fresh progress.
+  Future<void> refreshProgress() async {
+    final levelId = levelLessons.value?.levelId;
+    final lessonId = lessonDetail.value?.lesson.id;
+    await Future.wait([
+      fetchRoadmap(),
+      if (levelId != null) fetchLessons(levelId),
+      if (lessonId != null) fetchLessonDetail(lessonId),
+    ]);
   }
 }

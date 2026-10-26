@@ -19,6 +19,7 @@ class EventRegistrationListController extends GetxController {
     isLoading.value = true;
     try {
       final response = await Request().get(Url.myEventRegistrations);
+      print(response);
       final model = EventRegistrationListResponseModel.fromJson(response.data);
       if (model.status == 'success') {
         registrations.value = model.data;

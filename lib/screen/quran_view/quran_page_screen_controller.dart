@@ -110,7 +110,8 @@ class QuranPageScreenController extends GetxController {
   // Audio Settings
   final repeatCount = 1.obs; // x1, x2, x3, x5, x10
   final delayBetweenAyahs = 0.obs; // 0-10 seconds
-  final playbackRepeatOption = 1.obs; // 1 (Tidak), 2 (2x), 3 (3x), 5 (5x), 10 (10x), -1 (Selamanya)
+  final playbackRepeatOption =
+      1.obs; // 1 (Tidak), 2 (2x), 3 (3x), 5 (5x), 10 (10x), -1 (Selamanya)
   int currentPlaybackIteration = 1;
   int? startSurahId;
   int? startAyahNumber;
@@ -1214,12 +1215,14 @@ class QuranPageScreenController extends GetxController {
         throw Exception("Audio path is empty");
       }
       String finalAudioPath = audio.audioPath;
-      if (!finalAudioPath.startsWith('http') && !finalAudioPath.startsWith('file://') && !finalAudioPath.startsWith('/')) {
+      if (!finalAudioPath.startsWith('http') &&
+          !finalAudioPath.startsWith('file://') &&
+          !finalAudioPath.startsWith('/')) {
         finalAudioPath = '${Url.baseUrl}/$finalAudioPath';
       } else if (finalAudioPath.startsWith('/')) {
         finalAudioPath = '${Url.baseUrl}$finalAudioPath';
       }
-      
+
       final audioSource = AudioSource.uri(
         Uri.parse(finalAudioPath),
         tag: MediaItem(
@@ -1229,7 +1232,7 @@ class QuranPageScreenController extends GetxController {
           artist: audio.reciter?.name ?? "Reciter",
         ),
       );
-      
+
       await audioPlayer.setAudioSource(audioSource);
       audioPlayer.play();
     } catch (e) {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:quran_app/screen/quran_view/quran_list_screen_controller.dart';
 import 'package:quran_app/routes/app_routes.dart';
+import 'package:quran_app/theme/app_color.dart';
 import 'package:quran_app/theme/font.dart';
-import 'package:quran_app/widgets/text_input.dart';
 
 class QuranListScreen extends StatelessWidget {
   const QuranListScreen({super.key});
@@ -15,8 +16,11 @@ class QuranListScreen extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Quran Per-Ayat', style: pSemiBold16),
-        centerTitle: true,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -35,19 +39,45 @@ class QuranListScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            TextInput(
-              onChanged: controller.onSearch,
-              controller: controller.searchController,
-              hintText: 'Cari nama surah...',
-              suffixIcon: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Icon(
-                  Icons.search,
-                  color: Theme.of(context).primaryColor,
-                ),
+            Container(
+              height: 48,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColor.globalBorder, width: 0.5),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    LucideIcons.search,
+                    color: AppColor.globalTextSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      onChanged: controller.onSearch,
+                      controller: controller.searchController,
+                      style: pMedium14.copyWith(
+                        color: AppColor.globalTextSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Cari nama surah...',
+                        hintStyle: pRegular14.copyWith(
+                          color: AppColor.globalTextSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
@@ -74,17 +104,13 @@ class QuranListScreen extends StatelessWidget {
                             arguments: quran.nomor,
                           );
                         },
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: context.isDarkMode
-                                  ? Colors.grey.shade800
-                                  : Colors.grey.shade300,
-                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColor.globalBorder),
                           ),
                           child: Row(
                             children: [
@@ -100,7 +126,7 @@ class QuranListScreen extends StatelessWidget {
                                   Text(
                                     quran.nomor.toString(),
                                     style: pBold14.copyWith(
-                                      color: Theme.of(context).primaryColor,
+                                      color: AppColor.globalTextSecondary,
                                     ),
                                   ),
                                 ],
@@ -112,8 +138,9 @@ class QuranListScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       quran.namaLatin,
-                                      style: pSemiBold16.copyWith(
-                                        color: Theme.of(context).primaryColor,
+                                      style: pSemiBold14.copyWith(
+                                        color: AppColor.globalTextSecondary,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -140,7 +167,7 @@ class QuranListScreen extends StatelessWidget {
                                           ),
                                         ),
                                         Text(
-                                          '${quran.jumlahAyat} AYAT',
+                                          '${quran.jumlahAyat} Ayat',
                                           style: pMedium10.copyWith(
                                             color: Theme.of(context).hintColor,
                                             letterSpacing: 0.5,

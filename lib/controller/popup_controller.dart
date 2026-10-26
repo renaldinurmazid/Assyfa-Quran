@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -6,41 +8,64 @@ import 'package:quran_app/api/request.dart';
 import 'package:quran_app/api/url.dart';
 import 'package:quran_app/controller/global/auth_controller.dart';
 import 'package:quran_app/models/popup_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PopupController extends GetxController {
   static PopupController get to => Get.find<PopupController>();
+
+  static const _deviceIdKey = 'popup_device_id';
 
   final popups = <PopupData>[].obs;
   final isLoading = false.obs;
   final _shownPopupIds = <int>{};
   String? _cachedDeviceId;
 
-  Future<String?> _getDeviceId() async {
-    if (_cachedDeviceId != null) return _cachedDeviceId;
+  /// Stable id that tells the server which popups this device has already seen.
+  ///
+  /// Guests have nothing else to be recognised by. Android's `androidInfo.id` is the *firmware build*
+  /// id, identical on every phone with the same build, so it must not be used here: one person
+  /// dismissing a popup would hide it for everybody. A random id kept in preferences is unique.
+  Future<String> _getDeviceId() async {
+    if (_cachedDeviceId != null) return _cachedDeviceId!;
 
-    try {
-      final deviceInfo = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        _cachedDeviceId = androidInfo.id; // Usually a unique hardware ID
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        _cachedDeviceId = iosInfo.identifierForVendor;
+    final prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString(_deviceIdKey);
+
+    if (id == null) {
+      try {
+        // iOS: keep the vendor id the server may already know.
+        if (Platform.isIOS) {
+          id = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
+        }
+      } catch (e) {
+        debugPrint('Error getting device info: $e');
       }
-    } catch (e) {
-      debugPrint('Error getting device info: $e');
+      id ??= _randomId();
+      await prefs.setString(_deviceIdKey, id);
     }
 
-    return _cachedDeviceId;
+    return _cachedDeviceId = id;
   }
 
-  /// Fetch active popups from API.
-  /// If user is logged in, server automatically filters show_once popups.
+  static String _randomId() {
+    final random = Random.secure();
+    return List.generate(
+      32,
+      (_) => random.nextInt(16).toRadixString(16),
+    ).join();
+  }
+
+  /// Fetch the popups this visitor may see now.
+  /// The server applies schedule and frequency, for guests (by device id) and users (by token).
   Future<void> fetchPopups() async {
     isLoading.value = true;
     try {
       final isLogin = AuthController.to.isLogin.value;
-      final response = await Request().get(Url.popups, useToken: isLogin);
+      final response = await Request().get(
+        Url.popups,
+        queryParameters: {'device_id': await _getDeviceId()},
+        useToken: isLogin,
+      );
 
       if (response.statusCode == 200) {
         final popupResponse = PopupResponse.fromJson(response.data);
@@ -54,48 +79,25 @@ class PopupController extends GetxController {
     }
   }
 
-  /// Record that user has viewed a popup
-  Future<void> recordView(int popupId) async {
-    if (!AuthController.to.isLogin.value) return;
-    try {
-      final deviceId = await _getDeviceId();
-      await Request().post(
-        Url.popupView(popupId),
-        data: {'device_id': deviceId},
-        useToken: true,
-      );
-    } catch (e) {
-      debugPrint('Error recording popup view: $e');
-    }
-  }
+  /// Record that the popup was shown.
+  Future<void> recordView(int popupId) => _track(Url.popupView(popupId));
 
-  /// Record that user has dismissed a popup
-  Future<void> recordDismiss(int popupId) async {
-    if (!AuthController.to.isLogin.value) return;
-    try {
-      final deviceId = await _getDeviceId();
-      await Request().post(
-        Url.popupDismiss(popupId),
-        data: {'device_id': deviceId},
-        useToken: true,
-      );
-    } catch (e) {
-      debugPrint('Error recording popup dismiss: $e');
-    }
-  }
+  /// Record that the visitor closed the popup.
+  Future<void> recordDismiss(int popupId) => _track(Url.popupDismiss(popupId));
 
-  /// Record that user has clicked CTA button
-  Future<void> recordClick(int popupId) async {
-    if (!AuthController.to.isLogin.value) return;
+  /// Record that the visitor tapped the call-to-action.
+  Future<void> recordClick(int popupId) => _track(Url.popupClick(popupId));
+
+  /// Tracking is open to guests too: they are identified by the device id.
+  Future<void> _track(String url) async {
     try {
-      final deviceId = await _getDeviceId();
       await Request().post(
-        Url.popupClick(popupId),
-        data: {'device_id': deviceId},
-        useToken: true,
+        url,
+        data: {'device_id': await _getDeviceId()},
+        useToken: AuthController.to.isLogin.value,
       );
     } catch (e) {
-      debugPrint('Error recording popup click: $e');
+      debugPrint('Error recording popup event: $e');
     }
   }
 
