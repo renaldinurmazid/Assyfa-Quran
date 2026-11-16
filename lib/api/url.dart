@@ -15,6 +15,16 @@ class Url {
   static const String login = '/api/login';
   static const String changeProfile = '/api/change-profile';
   static const String groups = '/api/groups';
+  static const String dailyActivities = '/api/daily-activities';
+  static const String dailyActivityPresets = '/api/daily-activities/presets';
+  static String dailyActivity(int id) => '/api/daily-activities/$id';
+  static const String activityGroups = '/api/activity-groups';
+  static const String activityGroupJoin = '/api/activity-groups/join';
+  static String activityGroup(int id) => '/api/activity-groups/$id';
+  static String activityGroupLeave(int id) => '/api/activity-groups/$id/leave';
+  static String activityGroupMember(int id, int userId) =>
+      '/api/activity-groups/$id/members/$userId';
+  static String dailyActivityCheck(int id) => '/api/daily-activities/$id/check';
   static const String quranOfflineIndex = '/api/quran/offline/index';
   static const String quranOfflinePage = '/api/quran/offline/page';
   static const String quranOfflineDropdowns = '/api/quran/offline/dropdowns';

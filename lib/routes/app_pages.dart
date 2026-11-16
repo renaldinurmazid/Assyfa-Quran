@@ -20,6 +20,8 @@ import 'package:quran_app/screen/delete_account/delete_account_screen.dart';
 import 'package:quran_app/screen/event/event_registration_list_screen.dart';
 import 'package:quran_app/screen/find-qiblat/find_qiblat_screen.dart';
 import 'package:quran_app/screen/find_mosque/find_mosque_screen.dart';
+import 'package:quran_app/screen/daily_activity/activity_group_screen.dart';
+import 'package:quran_app/screen/daily_activity/daily_activity_screen.dart';
 import 'package:quran_app/screen/group/add_member_group_screen.dart';
 import 'package:quran_app/screen/group/show_member_screen.dart';
 import 'package:quran_app/screen/charity/mosque/mosque_infaq_activity_detail_screen.dart';
@@ -184,6 +186,18 @@ class AppPages {
     GetPage(
       name: Routes.addMemberGroup,
       page: () => const AddMemberGroupScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.dailyActivity,
+      page: () => const DailyActivityScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.activityGroup,
+      page: () => const ActivityGroupScreen(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 500),
     ),

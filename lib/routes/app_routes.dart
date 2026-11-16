@@ -18,6 +18,8 @@ abstract class Routes {
   static const showGroup = '/show_group';
   static const addMemberGroup = '/add_member_group';
   static const showMemberGroup = '/show_member_group';
+  static const dailyActivity = '/daily_activity';
+  static const activityGroup = '/activity_group';
   static const eventRegistrationList = '/event-registration-list';
   static const eventPayment = '/event_payment';
   static const eventPaymentDetail = '/event_payment_detail';
