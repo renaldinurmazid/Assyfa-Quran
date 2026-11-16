@@ -193,16 +193,16 @@ class CharityShowScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              campaign.coverImage,
-              height: 180,
-              width: Get.width,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                width: Get.width,
-                color: Colors.grey.shade300,
-                child: const Icon(LucideIcons.image, size: 40),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.network(
+                campaign.coverImage,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey.shade300,
+                  child: const Icon(LucideIcons.image, size: 40),
+                ),
               ),
             ),
           ),

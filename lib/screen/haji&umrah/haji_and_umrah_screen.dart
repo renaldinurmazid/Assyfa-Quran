@@ -22,7 +22,10 @@ class HajiAndUmrahScreen extends StatelessWidget {
         title: Text("Program Umrah", style: pSemiBold16),
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(LucideIcons.arrowLeft, color: context.theme.colorScheme.onSurface),
+          icon: Icon(
+            LucideIcons.arrowLeft,
+            color: context.theme.colorScheme.onSurface,
+          ),
         ),
       ),
       body: SafeArea(
@@ -33,9 +36,7 @@ class HajiAndUmrahScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
-                  Expanded(
-                    child: _SearchField(controller: controller),
-                  ),
+                  Expanded(child: _SearchField(controller: controller)),
                   const SizedBox(width: 10),
                   GestureDetector(
                     onTap: () => Get.bottomSheet(
@@ -48,9 +49,7 @@ class HajiAndUmrahScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: context.theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColor.globalBorder,
-                        ),
+                        border: Border.all(color: AppColor.globalBorder),
                       ),
                       child: const Icon(
                         LucideIcons.slidersHorizontal,
@@ -89,11 +88,12 @@ class HajiAndUmrahScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Package List
             Expanded(
               child: Obx(() {
-                if (controller.isLoading.value && controller.packagesList.isEmpty) {
+                if (controller.isLoading.value &&
+                    controller.packagesList.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(
                       color: AppColor.primaryColor,
@@ -132,9 +132,13 @@ class HajiAndUmrahScreen extends StatelessWidget {
                               ),
                             );
                           }
-                          if (!controller.hasMoreData.value && packages.isNotEmpty) {
+                          if (!controller.hasMoreData.value &&
+                              packages.isNotEmpty) {
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 28, top: 4),
+                              padding: const EdgeInsets.only(
+                                bottom: 28,
+                                top: 4,
+                              ),
                               child: Center(
                                 child: Text(
                                   'Semua paket sudah ditampilkan',
@@ -164,17 +168,19 @@ class HajiAndUmrahScreen extends StatelessWidget {
 
 class _PackageCard extends StatelessWidget {
   final HajiUmrahPackageModel package;
-  
+
   const _PackageCard({required this.package});
 
   @override
   Widget build(BuildContext context) {
     double progress = 0.0;
-    if (package.quota != null && package.quotaLeft != null && package.quota! > 0) {
+    if (package.quota != null &&
+        package.quotaLeft != null &&
+        package.quota! > 0) {
       int sold = package.quota! - package.quotaLeft!;
       progress = sold / package.quota!;
     }
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(2),
@@ -193,19 +199,21 @@ class _PackageCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
-              child: CachedNetworkImage(
-                imageUrl: package.bannerImageUrl,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 180,
-                  color: context.theme.colorScheme.surface,
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 180,
-                  color: context.theme.colorScheme.surface,
-                  child: Icon(LucideIcons.imageOff, color: AppColor.globalTextSecondary),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: CachedNetworkImage(
+                  imageUrl: package.bannerImageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      Container(color: context.theme.colorScheme.surface),
+                  errorWidget: (context, url, error) => Container(
+                    color: context.theme.colorScheme.surface,
+                    child: Icon(
+                      LucideIcons.imageOff,
+                      color: AppColor.globalTextSecondary,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -233,7 +241,8 @@ class _PackageCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        package.umrahDetail?.departureDateFormatted ?? 'Jadwal menyusul',
+                        package.umrahDetail?.departureDateFormatted ??
+                            'Jadwal menyusul',
                         style: pMedium12.copyWith(
                           color: AppColor.globalTextSecondary,
                         ),
@@ -299,7 +308,9 @@ class _PackageCard extends StatelessWidget {
                           Text(
                             "${package.quotaLeft ?? 0}",
                             style: pSemiBold14.copyWith(
-                              color: package.quotaLeft == 0 ? Colors.red : AppColor.globalTextSecondary,
+                              color: package.quotaLeft == 0
+                                  ? Colors.red
+                                  : AppColor.globalTextSecondary,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -327,9 +338,7 @@ class _SearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller.searchController,
-      style: pMedium14.copyWith(
-        color: context.theme.colorScheme.onSurface,
-      ),
+      style: pMedium14.copyWith(color: context.theme.colorScheme.onSurface),
       decoration: InputDecoration(
         hintText: 'Cari paket umrah',
         hintStyle: pMedium14.copyWith(
@@ -364,9 +373,7 @@ class _SearchField extends StatelessWidget {
         filled: false,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: AppColor.globalBorder,
-          ),
+          borderSide: BorderSide(color: AppColor.globalBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -435,9 +442,7 @@ class _FilterSheet extends StatelessWidget {
                 },
                 child: Text(
                   'Reset',
-                  style: pSemiBold14.copyWith(
-                    color: Colors.red.shade400,
-                  ),
+                  style: pSemiBold14.copyWith(color: Colors.red.shade400),
                 ),
               ),
             ],
@@ -480,9 +485,7 @@ class _FilterSheet extends StatelessWidget {
                 fillColor: context.theme.colorScheme.surface,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: AppColor.globalBorder,
-                  ),
+                  borderSide: BorderSide(color: AppColor.globalBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -490,9 +493,7 @@ class _FilterSheet extends StatelessWidget {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: AppColor.globalBorder,
-                  ),
+                  borderSide: BorderSide(color: AppColor.globalBorder),
                 ),
               ),
               items: [
@@ -543,9 +544,7 @@ class _FilterSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppColor.globalBorder,
-                  ),
+                  border: Border.all(color: AppColor.globalBorder),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -628,7 +627,11 @@ class _SortOption extends StatelessWidget {
                   ),
                 ),
                 child: controller.selectedSort.value == value
-                    ? const Icon(LucideIcons.check, size: 12, color: Colors.white)
+                    ? const Icon(
+                        LucideIcons.check,
+                        size: 12,
+                        color: Colors.white,
+                      )
                     : null,
               ),
               const SizedBox(width: 12),
@@ -676,8 +679,9 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
       decoration: BoxDecoration(
         color: context.theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
@@ -715,7 +719,9 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
             onChanged: (v) => _query.value = v,
             decoration: InputDecoration(
               hintText: 'Cari kota...',
-              hintStyle: pMedium14.copyWith(color: AppColor.globalTextSecondary),
+              hintStyle: pMedium14.copyWith(
+                color: AppColor.globalTextSecondary,
+              ),
               prefixIcon: Icon(
                 LucideIcons.search,
                 size: 19,
@@ -741,9 +747,7 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
               fillColor: context.theme.colorScheme.surface,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: AppColor.globalBorder,
-                ),
+                borderSide: BorderSide(color: AppColor.globalBorder),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -758,14 +762,11 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
             child: Obx(() {
               final q = _query.value.toLowerCase();
               final filtered = widget.controller.apiCities.where((c) {
-                return (c['name']?.toString() ?? '')
-                    .toLowerCase()
-                    .contains(q);
+                return (c['name']?.toString() ?? '').toLowerCase().contains(q);
               }).toList();
 
-              final showAll = q.isEmpty ||
-                  'semua kota'.contains(q) ||
-                  'semua'.contains(q);
+              final showAll =
+                  q.isEmpty || 'semua kota'.contains(q) || 'semua'.contains(q);
 
               return ListView(
                 physics: const BouncingScrollPhysics(),
@@ -785,8 +786,7 @@ class _CitySearchBottomSheetState extends State<CitySearchBottomSheet> {
                     final name = city['name']?.toString() ?? '';
                     return _CityTile(
                       name: name,
-                      isSelected:
-                          widget.controller.selectedCityId.value == id,
+                      isSelected: widget.controller.selectedCityId.value == id,
                       onTap: () {
                         widget.controller.selectedCityId.value = id;
                         Get.back();
@@ -834,12 +834,14 @@ class _CityTile extends StatelessWidget {
         name,
         style: isSelected
             ? pSemiBold14.copyWith(color: AppColor.primaryColor)
-            : pMedium14.copyWith(
-                color: context.theme.colorScheme.onSurface,
-              ),
+            : pMedium14.copyWith(color: context.theme.colorScheme.onSurface),
       ),
       trailing: isSelected
-          ? const Icon(LucideIcons.checkCircle2, color: AppColor.primaryColor, size: 20)
+          ? const Icon(
+              LucideIcons.checkCircle2,
+              color: AppColor.primaryColor,
+              size: 20,
+            )
           : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );

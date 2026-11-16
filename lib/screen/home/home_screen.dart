@@ -879,7 +879,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 220,
+              height: 265,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: controller.events.length,
@@ -932,17 +932,20 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(14),
-                image: (event.thumbnail != null && event.thumbnail!.isNotEmpty)
-                    ? DecorationImage(
-                        image: CachedNetworkImageProvider(event.thumbnail!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(14),
+                  image:
+                      (event.thumbnail != null && event.thumbnail!.isNotEmpty)
+                      ? DecorationImage(
+                          image: CachedNetworkImageProvider(event.thumbnail!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -1017,7 +1020,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 220,
+              height: 265,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: controller.finishedEvents.length,
@@ -1052,22 +1055,27 @@ class HomeScreen extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(14),
-                    image:
-                        (event.thumbnail != null && event.thumbnail!.isNotEmpty)
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(event.thumbnail!),
-                            fit: BoxFit.cover,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.black26,
-                              BlendMode.darken,
-                            ),
-                          )
-                        : null,
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(14),
+                      image:
+                          (event.thumbnail != null &&
+                              event.thumbnail!.isNotEmpty)
+                          ? DecorationImage(
+                              image: CachedNetworkImageProvider(
+                                event.thumbnail!,
+                              ),
+                              fit: BoxFit.cover,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.black26,
+                                BlendMode.darken,
+                              ),
+                            )
+                          : null,
+                    ),
                   ),
                 ),
                 Positioned(

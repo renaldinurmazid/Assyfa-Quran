@@ -103,17 +103,18 @@ class ShowEventScreen extends StatelessWidget {
           if (event.thumbnail != null && event.thumbnail!.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: CachedNetworkImage(
-                imageUrl: event.thumbnail!,
-                height: 180,
-                width: Get.width,
-                fit: BoxFit.cover,
-                placeholder: (c, _) => Container(color: AppColor.globalBorder),
-                errorWidget: (c, _, __) => Container(
-                  color: AppColor.globalBorder,
-                  height: 180,
-                  width: Get.width,
-                  child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: CachedNetworkImage(
+                  imageUrl: event.thumbnail!,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (c, _) =>
+                      Container(color: AppColor.globalBorder),
+                  errorWidget: (c, _, __) => Container(
+                    color: AppColor.globalBorder,
+                    child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+                  ),
                 ),
               ),
             )

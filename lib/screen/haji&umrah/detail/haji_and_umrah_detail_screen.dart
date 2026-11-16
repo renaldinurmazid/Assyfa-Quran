@@ -135,8 +135,9 @@ class HajiAndUmrahDetailScreen extends StatelessWidget {
   Widget _buildProgramInfo(HajiUmrahPackageModel package) {
     final quota = package.quota ?? 0;
     final quotaLeft = package.quotaLeft ?? 0;
-    final double progress =
-        quota > 0 ? ((quota - quotaLeft) / quota).clamp(0.0, 1.0) : 0.0; // progress is based on filled quota, or can just be quotaLeft / quota. Wait, charity was collected / target.
+    final double progress = quota > 0
+        ? ((quota - quotaLeft) / quota).clamp(0.0, 1.0)
+        : 0.0; // progress is based on filled quota, or can just be quotaLeft / quota. Wait, charity was collected / target.
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -149,16 +150,16 @@ class HajiAndUmrahDetailScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              package.bannerImageUrl,
-              height: 180,
-              width: Get.width,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                width: Get.width,
-                color: Colors.grey.shade300,
-                child: const Icon(LucideIcons.image, size: 40),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.network(
+                package.bannerImageUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey.shade300,
+                  child: const Icon(LucideIcons.image, size: 40),
+                ),
               ),
             ),
           ),
@@ -354,9 +355,9 @@ class HajiAndUmrahDetailScreen extends StatelessWidget {
                 .replaceAll('word-break: break-word', 'word-break: normal'),
             textStyle: pRegular14.copyWith(
               height: 1.7,
-              color: Theme.of(context).colorScheme.onSurface.withValues(
-                alpha: 0.8,
-              ),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.8),
             ),
             customStylesBuilder: (element) => {'word-break': 'normal'},
           ),
@@ -365,4 +366,3 @@ class HajiAndUmrahDetailScreen extends StatelessWidget {
     );
   }
 }
-

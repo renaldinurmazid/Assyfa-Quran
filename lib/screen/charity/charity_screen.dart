@@ -114,183 +114,175 @@ class CharityScreen extends StatelessWidget {
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColor.primaryColorDark,
-                            ),
-                          ),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColor.primaryColorDark,
                         ),
                       ),
-                    );
-                  }
-
-                  final charity = controller.charityList[index];
-                  final progressValue = (charity.percentage / 100).clamp(
-                    0.0,
-                    1.0,
-                  );
-
-                  return GestureDetector(
-                    onTap: () => Get.toNamed(
-                      Routes.charityShow,
-                      arguments: {'id': charity.id},
                     ),
-                    child: Container(
-                      height: 108,
-                      padding: EdgeInsets.all(2),
-                      margin: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColor.globalBorder,
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: CachedNetworkImage(
-                              imageUrl: charity.coverImage,
-                              width: 156,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                width: 156,
-                                color: context.isDarkMode
-                                    ? Colors.grey.shade900
-                                    : Colors.grey.shade100,
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColor.primaryColorDark,
-                                      ),
-                                    ),
+                  ),
+                );
+              }
+
+              final charity = controller.charityList[index];
+              final progressValue = (charity.percentage / 100).clamp(0.0, 1.0);
+
+              return GestureDetector(
+                onTap: () => Get.toNamed(
+                  Routes.charityShow,
+                  arguments: {'id': charity.id},
+                ),
+                child: Container(
+                  height: 100,
+                  padding: EdgeInsets.all(2),
+                  margin: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColor.globalBorder,
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: charity.coverImage,
+                          width: 170,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 170,
+                            color: context.isDarkMode
+                                ? Colors.grey.shade900
+                                : Colors.grey.shade100,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColor.primaryColorDark,
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => Container(
-                                width: 156,
-                                color: context
-                                    .theme
-                                    .colorScheme
-                                    .surfaceContainerHighest,
-                                child: const Icon(IconlyLight.image, size: 24),
-                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                top: 4,
-                                left: 4,
-                                right: 4,
-                                bottom: 8,
+                          errorWidget: (context, url, error) => Container(
+                            width: 170,
+                            color: context
+                                .theme
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            child: const Icon(IconlyLight.image, size: 24),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 4,
+                            left: 4,
+                            right: 4,
+                            bottom: 8,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                charity.title,
+                                style: pSemiBold12.copyWith(
+                                  color: AppColor.globalTextSecondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const Spacer(),
+                              Container(
+                                width: double.infinity,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: AppColor.globalBorder,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: LinearProgressIndicator(
+                                  value: progressValue,
+                                  color: AppColor.primaryColor,
+                                  backgroundColor: AppColor.globalBorder,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    charity.title,
-                                    style: pSemiBold12.copyWith(
-                                      color: AppColor.globalTextSecondary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const Spacer(),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 4,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: AppColor.globalBorder,
-                                        width: 0.5,
-                                      ),
-                                    ),
-                                    child: LinearProgressIndicator(
-                                      value: progressValue,
-                                      color: AppColor.primaryColor,
-                                      backgroundColor: AppColor.globalBorder,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Terkumpul",
-                                            style: pRegular10.copyWith(
-                                              color:
-                                                  AppColor.globalTextSecondary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          Text(
-                                            charity.collectedAmount,
-                                            style: pSemiBold10.copyWith(
-                                              color:
-                                                  AppColor.globalTextSecondary,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ],
+                                      Text(
+                                        "Terkumpul",
+                                        style: pRegular10.copyWith(
+                                          color: AppColor.globalTextSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "Sisa hari",
-                                            style: pRegular10.copyWith(
-                                              color:
-                                                  AppColor.globalTextSecondary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          charity.endDate.toString() ==
-                                                  'Infinity'
-                                              ? const Icon(
-                                                  Icons.all_inclusive,
-                                                  size: 14,
-                                                  color: Colors.grey,
-                                                )
-                                              : Text(
-                                                  charity.endDate.toString(),
-                                                  style: pSemiBold10.copyWith(
-                                                    color: AppColor
-                                                        .globalTextSecondary,
-                                                    fontWeight: FontWeight.w900,
-                                                  ),
-                                                ),
-                                        ],
+                                      Text(
+                                        charity.collectedAmount,
+                                        style: pSemiBold10.copyWith(
+                                          color: AppColor.globalTextSecondary,
+                                          fontWeight: FontWeight.w900,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        "Sisa hari",
+                                        style: pRegular10.copyWith(
+                                          color: AppColor.globalTextSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      charity.endDate.toString() == 'Infinity'
+                                          ? const Icon(
+                                              Icons.all_inclusive,
+                                              size: 14,
+                                              color: Colors.grey,
+                                            )
+                                          : Text(
+                                              charity.endDate.toString(),
+                                              style: pSemiBold10.copyWith(
+                                                color: AppColor
+                                                    .globalTextSecondary,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
                                     ],
                                   ),
                                 ],
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               );
-            }),
+            },
+          );
+        }),
       ],
     );
   }
@@ -358,39 +350,41 @@ class CharityScreen extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: charity.coverImage,
-                            height: 125,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: 125,
-                              color: context.isDarkMode
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade100,
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColor.primaryColorDark,
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: CachedNetworkImage(
+                              imageUrl: charity.coverImage,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: context.isDarkMode
+                                    ? Colors.grey.shade900
+                                    : Colors.grey.shade100,
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColor.primaryColorDark,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              height: 125,
-                              color: context
-                                  .theme
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              child: Icon(
-                                IconlyLight.image,
-                                color:
-                                    context.theme.colorScheme.onSurfaceVariant,
+                              errorWidget: (context, url, error) => Container(
+                                color: context
+                                    .theme
+                                    .colorScheme
+                                    .surfaceContainerHighest,
+                                child: Icon(
+                                  IconlyLight.image,
+                                  color: context
+                                      .theme
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                               ),
                             ),
                           ),
